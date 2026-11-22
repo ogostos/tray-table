@@ -300,6 +300,18 @@ input{font:inherit;color:inherit}
 .ms-c.boom{background:#FF5A5F}.ms-c.boom::after{color:#fff}
 .ms-grid.done .ms-c:not(.o){background:#2A4A3A}
 /* ---------- SHEETS ---------- */
+.solbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--s1);border-top:1px solid var(--line);padding:12px 16px calc(env(safe-area-inset-bottom) + 12px);box-shadow:0 -12px 30px rgba(0,0,0,.45);animation:up .25s ease-out}
+.solbar .sbt{max-width:448px;margin:0 auto 10px;font-size:14.5px;color:var(--mute)}.solbar .sbt b{color:var(--tx)}
+.solbar .sbb{max-width:448px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+.solbar .big{height:48px;font-size:14px;padding:0 6px}
+.solbar .sbb:has(> :nth-child(2):last-child){grid-template-columns:1.6fr 1fr}
+body.has-bar #app{padding-bottom:170px}
+#app.solved-shown .controls,#app.solved-shown .qn-tools{visibility:hidden}
+.lo-cell.sol{box-shadow:inset 0 0 0 3px #fff}
+.t24-sol{display:grid;gap:8px;width:min(100%,340px)}
+.t24-sol div{display:flex;justify-content:space-between;gap:10px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:700}
+.t24-sol span{color:var(--mute)}.t24-sol b{color:var(--t24)}
+
 .sheet-x{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:var(--s2);border:1px solid var(--line);color:var(--mute);font-size:15px;font-weight:700;display:grid;place-items:center;z-index:2}
 .sheet>.kicker,.sheet>h2{padding-right:44px}
 .handoff .hback{margin-top:18px;height:44px;padding:0 20px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;font-weight:700;font-size:14px}
@@ -518,7 +530,7 @@ document.addEventListener('keydown', (e) => {
 });
 function renderHome() {
   clearInterval(tickTimer); window.onkeydown = null;
-  document.querySelectorAll('.veil,.handoff').forEach((v) => v.remove());
+  document.querySelectorAll('.veil,.handoff,.solbar').forEach((v) => v.remove()); document.body.classList.remove('has-bar');
   document.documentElement.style.setProperty('--acc', '#FFC247');
   app.innerHTML = '';
   app.appendChild($('div', 'brand', `<div class="logo">✈︎</div><div><div class="t1">Tray Table</div><div class="t2">Offline puzzle arcade · ${GAMES.length} games</div></div>`));
@@ -681,7 +693,7 @@ function openGame(ctx) {
   const { gid, t, num, p, ri } = ctx;
   const duel = ri != null;
   clearInterval(tickTimer); window.onkeydown = null;
-  document.querySelectorAll('.veil').forEach((v) => v.remove());
+  document.querySelectorAll('.veil,.solbar').forEach((v) => v.remove()); document.body.classList.remove('has-bar'); app.classList.remove('solved-shown');
   const g = G[gid], c = cfg(gid);
   document.documentElement.style.setProperty('--acc', getComputedStyle(document.documentElement).getPropertyValue('--' + gid).trim() || '#FFC247');
   app.innerHTML = '';
@@ -738,11 +750,15 @@ function openGame(ctx) {
     st.acc = elapsed() - st.penalty; st.started = false; st.done = true; paint();
     r.t = Math.round(elapsed() * 10) / 10; r.a = st.moves; if (st.par != null) r.p = st.par;
     let info = {};
-    if (!r.x) info = putRes(gid, t, num, p, r);
+    if (!r.x) { info = putRes(gid, t, num, p, r); st.solvedByPlayer = true; }
     if (duel) round.res[p] = r;
     store.save();
+    if (r.x && !duel) { setTimeout(() => showGaveUp(ctx, r, title, st), 60); return; } // solo: straight to the answer
     setTimeout(() => showResult(ctx, r, title, info, st), r.x ? 50 : 450);
   };
+  let solver = null, revealed = false;
+  st.reveal = () => { if (revealed || !solver) return; revealed = true; app.classList.add('solved-shown'); solver(); };
+  st.canReveal = () => !!solver;
   let concedeArm = 0;
   const api = {
     get done() { return st.done; },
@@ -755,6 +771,7 @@ function openGame(ctx) {
     btn(label, fn, cls = '') { const b = $('button', 'cbtn ' + cls, label); b.onclick = fn; controls.appendChild(b); return b; },
     win(opts = {}) { if (st.done) return; finish({ m: opts.m != null ? opts.m : st.moves }, opts.title); },
     fail(title, why) { if (st.done) return; finish({ x: 1, m: 0, why }, title); },
+    solution(fn) { solver = fn; },
   };
   document.onvisibilitychange = () => {
     if (st.done || !st.started) return;
@@ -762,7 +779,7 @@ function openGame(ctx) {
     else { st.t0 = performance.now(); st.paused = false; }
   };
   g.mount(stage, controls, P, api, { num, t });
-  const cb = api.btn(duel ? 'Concede' : 'Give up', () => {
+  const cb = (!duel && g.metric === 'score') ? null : api.btn(duel ? 'Concede' : 'Give up', () => {
     if (st.done) return;
     if (Date.now() - concedeArm > 2500) { concedeArm = Date.now(); cb.textContent = 'Tap again to confirm'; cb.classList.add('warn'); setTimeout(() => { if (!st.done) { cb.textContent = duel ? 'Concede' : 'Give up'; cb.classList.remove('warn'); } }, 2500); return; }
     finish({ x: 1, m: 0 }, duel ? 'Conceded' : 'Gave up');
@@ -773,6 +790,22 @@ function openGame(ctx) {
   return api;
 }
 
+function showBar(text, buttons) {
+  document.querySelectorAll('.solbar').forEach((v) => v.remove());
+  const bar = $('div', 'solbar');
+  bar.appendChild($('div', 'sbt', text));
+  const row = $('div', 'sbb');
+  for (const [label, cls, fn, color] of buttons) { const b = $('button', 'big ' + cls, label); if (color) { b.style.background = color; b.style.borderColor = color; } b.onclick = () => { bar.remove(); document.body.classList.remove('has-bar'); fn(); }; row.appendChild(b); }
+  bar.appendChild(row);
+  document.body.appendChild(bar); document.body.classList.add('has-bar');
+}
+function showGaveUp(ctx, r, title, st) {
+  const { gid, t, num } = ctx, g = G[gid];
+  st.reveal();
+  let nx = num + 1; while (getRes(gid, t, nx, 0)) nx++;
+  const text = r.why === 'hit a mine' ? '<b>Boom!</b> Here’s the whole board.' : st.canReveal() ? '<b>Gave up.</b> Here’s the solution.' : '<b>Gave up.</b>';
+  showBar(text, [[`Next puzzle · #${nx}`, 'pri', () => openGame({ gid, t, num: nx, p: 0 })], ['Try again', '', () => openGame(ctx)], ['‹ Arcade', '', () => goHome()]]);
+}
 function showRules(g) {
   const btn = $('button', 'big pri', 'Got it');
   const v = veil([$('div', 'kicker', 'How to play'), $('h2', '', g.name), ...g.rules.map((r) => $('p', '', r)), $('div', '', '<div style="height:6px"></div>'), btn]);
@@ -823,6 +856,11 @@ function showResult(ctx, r, title, info, st) {
       pass.style.background = PC[other]; pass.style.borderColor = PC[other];
       pass.onclick = () => { v.remove(); handoff(gid, ri, other); };
       btns.append(pass);
+      if (r.x && round.mode === 'diff' && st.canReveal()) { // their own board, so no spoiler for the other player
+        const see = $('button', 'big', 'Show the solution');
+        see.onclick = () => { v.remove(); st.reveal(); showBar(`<b>${nm(p)} ${r.why || 'conceded'}.</b> Here’s the solution.`, [[`Hand over to ${nm(other)} →`, 'pri', () => handoff(gid, ri, other), PC[other]], ['‹ Arcade', '', () => goHome()]]); };
+        btns.append(see);
+      }
     } else {
       const res = round.res, k = cmp(g, res[0], res[1], round.mode);
       const w = k.c < 0 ? 0 : k.c > 0 ? 1 : null;
@@ -839,6 +877,11 @@ function showResult(ctx, r, title, info, st) {
       nx.style.background = PC[first]; nx.style.borderColor = PC[first];
       nx.onclick = () => { v.remove(); const i = newRound(gid); handoff(gid, i, first); };
       btns.append(nx);
+      if (st.canReveal() && !st.solvedByPlayer) {
+        const see = $('button', 'big', 'Show the solution');
+        see.onclick = () => { v.remove(); st.reveal(); showBar(`<b>Round ${ri + 1}</b> · here’s the solution${round.mode === 'diff' ? ` to ${nm(p)}’s puzzle` : ''}.`, [[`Next round · ${nm(first)} starts →`, 'pri', () => { const i = newRound(gid); handoff(gid, i, first); }, PC[first]], ['‹ Arcade', '', () => goHome()]]); };
+        btns.append(see);
+      }
     }
   }
   const home = $('button', 'big', '‹  Back to arcade'); home.onclick = () => { v.remove(); goHome(); };
@@ -873,6 +916,11 @@ function mountLO(stage, controls, P, api) {
     cells.push(c); grid.appendChild(c);
   }
   paint(); stage.appendChild(grid);
+  api.solution(() => {
+    b = P.board.slice(); paint();
+    const x = Core.loPlan(b, n); x.forEach((i) => cells[i].classList.add('sol'));
+    x.forEach((i, k) => setTimeout(() => { Core.loToggle(b, n, i); paint(); }, 700 + k * 450));
+  });
   api.btn('↺  Reset', () => { if (api.done) return; b = P.board.slice(); paint(); api.resetMoves(); });
 }
 
@@ -939,6 +987,11 @@ function mountUB(stage, controls, P, api) {
     car.onpointerup = end; car.onpointercancel = end;
   });
   stage.appendChild(wrap);
+  api.solution(() => {
+    const path = Core.ubPath(V); if (!path) return;
+    pos = path[0].slice(); placeAll();
+    path.slice(1).forEach((q, k) => setTimeout(() => { pos = q.slice(); placeAll(); if (k === path.length - 2) setTimeout(() => cars[0].classList.add('out'), 350); }, 600 + k * 600));
+  });
   api.btn('↺  Reset', () => { if (api.done) return; pos = start.slice(); placeAll(); api.resetMoves(); });
 }
 
@@ -1036,6 +1089,7 @@ function mountQN(stage, controls, P, api, ctx) {
   tools.append(tMark, tErase, tAuto);
   stage.append(wrap, tools);
   paint();
+  api.solution(() => { mark = new Array(n * n).fill(0); P.solution.forEach((c, r) => (mark[r * n + c] = 2)); paint(); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; mark = hist.pop(); paint(); });
   api.btn('Clear all', () => { if (api.done) return; hist.push(mark.slice()); mark.fill(0); paint(); });
 }
@@ -1098,6 +1152,10 @@ function mount24(stage, controls, P, api) {
       }
     }
   }
+  api.solution(() => {
+    [dots, grid, ops, toast].forEach((e) => (e.style.display = 'none'));
+    stage.appendChild($('div', 't24-sol', P.hands.map((hd) => `<div><span class="num">${hd.nums.join(' · ')}</span><b class="num">${hd.solution.replace(/-/g, '−')} = 24</b></div>`).join('')));
+  });
   api.btn('↶  Undo', () => { if (locked || !hist.length) return; cards = hist.pop(); sel = null; op = null; toast.innerHTML = '&nbsp;'; paint(); });
   api.btn('↺  Reset', () => { if (locked) return; load(); });
   api.btn('Give up  +60s', () => {
@@ -1169,6 +1227,7 @@ function mountKK(stage, controls, P, api) {
   pad.appendChild(del);
   stage.append(grid, pad);
   sel = 0; paint();
+  api.solution(() => { P.solution.forEach((v, i) => (vals[i] = v)); sel = null; paint(); });
   api.btn('Clear board', () => { if (api.done) return; vals.fill(0); paint(); });
 }
 
@@ -1222,6 +1281,7 @@ function mountLK(stage, controls, P, api) {
   svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
   stage.appendChild(svg);
   render();
+  api.solution(() => { paths = P.solution.map((sg) => sg.slice()); active = null; render(); });
   api.btn('↺  Reset', () => { if (api.done) return; paths = P.dots.map(() => []); render(); });
 }
 
@@ -1252,6 +1312,10 @@ function mountPP(stage, controls, P, api) {
   }
   stage.appendChild(grid);
   paint();
+  api.solution(() => {
+    base.forEach((m, i) => { let y = m, k = 0; while (y !== P.solution[i] && k < 4) { y = Core.rotCW(y); k++; } turns[i] += ((k - turns[i]) % 4 + 4) % 4; tiles[i].firstChild.style.transform = `rotate(${turns[i] * 90}deg)`; });
+    paint();
+  });
   api.btn('↺  Reset', () => { if (api.done) return; turns.fill(0); tiles.forEach((t) => (t.firstChild.style.transform = '')); api.resetMoves(); paint(); });
 }
 
@@ -1281,6 +1345,13 @@ function mountPR(stage, controls, P, api) {
   }
   stage.appendChild(rack);
   paint();
+  api.solution(() => {
+    tubes = P.tubes.map((t) => t.slice()); sel = null; paint();
+    (Core.pourPlan(P.tubes) || []).forEach(([a, b], k) => {
+      setTimeout(() => { sel = a; paint(); }, 600 + k * 650);
+      setTimeout(() => { const q = Core.pourOK(tubes, a, b); for (let i = 0; i < q; i++) tubes[b].push(tubes[a].pop()); sel = null; paint(); }, 900 + k * 650);
+    });
+  });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; tubes = hist.pop(); sel = null; api.move(-1); paint(); });
   api.btn('↺  Reset', () => { if (api.done) return; tubes = P.tubes.map((t) => t.slice()); hist = []; sel = null; api.resetMoves(); paint(); });
 }
@@ -1306,6 +1377,10 @@ function mountFL(stage, controls, P, api) {
   }
   stage.append(grid, pal);
   paint();
+  api.solution(() => {
+    g = P.grid.slice(); paint();
+    Core.floodPlan(P.grid, n, P.colors).forEach((c, k) => setTimeout(() => { g = Core.floodApply(g, n, c); paint(); }, 500 + k * 380));
+  });
   api.btn('↺  Reset', () => { if (api.done) return; g = P.grid.slice(); api.resetMoves(); paint(); });
 }
 
@@ -1341,6 +1416,12 @@ function mountHU(stage, controls, P, api) {
   grid.onpointercancel = () => (down = null);
   stage.appendChild(grid);
   paint();
+  api.solution(() => {
+    board = P.board.slice(); sel = null; paint();
+    const b2 = board.slice(), swaps = [];
+    for (let p0 = 0; p0 < b2.length; p0++) while (b2[p0] !== p0) { const q = b2[p0]; swaps.push([p0, q]); [b2[p0], b2[q]] = [b2[q], b2[p0]]; }
+    swaps.forEach(([a, c], k) => setTimeout(() => { [board[a], board[c]] = [board[c], board[a]]; paint(); if (k === swaps.length - 1) grid.classList.add('solved'); }, 500 + k * 220));
+  });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; board = hist.pop(); sel = null; api.move(-1); paint(); });
 }
 
@@ -1402,6 +1483,10 @@ function mountOL(stage, controls, P, api) {
   svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
   stage.append(svg, toast);
   render();
+  api.solution(() => {
+    const tr = P.trail; path = [tr[0]]; usedE = []; toast.innerHTML = 'Start at the white dot and follow the line'; render();
+    tr.slice(1).forEach((v, k) => setTimeout(() => { usedE.push(idx.get(path[path.length - 1] + '-' + v)); path.push(v); render(); if (k === tr.length - 2) svg.classList.add('done'); }, 500 + k * 220));
+  });
   api.btn('↶  Undo', () => { if (api.done || !usedE.length) return; usedE.pop(); path.pop(); if (path.length === 1) path = []; toast.innerHTML = '&nbsp;'; render(); });
   api.btn('↺  Start over', () => { if (api.done) return; path = []; usedE = []; toast.innerHTML = '&nbsp;'; render(); });
 }
@@ -1447,6 +1532,7 @@ function mountTG(stage, controls, P, api) {
   }
   stage.appendChild(wrap);
   paint();
+  api.solution(() => { g = P.solution.slice(); paint(); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; g = hist.pop(); paint(); });
   api.btn('Clear', () => { if (api.done) return; hist.push(g.slice()); g = P.givens.slice(); paint(); });
 }
@@ -1501,6 +1587,10 @@ function mountZP(stage, controls, P, api) {
   svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
   stage.appendChild(svg);
   render();
+  api.solution(() => {
+    path = [P.solution[0]]; render();
+    P.solution.slice(1).forEach((c, k) => setTimeout(() => { path.push(c); render(); if (k === P.solution.length - 2) svg.classList.add('done'); }, 400 + k * 45));
+  });
   api.btn('↺  Start over', () => { if (api.done) return; path = []; render(); });
 }
 
@@ -1570,6 +1660,7 @@ function mountHB(stage, controls, P, api) {
   svg.addEventListener('pointercancel', () => (down = null));
   stage.append(svg, toast);
   render();
+  api.solution(() => { br.clear(); for (const [k, v] of P.solution) br.set(k, v); sel = null; render(); svg.classList.add('done'); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; const m = hist.pop(); br.clear(); m.forEach((v, k) => br.set(k, v)); render(); });
   api.btn('Clear', () => { if (api.done) return; hist.push(new Map(br)); br.clear(); render(); });
 }
@@ -1625,6 +1716,7 @@ function mountNG(stage, controls, P, api) {
   tools.style.width = (clueW + cs * W) + 'px';
   stage.append(wrap, tools);
   paint();
+  api.solution(() => { g = P.solution.map((v) => (v ? 1 : 0)); paint(); wrap.classList.add('done'); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; g = hist.pop(); paint(); });
   api.btn('Clear', () => { if (api.done) return; hist.push(g.slice()); g.fill(0); paint(); });
 }
@@ -1684,6 +1776,7 @@ function mountSK(stage, controls, P, api) {
   board.onpointerup = up; board.onpointercancel = up;
   stage.appendChild(board);
   render();
+  api.solution(() => { rects = P.solution.map(([x, y, w, h], i) => ({ x, y, w, h, col: SKC[i % SKC.length] })); render(); board.classList.add('done'); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; rects = hist.pop(); render(); });
   api.btn('Clear', () => { if (api.done) return; hist.push(rects.map((x) => ({ ...x }))); rects = []; render(); });
 }
@@ -1744,6 +1837,7 @@ function mountMS(stage, controls, P, api) {
   tD.onclick = () => setTool('dig'); tF.onclick = () => setTool('flag');
   tools.append(tD, tF); tools.style.width = cs * W + 'px';
   stage.append(grid, tools, $('div', 'toast', 'Long-press a cell to flag it · tap a finished number to clear around it'));
+  api.solution(() => { for (let i = 0; i < N; i++) { if (P.mines[i]) flag[i] = 1; else open[i] = 1; } paint(); });
   paint();
 }
 

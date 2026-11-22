@@ -981,6 +981,92 @@ const Core = (() => {
     }
   }
 
+
+  // ---------- solution helpers (used by "Give up" to show the answer) ----------
+  function loPlan(board, n) { // fewest presses that clear the board
+    const N = n * n, rows = [];
+    for (let i = 0; i < N; i++) { const row = new Array(N + 1).fill(0), tmp = new Array(N).fill(0); loToggle(tmp, n, i); for (let j = 0; j < N; j++) row[j] = tmp[j]; row[N] = board[i]; rows.push(row); }
+    const pivotCol = []; let r = 0;
+    for (let c = 0; c < N && r < N; c++) {
+      let p = -1; for (let k = r; k < N; k++) if (rows[k][c]) { p = k; break; }
+      if (p < 0) continue;
+      [rows[r], rows[p]] = [rows[p], rows[r]];
+      for (let k = 0; k < N; k++) if (k !== r && rows[k][c]) for (let j = c; j <= N; j++) rows[k][j] ^= rows[r][j];
+      pivotCol.push(c); r++;
+    }
+    const isPivot = new Set(pivotCol), free = [];
+    for (let c = 0; c < N; c++) if (!isPivot.has(c)) free.push(c);
+    let best = null;
+    for (let mask = 0; mask < (1 << free.length); mask++) {
+      const x = new Array(N).fill(0);
+      free.forEach((c, i) => (x[c] = (mask >> i) & 1));
+      for (let k = 0; k < r; k++) { let v = rows[k][N]; for (const c of free) if (rows[k][c] && x[c]) v ^= 1; x[pivotCol[k]] = v; }
+      if (!best || x.reduce((a, b) => a + b, 0) < best.reduce((a, b) => a + b, 0)) best = x;
+    }
+    return best ? best.map((v, i) => (v ? i : -1)).filter((i) => i >= 0) : [];
+  }
+  function ubPath(vs) { // shortest sequence of positions from the start to the exit
+    const start = vs.map((v) => (v.h ? v.c : v.r)), key = (p) => p.join(',');
+    const parent = new Map([[key(start), null]]);
+    let frontier = [start];
+    while (frontier.length) {
+      const next = [];
+      for (const p of frontier) {
+        if (p[0] === 6 - vs[0].len) { const out = [p]; let k = parent.get(key(p)); while (k) { out.unshift(k); k = parent.get(key(k)); } return out; }
+        const grid = new Int8Array(36).fill(-1);
+        vs.forEach((v, i) => { for (let k = 0; k < v.len; k++) grid[(v.h ? v.r : p[i] + k) * 6 + (v.h ? p[i] + k : v.c)] = i; });
+        vs.forEach((v, i) => { for (const dir of [-1, 1]) { let pos = p[i];
+          while (true) { const np = pos + dir; if (np < 0 || np + v.len > 6) break; const edge = dir < 0 ? np : np + v.len - 1;
+            if (grid[(v.h ? v.r : edge) * 6 + (v.h ? edge : v.c)] !== -1) break; pos = np; const q = p.slice(); q[i] = pos; const k = key(q);
+            if (!parent.has(k)) { parent.set(k, p); next.push(q); } } } });
+      }
+      frontier = next;
+      if (parent.size > 300000) break;
+    }
+    return null;
+  }
+  function pourPlan(tubes0, limit = 200000) { // a working sequence of pours [[from, to], ...]
+    const key = (ts) => ts.map((t) => t.join('')).sort().join('|');
+    const seen = new Set(), moves = [];
+    let found = null, nodes = 0;
+    (function dfs(ts) {
+      if (found || nodes > limit) return;
+      if (pourSolved(ts)) { found = moves.slice(); return; }
+      const k = key(ts); if (seen.has(k)) return; seen.add(k); nodes++;
+      for (let a = 0; a < ts.length; a++) {
+        const A = ts[a];
+        if (!A.length || (A.length === CAP && A.every((x) => x === A[0]))) continue;
+        const uniform = A.every((x) => x === A[0]);
+        let triedEmpty = false;
+        for (let b = 0; b < ts.length; b++) {
+          const q = pourOK(ts, a, b); if (!q) continue;
+          if (!ts[b].length) { if (uniform || triedEmpty) continue; triedEmpty = true; }
+          const nt = ts.map((t) => t.slice());
+          for (let i = 0; i < q; i++) nt[b].push(nt[a].pop());
+          moves.push([a, b]); dfs(nt); moves.pop();
+          if (found) return;
+        }
+      }
+    })(tubes0.map((t) => t.slice()));
+    return found;
+  }
+  function floodPlan(g0, n, colors) { // the colour sequence behind the target
+    let g = g0.slice(); const seq = [];
+    while (floodRegion(g, n).size < n * n && seq.length < 200) {
+      let best = null, bs = -1, bc = 0;
+      for (let c = 0; c < colors; c++) {
+        if (c === g[0]) continue;
+        const g1 = floodApply(g, n, c);
+        let sc = floodRegion(g1, n).size * 100, s2 = 0;
+        for (let d = 0; d < colors; d++) if (d !== c) s2 = Math.max(s2, floodRegion(floodApply(g1, n, d), n).size);
+        sc += s2;
+        if (sc > bs) { bs = sc; best = g1; bc = c; }
+      }
+      g = best; seq.push(bc);
+    }
+    return seq;
+  }
+
   // ---------- UNBLOCK (bank lookup) ----------
   function getUnblock(bank, t, num) {
     const list = bank[t];
@@ -990,7 +1076,7 @@ const Core = (() => {
     return { par: +par, vehicles, tier: t, bankSize: list.length };
   }
 
-  return { rng, hashStr, TIER_NAMES, seedOf, genZip, genBridges, bridgeNeighbours, bridgesCross, genNonogram, lineClue, nonogramSolvable, genShikaku, shikakuCount, genMines, msNeighbours, genOneLine, genTango, tangoCount, tangoCheck, genHue, getUnblock, loToggle, genLightsOut, ubSolve, genQueens, queensCount, gen24, solve24, fr, fop, genKenKen, cageOk,
+  return { rng, hashStr, TIER_NAMES, seedOf, loPlan, ubPath, pourPlan, floodPlan, genZip, genBridges, bridgeNeighbours, bridgesCross, genNonogram, lineClue, nonogramSolvable, genShikaku, shikakuCount, genMines, msNeighbours, genOneLine, genTango, tangoCount, tangoCheck, genHue, getUnblock, loToggle, genLightsOut, ubSolve, genQueens, queensCount, gen24, solve24, fr, fop, genKenKen, cageOk,
     genLinks, genPipes, pipesConnected, rotCW, genPour, pourOK, pourSolved, pourSolve, CAP, genFlood, floodRegion, floodApply };
 })();
 if (typeof module !== 'undefined') module.exports = Core;

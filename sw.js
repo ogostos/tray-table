@@ -1,5 +1,5 @@
 // Tray Table service worker — cache everything, serve offline.
-const CACHE = 'tray-table-6583b459a6';
+const CACHE = 'tray-table-b34f5c504e';
 const FILES = ['./', './index.html', './manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
