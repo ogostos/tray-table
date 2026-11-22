@@ -681,6 +681,306 @@ const Core = (() => {
     return { W, H: Hh, colors: colors.map((c) => `rgb(${c[0]},${c[1]},${c[2]})`), fixed, board, par: movable.length - cycles, misplaced, tier: t };
   }
 
+  // ---------- shared: random Hamiltonian path on an n×n grid (backbite moves) ----------
+  function hamPath(R, n, iters) {
+    let path = [];
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) path.push(r * n + (r % 2 ? n - 1 - c : c));
+    for (let it = 0; it < (iters || n * n * 30); it++) {
+      if (R() < 0.5) path.reverse();
+      const e = path[0], r = Math.floor(e / n), c = e % n;
+      const nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dr, dc]) => [r + dr, c + dc]).filter(([rr, cc]) => rr >= 0 && cc >= 0 && rr < n && cc < n).map(([rr, cc]) => rr * n + cc);
+      const x = nb[rint(R, nb.length)], i = path.indexOf(x);
+      if (i >= 2) path = path.slice(0, i).reverse().concat(path.slice(i));
+    }
+    return path;
+  }
+
+  // ---------- ZIP (one path through every cell, numbers in order) ----------
+  function genZip(t, num) {
+    const R = seedOf('zp', t, num);
+    const n = [5, 6, 7, 8][t];
+    const path = hamPath(R, n);
+    const L = n * n, K = [9, 9, 9, 10][t] + rint(R, 2);
+    // spread checkpoints along the path with some jitter
+    const idx = new Set([0, L - 1]);
+    for (let k = 1; k < K - 1; k++) { const base = Math.round(k * (L - 1) / (K - 1)); idx.add(Math.max(1, Math.min(L - 2, base + rint(R, 3) - 1))); }
+    const order = [...idx].sort((a, b) => a - b);
+    const numbers = new Map(order.map((pi, k) => [path[pi], k + 1]));
+    return { n, numbers: [...numbers.entries()], count: order.length, solution: path, tier: t };
+  }
+
+  // ---------- BRIDGES (Hashi) ----------
+  function genBridges(t, num) {
+    const R = seedOf('hb', t, num);
+    const n = [7, 8, 9, 10][t], want = [9, 13, 18, 24][t];
+    for (let attempt = 0; attempt < 200; attempt++) {
+      const isl = [], at = new Map(), occ = new Map(); // occ: cell -> 'h'|'v' bridge passing
+      const br = new Map(); // "a-b" -> count
+      const key = (a, b) => (a < b ? a + '-' + b : b + '-' + a);
+      const add = (x, y) => { at.set(y * n + x, isl.length); isl.push([x, y]); };
+      add(rint(R, n), rint(R, n));
+      const clearPath = (x1, y1, x2, y2) => {
+        const dx = Math.sign(x2 - x1), dy = Math.sign(y2 - y1);
+        for (let x = x1 + dx, y = y1 + dy; x !== x2 || y !== y2; x += dx, y += dy) { const c = y * n + x; if (at.has(c) || occ.has(c)) return false; }
+        return true;
+      };
+      const lay = (a, b, cnt) => {
+        const [x1, y1] = isl[a], [x2, y2] = isl[b], dx = Math.sign(x2 - x1), dy = Math.sign(y2 - y1);
+        for (let x = x1 + dx, y = y1 + dy; x !== x2 || y !== y2; x += dx, y += dy) occ.set(y * n + x, dx ? 'h' : 'v');
+        br.set(key(a, b), cnt);
+      };
+      let guard = 0;
+      while (isl.length < want && guard++ < 3000) {
+        const a = rint(R, isl.length), [x, y] = isl[a];
+        const [dx, dy] = [[1, 0], [-1, 0], [0, 1], [0, -1]][rint(R, 4)];
+        const d = 2 + rint(R, Math.max(1, Math.floor(n / 2)));
+        const nx = x + dx * d, ny = y + dy * d;
+        if (nx < 0 || ny < 0 || nx >= n || ny >= n) continue;
+        const c = ny * n + nx;
+        if (at.has(c) || occ.has(c)) continue;
+        if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([ex, ey]) => at.has((ny + ey) * n + nx + ex) && nx + ex >= 0 && nx + ex < n)) continue;
+        if (!clearPath(x, y, nx, ny)) continue;
+        add(nx, ny);
+        lay(a, isl.length - 1, R() < 0.35 ? 2 : 1);
+      }
+      if (isl.length < want) continue;
+      // extra links between existing neighbours (creates loops -> more interesting)
+      for (let a = 0; a < isl.length; a++) for (const [dx, dy] of [[1, 0], [0, 1]]) {
+        let [x, y] = isl[a]; x += dx; y += dy;
+        while (x < n && y < n && !at.has(y * n + x) && !occ.has(y * n + x)) { x += dx; y += dy; }
+        if (x >= n || y >= n || !at.has(y * n + x)) continue;
+        const b = at.get(y * n + x);
+        if (br.has(key(a, b)) || R() > 0.3) continue;
+        lay(a, b, R() < 0.3 ? 2 : 1);
+      }
+      const need = isl.map(() => 0);
+      for (const [k, v] of br) { const [a, b] = k.split('-').map(Number); need[a] += v; need[b] += v; }
+      return { n, islands: isl, need, solution: [...br.entries()], tier: t };
+    }
+  }
+  // neighbours of each island (first island straight along each direction)
+  function bridgeNeighbours(n, islands) {
+    const at = new Map(islands.map(([x, y], i) => [y * n + x, i]));
+    return islands.map(([x, y]) => [[0, -1], [1, 0], [0, 1], [-1, 0]].map(([dx, dy]) => {
+      let cx = x + dx, cy = y + dy;
+      while (cx >= 0 && cy >= 0 && cx < n && cy < n) { if (at.has(cy * n + cx)) return at.get(cy * n + cx); cx += dx; cy += dy; }
+      return -1;
+    }));
+  }
+  function bridgesCross(n, islands, a, b, c, d) {
+    const [ax, ay] = islands[a], [bx, by] = islands[b], [cx, cy] = islands[c], [dx, dy] = islands[d];
+    const h1 = ay === by, h2 = cy === dy;
+    if (h1 === h2) return false;
+    const [H, V] = h1 ? [[ax, bx, ay], [cy, dy, cx]] : [[cx, dx, cy], [ay, by, ax]];
+    const [hx1, hx2] = [Math.min(H[0], H[1]), Math.max(H[0], H[1])], [vy1, vy2] = [Math.min(V[0], V[1]), Math.max(V[0], V[1])];
+    return V[2] > hx1 && V[2] < hx2 && H[2] > vy1 && H[2] < vy2;
+  }
+
+  // ---------- NONOGRAM ----------
+  function lineClue(cells) { const out = []; let run = 0; for (const v of cells) { if (v === 1) run++; else if (run) { out.push(run); run = 0; } } if (run) out.push(run); return out; }
+  // line solver: known: -1 unknown, 0 empty, 1 filled. returns new array or null if contradiction
+  function solveLine(clue, known) {
+    const L = known.length, canF = new Array(L).fill(false), canE = new Array(L).fill(false);
+    let any = false;
+    const cur = new Array(L).fill(0);
+    const memo = new Map();
+    // place(k, pos): can blocks k.. be placed from pos on, consistent?  fills canF/canE via reconstruction
+    function ok(k, pos) {
+      const mk = k * 64 + pos; if (memo.has(mk)) return memo.get(mk);
+      let res = false;
+      if (k === clue.length) { res = true; for (let i = pos; i < L; i++) if (known[i] === 1) { res = false; break; } }
+      else {
+        const len = clue[k];
+        for (let s = pos; s + len <= L; s++) {
+          if (known[s - 1] === 1 && s - 1 >= pos) break;
+          let fits = true;
+          for (let i = s; i < s + len; i++) if (known[i] === 0) { fits = false; break; }
+          if (fits && s + len < L && known[s + len] === 1) fits = false;
+          if (fits && ok(k + 1, s + len + 1)) { res = true; break; }
+          if (known[s] === 1) break;
+        }
+      }
+      memo.set(mk, res); return res;
+    }
+    function mark(k, pos) {
+      const mk = 100000 + k * 64 + pos; if (memo.has(mk)) return; memo.set(mk, true);
+      if (k === clue.length) { for (let i = pos; i < L; i++) canE[i] = true; any = true; return; }
+      const len = clue[k];
+      for (let s = pos; s + len <= L; s++) {
+        if (known[s - 1] === 1 && s - 1 >= pos) break;
+        let fits = true;
+        for (let i = s; i < s + len; i++) if (known[i] === 0) { fits = false; break; }
+        if (fits && s + len < L && known[s + len] === 1) fits = false;
+        if (fits && ok(k + 1, s + len + 1)) {
+          for (let i = pos; i < s; i++) canE[i] = true;
+          for (let i = s; i < s + len; i++) canF[i] = true;
+          if (s + len < L) canE[s + len] = true;
+          mark(k + 1, s + len + 1);
+        }
+        if (known[s] === 1) break;
+      }
+    }
+    if (!ok(0, 0)) return null;
+    mark(0, 0);
+    return known.map((v, i) => (v !== -1 ? v : canF[i] && !canE[i] ? 1 : canE[i] && !canF[i] ? 0 : -1));
+  }
+  function nonogramSolvable(W, H, rows, cols) {
+    const g = new Array(W * H).fill(-1);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (let r = 0; r < H; r++) {
+        const line = g.slice(r * W, r * W + W), res = solveLine(rows[r], line);
+        if (!res) return false;
+        res.forEach((v, c) => { if (v !== line[c]) { g[r * W + c] = v; changed = true; } });
+      }
+      for (let c = 0; c < W; c++) {
+        const line = []; for (let r = 0; r < H; r++) line.push(g[r * W + c]);
+        const res = solveLine(cols[c], line);
+        if (!res) return false;
+        res.forEach((v, r) => { if (v !== line[r]) { g[r * W + c] = v; changed = true; } });
+      }
+    }
+    return g.every((v) => v !== -1);
+  }
+  function genNonogram(t, num) {
+    const R = seedOf('ng', t, num);
+    const W = [5, 8, 10, 12][t], H = W;
+    for (let attempt = 0; attempt < 400; attempt++) {
+      // blobby picture: random seeds smoothed once, so it looks like shapes rather than noise
+      let g = Array.from({ length: W * H }, () => (R() < [0.62, 0.58, 0.55, 0.52][t] ? 1 : 0));
+      if (t > 0) g = g.map((v, i) => { const r = Math.floor(i / W), c = i % W; let s = 0, k = 0; for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const rr = r + dr, cc = c + dc; if (rr >= 0 && cc >= 0 && rr < H && cc < W) { s += g[rr * W + cc]; k++; } } return s * 2 > k ? 1 : s * 2 === k ? v : 0; });
+      const filled = g.filter(Boolean).length;
+      if (filled < W * H * 0.35 || filled > W * H * 0.75) continue;
+      const rows = [], cols = [];
+      for (let r = 0; r < H; r++) rows.push(lineClue(g.slice(r * W, r * W + W)));
+      for (let c = 0; c < W; c++) { const col = []; for (let r = 0; r < H; r++) col.push(g[r * W + c]); cols.push(lineClue(col)); }
+      if (!nonogramSolvable(W, H, rows, cols)) continue;
+      return { W, H, rows, cols, solution: g, tier: t };
+    }
+  }
+
+  // ---------- SHIKAKU ----------
+  function shikakuCount(W, H, clues, limit = 2) {
+    // clues: [[cell, area]]; candidates per clue: rectangles of that area containing only that clue
+    const clueAt = new Map(clues.map(([c, a], k) => [c, k]));
+    const cands = clues.map(([cell, area]) => {
+      const cx = cell % W, cy = Math.floor(cell / W), out = [];
+      for (let w = 1; w <= area; w++) {
+        if (area % w) continue; const h = area / w;
+        if (w > W || h > H) continue;
+        for (let x0 = cx - w + 1; x0 <= cx; x0++) for (let y0 = cy - h + 1; y0 <= cy; y0++) {
+          if (x0 < 0 || y0 < 0 || x0 + w > W || y0 + h > H) continue;
+          const cells = []; let bad = false;
+          for (let y = y0; y < y0 + h && !bad; y++) for (let x = x0; x < x0 + w; x++) { const c = y * W + x; if (c !== cell && clueAt.has(c)) { bad = true; break; } cells.push(c); }
+          if (!bad) out.push(cells);
+        }
+      }
+      return out;
+    });
+    const cover = new Int8Array(W * H);
+    let count = 0;
+    const done = new Array(clues.length).fill(false);
+    (function rec(placed) {
+      if (count >= limit) return;
+      if (placed === clues.length) { if (cover.every((v) => v)) count++; return; }
+      // most constrained clue first
+      let best = -1, bestOpts = null;
+      for (let k = 0; k < clues.length; k++) {
+        if (done[k]) continue;
+        const opts = cands[k].filter((cs) => cs.every((c) => !cover[c]));
+        if (!opts.length) return;
+        if (!bestOpts || opts.length < bestOpts.length) { best = k; bestOpts = opts; }
+      }
+      done[best] = true;
+      for (const cs of bestOpts) { cs.forEach((c) => (cover[c] = 1)); rec(placed + 1); cs.forEach((c) => (cover[c] = 0)); if (count >= limit) break; }
+      done[best] = false;
+    })(0);
+    return count;
+  }
+  function genShikaku(t, num) {
+    const R = seedOf('sk', t, num);
+    const [W, H] = [[5, 5], [6, 7], [8, 9], [9, 11]][t];
+    const maxA = [6, 8, 10, 12][t];
+    for (let attempt = 0; attempt < 600; attempt++) {
+      const owner = new Int16Array(W * H).fill(-1), rects = [];
+      let ok = true;
+      for (let i = 0; i < W * H && ok; i++) {
+        if (owner[i] >= 0) continue;
+        const x0 = i % W, y0 = Math.floor(i / W);
+        let maxW = 0; while (x0 + maxW < W && owner[y0 * W + x0 + maxW] < 0) maxW++;
+        const opts = [];
+        for (let w = 1; w <= maxW; w++) for (let h = 1; y0 + h <= H; h++) {
+          let free = true; for (let x = x0; x < x0 + w; x++) if (owner[(y0 + h - 1) * W + x] >= 0) { free = false; break; }
+          if (!free) break;
+          const a = w * h; if (a > maxA) break;
+          if (a >= 2 || R() < 0.15) opts.push([w, h]);
+        }
+        if (!opts.length) { ok = false; break; }
+        const [w, h] = opts[rint(R, opts.length)];
+        for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) owner[y * W + x] = rects.length;
+        rects.push([x0, y0, w, h]);
+      }
+      if (!ok) continue;
+      const clues = rects.map(([x, y, w, h]) => [(y + rint(R, h)) * W + x + rint(R, w), w * h]);
+      if (shikakuCount(W, H, clues, 2) !== 1) continue;
+      return { W, H, clues, solution: rects, tier: t };
+    }
+  }
+
+  // ---------- MINESWEEPER (no guessing) ----------
+  function msNeighbours(W, H, i) { const x = i % W, y = Math.floor(i / W), out = []; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < W && ny < H) out.push(ny * W + nx); } return out; }
+  function msReveal(W, H, mines, counts, open, i) { const st = [i]; while (st.length) { const c = st.pop(); if (open[c] || mines[c]) continue; open[c] = 1; if (counts[c] === 0) for (const nb of msNeighbours(W, H, c)) if (!open[nb]) st.push(nb); } }
+  function msSolvable(W, H, mines, counts, start) {
+    const N = W * H, open = new Uint8Array(N), flag = new Uint8Array(N), total = mines.reduce((a, b) => a + b, 0);
+    msReveal(W, H, mines, counts, open, start);
+    let progress = true;
+    while (progress) {
+      progress = false;
+      const cons = [];
+      for (let i = 0; i < N; i++) {
+        if (!open[i] || !counts[i]) continue;
+        const nb = msNeighbours(W, H, i), unk = nb.filter((c) => !open[c] && !flag[c]), f = nb.filter((c) => flag[c]).length;
+        if (!unk.length) continue;
+        const need = counts[i] - f;
+        if (need === 0) { unk.forEach((c) => msReveal(W, H, mines, counts, open, c)); progress = true; }
+        else if (need === unk.length) { unk.forEach((c) => (flag[c] = 1)); progress = true; }
+        else cons.push([unk, need]);
+      }
+      if (progress) continue;
+      // subset rule
+      for (let a = 0; a < cons.length && !progress; a++) for (let b = 0; b < cons.length && !progress; b++) {
+        if (a === b) continue;
+        const [ua, na] = cons[a], [ub, nb] = cons[b];
+        if (ua.length >= ub.length || !ua.every((c) => ub.includes(c))) continue;
+        const rest = ub.filter((c) => !ua.includes(c)), d = nb - na;
+        if (d === 0) { rest.forEach((c) => msReveal(W, H, mines, counts, open, c)); progress = true; }
+        else if (d === rest.length) { rest.forEach((c) => (flag[c] = 1)); progress = true; }
+      }
+      if (progress) continue;
+      // global count
+      const unknown = []; for (let i = 0; i < N; i++) if (!open[i] && !flag[i]) unknown.push(i);
+      const left = total - flag.reduce((a, b) => a + b, 0);
+      if (unknown.length && left === 0) { unknown.forEach((c) => msReveal(W, H, mines, counts, open, c)); progress = true; }
+      else if (unknown.length && left === unknown.length) { unknown.forEach((c) => (flag[c] = 1)); progress = true; }
+    }
+    for (let i = 0; i < N; i++) if (!mines[i] && !open[i]) return false;
+    return true;
+  }
+  function genMines(t, num) {
+    const R = seedOf('ms', t, num);
+    const [W, H, M] = [[8, 9, 10], [9, 11, 18], [10, 13, 26], [11, 15, 36]][t];
+    for (let attempt = 0; attempt < 3000; attempt++) {
+      const start = rint(R, W * H);
+      const safe = new Set([start, ...msNeighbours(W, H, start)]);
+      const pool = shuffle(R, [...Array(W * H).keys()].filter((c) => !safe.has(c)));
+      const mines = new Uint8Array(W * H); pool.slice(0, M).forEach((c) => (mines[c] = 1));
+      const counts = [...Array(W * H).keys()].map((i) => msNeighbours(W, H, i).filter((c) => mines[c]).length);
+      if (!msSolvable(W, H, mines, counts, start)) continue;
+      return { W, H, M, mines: [...mines], counts, start, tier: t };
+    }
+  }
+
   // ---------- UNBLOCK (bank lookup) ----------
   function getUnblock(bank, t, num) {
     const list = bank[t];
@@ -690,7 +990,7 @@ const Core = (() => {
     return { par: +par, vehicles, tier: t, bankSize: list.length };
   }
 
-  return { rng, hashStr, TIER_NAMES, seedOf, genOneLine, genTango, tangoCount, tangoCheck, genHue, getUnblock, loToggle, genLightsOut, ubSolve, genQueens, queensCount, gen24, solve24, fr, fop, genKenKen, cageOk,
+  return { rng, hashStr, TIER_NAMES, seedOf, genZip, genBridges, bridgeNeighbours, bridgesCross, genNonogram, lineClue, nonogramSolvable, genShikaku, shikakuCount, genMines, msNeighbours, genOneLine, genTango, tangoCount, tangoCheck, genHue, getUnblock, loToggle, genLightsOut, ubSolve, genQueens, queensCount, gen24, solve24, fr, fop, genKenKen, cageOk,
     genLinks, genPipes, pipesConnected, rotCW, genPour, pourOK, pourSolved, pourSolve, CAP, genFlood, floodRegion, floodApply };
 })();
 if (typeof module !== 'undefined') module.exports = Core;

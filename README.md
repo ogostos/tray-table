@@ -1,6 +1,6 @@
 # Tray Table
 
-Offline puzzle arcade for the phone — 13 games: Links, Pipes, Pour, Flood, Hue, One Line, 2048, Lights Out, Unblock, Queens, Tango, 24, KenKen.
+Offline puzzle arcade for the phone — 18 games: Links, Pipes, Pour, Flood, Hue, One Line, Zip, Bridges, Shikaku, 2048, Lights Out, Unblock, Queens, Tango, Nonogram, Minesweeper, 24, KenKen.
 One static page (`index.html`) plus a service worker, so it works in airplane mode once installed.
 
 Install on iPhone: open the site in Safari → Share → **Add to Home Screen**. Open it once while online; after that it runs offline.
