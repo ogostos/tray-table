@@ -19,8 +19,8 @@ const Core = (() => {
     for (let i = arr.length - 1; i > 0; i--) { const j = rint(R, i + 1); [arr[i], arr[j]] = [arr[j], arr[i]]; }
     return arr;
   }
-  const tier = (n) => (n <= 10 ? 0 : n <= 30 ? 1 : 2); // easy / medium / hard
-  const TIER_NAMES = ['Easy', 'Medium', 'Hard'];
+  const TIER_NAMES = ['Easy', 'Medium', 'Hard', 'Expert'];
+  const seedOf = (id, t, num) => rng(hashStr(`${id}-${t}-${num}`));
 
   // ---------- LIGHTS OUT ----------
   function loToggle(board, n, i) {
@@ -70,15 +70,14 @@ const Core = (() => {
     }
     return best;
   }
-  function genLightsOut(num) {
-    const R = rng(hashStr('lo-' + num));
-    const t = tier(num);
-    const n = 5;
-    const presses = [5, 8, 11][t] + rint(R, 3);
+  function genLightsOut(t, num) {
+    const R = seedOf('lo', t, num);
+    const n = t === 3 ? 6 : 5;
+    const presses = [5, 8, 11, 15][t] + rint(R, 3);
     const board = new Array(n * n).fill(0);
     const cells = shuffle(R, [...Array(n * n).keys()]).slice(0, presses);
     cells.forEach((i) => loToggle(board, n, i));
-    if (board.every((v) => v === 0)) loToggle(board, n, 12);
+    if (board.every((v) => v === 0)) loToggle(board, n, Math.floor(n * n / 2));
     return { n, board, par: loMinPresses(board, n), tier: t };
   }
 
@@ -123,42 +122,6 @@ const Core = (() => {
     }
     return { moves: -1, states: seen.size };
   }
-  function genUnblock(num, maxTries = 250) {
-    const R = rng(hashStr('ub-' + num));
-    const t = tier(num);
-    const target = [6, 10, 14][t];
-    let best = null;
-    let tries = 0;
-    while (tries < maxTries) { // fixed count -> same puzzle on every device
-      tries++;
-      const occ = new Array(36).fill(false);
-      const vs = [];
-      const redC = rint(R, 3);
-      vs.push({ r: 2, c: redC, len: 2, h: true });
-      occ[12 + redC] = occ[12 + redC + 1] = true;
-      const count = 9 + rint(R, 5);
-      let guard = 0;
-      while (vs.length < count && guard++ < 200) {
-        const len = R() < 0.72 ? 2 : 3;
-        const h = R() < 0.5;
-        const r = h ? rint(R, 6) : rint(R, 7 - len);
-        const c = h ? rint(R, 7 - len) : rint(R, 6);
-        if (h && r === 2) continue;
-        let ok = true;
-        for (let k = 0; k < len; k++) if (occ[(h ? r : r + k) * 6 + (h ? c + k : c)]) { ok = false; break; }
-        if (!ok) continue;
-        for (let k = 0; k < len; k++) occ[(h ? r : r + k) * 6 + (h ? c + k : c)] = true;
-        vs.push({ r, c, len, h });
-      }
-      const res = ubSolve(vs);
-      if (res.moves < 2) continue;
-      if (!best || res.moves > best.par) best = { vehicles: vs, par: res.moves };
-      if (best.par >= target && tries >= 20) break;
-    }
-    best.tier = t;
-    return best;
-  }
-
   // ---------- QUEENS ----------
   function queensCount(n, region, limit = 2) {
     let count = 0, sol = null; const sols = [];
@@ -180,10 +143,9 @@ const Core = (() => {
     })(0);
     return { count, sol, sols };
   }
-  function genQueens(num) {
-    const R = rng(hashStr('qn-' + num));
-    const t = tier(num);
-    const n = [6, 7, 8][t];
+  function genQueens(t, num) {
+    const R = seedOf('qn', t, num);
+    const n = [6, 7, 8, 9][t];
     let fallback = null;
     for (let attempt = 0; attempt < 3000; attempt++) {
       // random valid placement
@@ -290,15 +252,17 @@ const Core = (() => {
     })(items);
     return found ? found.replace(/^\((.*)\)$/, '$1') : null;
   }
-  function gen24(num) {
-    const R = rng(hashStr('24-' + num));
-    const t = tier(num);
-    const maxN = [9, 10, 13][t];
+  // hand pools, classified offline over every 1..13 multiset (hex digits):
+  // easy = no division needed, max <= 9; medium = no division, has 10-13; hard = needs ÷; frac = needs a fraction
+  const H24 = {"easy":["1118","1126","1127","1128","1129","1134","1135","1136","1137","1138","1139","1144","1145","1146","1147","1148","1149","1155","1156","1157","1158","1166","1169","1188","1224","1225","1226","1227","1228","1229","1233","1234","1235","1236","1237","1238","1239","1244","1245","1246","1247","1248","1249","1255","1256","1257","1258","1259","1266","1267","1268","1269","1278","1279","1288","1289","1333","1334","1335","1336","1337","1338","1339","1344","1345","1347","1348","1349","1356","1357","1358","1359","1366","1367","1368","1369","1377","1378","1388","1444","1445","1446","1447","1448","1449","1455","1457","1458","1459","1466","1467","1468","1469","1477","1478","1479","1488","1489","1556","1559","1566","1567","1568","1569","1578","1579","1588","1589","1599","1666","1669","1679","1688","1689","1699","1779","1788","1789","1799","1888","1889","2223","2224","2225","2227","2228","2229","2233","2234","2235","2236","2237","2238","2239","2244","2245","2246","2247","2248","2249","2255","2256","2257","2258","2259","2266","2267","2268","2269","2277","2278","2288","2289","2333","2335","2336","2337","2338","2339","2344","2345","2346","2347","2348","2349","2355","2356","2357","2358","2359","2366","2367","2368","2369","2377","2378","2379","2388","2389","2399","2444","2445","2446","2447","2448","2449","2455","2456","2457","2458","2459","2466","2467","2468","2469","2477","2478","2479","2488","2489","2499","2557","2559","2566","2567","2568","2577","2578","2579","2588","2589","2666","2667","2668","2669","2678","2679","2688","2689","2699","2778","2788","2789","2888","2889","2899","3333","3334","3335","3336","3337","3338","3344","3345","3346","3347","3348","3349","3356","3357","3359","3367","3368","3369","3378","3379","3389","3399","3444","3445","3446","3447","3448","3449","3455","3456","3457","3458","3459","3466","3468","3469","3477","3478","3479","3489","3499","3556","3557","3558","3566","3567","3568","3569","3578","3579","3588","3589","3599","3666","3667","3668","3669","3677","3678","3679","3688","3689","3699","3777","3778","3788","3789","3799","3888","3889","3899","3999","4444","4446","4447","4448","4449","4455","4456","4457","4458","4468","4469","4478","4479","4488","4489","4555","4556","4559","4566","4567","4568","4569","4577","4578","4579","4589","4666","4667","4668","4669","4677","4678","4688","4689","4699","4778","4788","4789","4888","4889","5556","5559","5566","5567","5568","5577","5578","5589","5667","5668","5669","5678","5679","5688","5689","5699","5779","5788","5789","5888","5889","6666","6668","6669","6679","6689","6799","6888","6889","7889"],"medium":["111b","111c","111d","112a","112b","112c","112d","113a","113b","113c","113d","114a","114c","116c","117a","119d","11ac","11ad","11bb","11bc","11bd","11cc","11cd","11dd","122a","122b","122c","122d","123a","123b","123c","123d","124a","124b","124c","124d","125a","125c","125d","126a","126b","126c","126d","127a","127b","127c","128a","128d","129b","129c","129d","12ab","12ac","12ad","12bb","12bc","12bd","12cc","12cd","12dd","133a","133b","133c","134a","134b","134c","134d","135a","135b","135c","135d","136a","136b","136c","136d","137a","137d","138b","138c","138d","139a","139b","139c","139d","13aa","13ab","13ac","13bb","13bc","13cc","13cd","13dd","144a","144b","144c","145a","145b","145c","145d","146a","146b","146c","146d","147b","147c","147d","148b","148c","148d","149a","149b","149c","149d","14aa","14ab","14ac","14cc","155a","155b","155d","156a","156b","156c","156d","157a","157b","157c","157d","158a","158b","158c","158d","159a","159b","159c","159d","15aa","166a","166b","166c","166d","167a","167b","167c","168a","168b","168c","168d","169a","169c","169d","16ad","177a","177b","178a","178b","178c","179a","179b","179c","179d","17ac","17ad","188a","188b","188c","189b","189c","189d","18ab","18ac","18ad","18bc","18bd","199c","19ac","19ad","19bb","19bc","19bd","19cc","1abc","1acc","1acd","1bbd","1bcc","1bcd","1bdd","1ccd","222a","222b","222c","222d","223a","223b","223c","223d","224a","224b","224c","224d","225a","225b","225c","226a","226b","226c","226d","227c","227d","228a","228c","229a","229b","229c","22aa","22ab","22bd","22cc","233a","233b","233c","233d","234a","234b","234c","234d","235a","235b","235d","236a","236c","236d","237a","237b","237c","237d","238a","238b","238c","238d","239a","239c","239d","23aa","23ac","23ad","23bb","23bc","23bd","23cc","23cd","23dd","244a","244c","245a","245b","245c","245d","246a","246b","246c","246d","247a","247b","247c","248a","248b","248c","249a","249c","249d","24ab","24ac","24ad","24bb","24bc","24cc","24dd","255b","255c","255d","256a","256b","256c","256d","257a","257b","257d","258a","258b","258c","258d","259a","259b","259c","25ab","25ac","25ad","25bc","25cc","25cd","266a","266c","267a","267b","267c","267d","268a","268b","268c","268d","269a","269b","269c","26aa","26ab","26ac","26ad","26bd","26cc","277b","277c","278b","278c","278d","279a","279b","279d","27aa","27ab","27bc","27cc","27cd","288a","288c","288d","289a","289b","289c","289d","28aa","28ab","28ac","28ad","28bc","28cc","28cd","299c","29ab","29ac","29ad","29bb","29bd","29cd","2aac","2aad","2abb","2abc","2abd","2acd","2bbc","2bbd","2bcc","2bcd","2bdd","2ccc","2ccd","2cdd","333a","333b","333c","334b","334c","334d","335a","335c","335d","336a","336b","336c","336d","337b","337c","337d","338a","338c","338d","339a","339c","339d","33bc","33bd","33cc","33cd","344a","344b","344d","345a","345b","345c","345d","346a","346b","346c","347a","347b","348a","348b","348c","349b","349c","349d","34aa","34ac","34ad","34bc","34bd","34cc","34cd","355b","356a","356b","356c","356d","357a","357b","357c","358b","358c","358d","359a","359c","359d","35ab","35ac","35ad","35bb","35cc","35cd","35dd","366a","366c","366d","367c","367d","368a","368c","368d","369a","369b","369c","369d","36ab","36ac","36bc","36bd","36cc","36cd","377a","377d","378b","378c","378d","379a","379b","379c","379d","37aa","37ab","37ad","37bc","37cc","37cd","388b","389a","389b","389c","389d","38aa","38ab","38bb","38bc","38cc","38cd","38dd","399a","399b","399c","399d","39ab","39ac","39ad","39bc","39bd","39cd","3aac","3abc","3abd","3bcc","3ccd","444a","444b","444c","445a","445b","445c","445d","446a","446b","446c","446d","447a","447c","447d","448a","448b","448c","448d","449b","449c","44ac","44ad","44bd","44cc","44cd","455a","456a","456d","457a","457b","457c","457d","458b","458c","458d","459a","459c","459d","45ab","45ad","45bb","45bc","45bd","45cc","45cd","466c","467a","468a","468c","468d","469a","469c","469d","46aa","46ab","46ac","46bb","46bc","46cc","46cd","46dd","477b","478b","478c","478d","479a","479b","479c","479d","47ab","47ac","47bc","47bd","47cc","47cd","488a","488c","489a","489b","489c","489d","48aa","48ab","48ac","48bc","48bd","48cd","499a","499c","49ab","49ad","49bb","49bc","49cc","4aab","4aac","4abd","4acc","4acd","4bcd","4ccc","556b","558b","558c","558d","559a","559b","55ab","55bc","55bd","55cc","55cd","566a","566c","567c","567d","568a","569a","569c","569d","56ab","56ad","56bc","56bd","56cc","56cd","577a","578a","579a","579b","579d","57ab","57ac","57ad","57bb","57bd","57cc","57dd","588a","588d","589b","589c","589d","58ab","58ac","58bc","58bd","58cc","599b","599c","59aa","59ab","59ad","59bd","59cc","59cd","5acd","5add","666a","666b","667a","667b","667c","668a","668b","668c","668d","669a","669b","669c","669d","66ac","66ad","66bd","66cc","677a","677b","678a","678b","679c","67aa","67ac","67ad","67bb","67bc","67bd","67cc","67cd","688a","688b","688c","689a","689c","689d","68ab","68ac","68ad","68bb","68bd","68cc","68dd","699b","699c","69ab","69ac","69bc","69bd","69cc","69cd","6aaa","6aad","6acc","6bcd","778b","779a","77bc","77bd","77cc","77cd","788a","788b","788c","789d","78aa","78ad","78bc","78bd","78cc","78cd","799d","79ab","79ac","79bb","79bc","79cc","79dd","7aab","7aac","7abd","7acc","888a","888b","888c","888d","889b","889c","889d","88ac","88ad","88bd","88cc","89ad","89bb","89bc","89bd","89cc","89cd","8aac","8abb","8acc","8add","8bcc","99bc","99bd","99cc","99cd","9aad","9abc","9abd","9acc","9acd","9bbb","9bcc","9bdd","9ccc","aabd","aacc","abbc","abbd","abcc","abcd","accc","accd","acdd","bbbd","bbcc","bbcd","bccc","bccd","bcdd","bddd","cccc","cccd","ccdd"],"hard":["1168","1277","1379","137c","1389","138a","1399","155c","15ab","15ac","15ad","15bb","15bc","15cc","16ac","16bc","16bd","16cc","16cd","177c","17cc","17cd","17dd","1aac","1bbc","1ccc","1cdd","227a","22ad","22bc","22cd","236b","244b","244d","248d","2558","2569","25aa","266b","266d","26bc","26cd","277d","27ac","288b","28bb","28dd","299b","299d","29aa","29dd","2aab","2bbb","2ddd","3339","3355","3366","339b","33ad","344c","346d","347c","348d","3559","355c","357d","35aa","35bc","366b","367a","36aa","36bb","36dd","3779","377c","37bb","37dd","388a","388c","38ac","39aa","39bb","39cc","39dd","3bbc","3ccc","3cdd","4445","44aa","44bc","4557","4558","456b","456c","4588","458a","4599","45aa","45ac","45dd","466a","4679","467c","4777","478a","4799","47aa","47bb","47dd","488b","488d","4899","48bb","48cc","48dd","49ac","4abc","5555","555c","557a","5588","558a","5599","55aa","55ad","55bb","55dd","5666","5677","568c","568d","569b","56aa","56ac","56bb","56dd","579c","57aa","5aab","5aac","5aad","5abb","5bcc","666c","6688","66bc","66cd","6789","678c","6899","689b","68bc","699a","6abc","6acd","6bbc","6bcc","6ccc","6ccd","6cdd","777c","77ad","788d","789a","789c","78ab","7acd","7ccd","88bc","88cd","899c","89ac","8acd","999c","99ad","9bcd","aaac","aaad","aabc","aacd","addd","bbbc","cddd"],"expert":["1346","1456","1555","1668","18cc","22bb","22dd","235c","24aa","255a","277a","3377","3388","4477","557b","577b"]};
+  function gen24(t, num) {
+    const R = seedOf('24', t, num);
+    const pool = [H24.easy, H24.medium, H24.hard, H24.hard][t];
     const hands = [];
-    while (hands.length < 5) {
-      const h = [1, 2, 3, 4].map(() => 1 + rint(R, maxN));
-      const sol = solve24(h);
-      if (sol) hands.push({ nums: h, solution: sol });
+    for (let i = 0; i < 5; i++) {
+      const src = t === 3 && (i === 1 || i === 3) ? H24.expert : pool;
+      const h = shuffle(R, src[rint(R, src.length)].split('').map((x) => parseInt(x, 16)));
+      hands.push({ nums: h, solution: solve24(h) });
     }
     return { hands, tier: t };
   }
@@ -337,10 +301,9 @@ const Core = (() => {
     })(0);
     return count;
   }
-  function genKenKen(num) {
-    const R = rng(hashStr('kk-' + num));
-    const t = tier(num);
-    const n = [4, 5, 5][t];
+  function genKenKen(t, num) {
+    const R = seedOf('kk', t, num);
+    const n = [4, 5, 6, 6][t];
     for (let attempt = 0; attempt < 500; attempt++) {
       const rows = shuffle(R, [...Array(n).keys()]), cols = shuffle(R, [...Array(n).keys()]);
       const sym = shuffle(R, [...Array(n).keys()].map((x) => x + 1));
@@ -351,7 +314,7 @@ const Core = (() => {
       for (const start of shuffle(R, [...Array(n * n).keys()])) {
         if (cageOf[start] !== -1) continue;
         const x = R();
-        const size = x < 0.1 ? 1 : x < 0.6 ? 2 : x < (t === 2 ? 0.9 : 0.95) ? 3 : 4;
+        const size = t === 3 ? (x < 0.04 ? 1 : x < 0.4 ? 2 : x < 0.85 ? 3 : 4) : (x < 0.1 ? 1 : x < 0.6 ? 2 : x < (t === 2 ? 0.9 : 0.95) ? 3 : 4);
         const cells = [start]; cageOf[start] = cages.length;
         while (cells.length < size) {
           const opts = [];
@@ -388,11 +351,10 @@ const Core = (() => {
   }
 
   // ---------- LINKS (connect colours, fill the board) ----------
-  function genLinks(num) {
-    const R = rng(hashStr('lk-' + num));
-    const t = tier(num);
-    const n = [5, 6, 7][t] + (t === 2 && R() < 0.5 ? 1 : 0);
-    const k = Math.min(9, [4, 5, 6][t] + rint(R, 2) + (n === 8 ? 1 : 0));
+  function genLinks(t, num) {
+    const R = seedOf('lk', t, num);
+    const n = [5, 6, 7, 9][t];
+    const k = [4, 5, 6, 8][t] + rint(R, 2);
     const adj = (a, b) => Math.abs(Math.floor(a / n) - Math.floor(b / n)) + Math.abs((a % n) - (b % n)) === 1;
     for (let attempt = 0; attempt < 400; attempt++) {
       // boustrophedon Hamiltonian path, randomised with backbite moves
@@ -420,10 +382,9 @@ const Core = (() => {
   // ---------- PIPES (Net) ----------
   // bits: 1=N 2=E 4=S 8=W
   const rotCW = (m) => ((m << 1) | (m >> 3)) & 15;
-  function genPipes(num) {
-    const R = rng(hashStr('pp-' + num));
-    const t = tier(num);
-    const n = [5, 6, 7][t];
+  function genPipes(t, num) {
+    const R = seedOf('pp', t, num);
+    const n = [5, 6, 7, 8][t];
     const DIRS = [[-1, 0, 1, 4], [0, 1, 2, 8], [1, 0, 4, 1], [0, -1, 8, 2]];
     for (let attempt = 0; attempt < 100; attempt++) {
       const m = new Array(n * n).fill(0), inT = new Array(n * n).fill(false);
@@ -504,10 +465,9 @@ const Core = (() => {
     })(tubes0.map((t) => t.slice()), 0);
     return found;
   }
-  function genPour(num) {
-    const R = rng(hashStr('pr-' + num));
-    const t = tier(num);
-    const k = [4, 6, 8][t] + (t < 2 ? rint(R, 2) : rint(R, 2));
+  function genPour(t, num) {
+    const R = seedOf('pr', t, num);
+    const k = [4, 6, 8, 10][t] + rint(R, 2);
     for (let attempt = 0; attempt < 200; attempt++) {
       const balls = []; for (let c = 0; c < k; c++) for (let i = 0; i < CAP; i++) balls.push(c);
       shuffle(R, balls);
@@ -548,15 +508,189 @@ const Core = (() => {
     }
     return moves;
   }
-  function genFlood(num) {
-    const R = rng(hashStr('fl-' + num));
-    const t = tier(num);
-    const n = [10, 12, 14][t], colors = [5, 6, 6][t];
+  function genFlood(t, num) {
+    const R = seedOf('fl', t, num);
+    const n = [10, 12, 14, 16][t], colors = [5, 6, 6, 7][t];
     const g = Array.from({ length: n * n }, () => rint(R, colors));
     return { n, colors, grid: g, target: floodGreedy(g, n, colors), tier: t };
   }
 
-  return { rng, hashStr, tier, TIER_NAMES, loToggle, genLightsOut, genUnblock, ubSolve, genQueens, queensCount, gen24, solve24, fr, fop, genKenKen, cageOk,
+
+  // ---------- ONE LINE (draw the figure in one stroke) ----------
+  function genOneLine(t, num) {
+    const R = seedOf('ol', t, num);
+    const [W, Hh] = [[3, 3], [4, 4], [4, 5], [5, 5]][t];
+    const [lo, hi] = [[7, 9], [11, 14], [16, 19], [21, 26]][t];
+    const id = (x, y) => y * W + x;
+    for (let attempt = 0; attempt < 2000; attempt++) {
+      const target = lo + rint(R, hi - lo + 1);
+      const edges = new Set();
+      const ek = (a, b) => (a < b ? a + '-' + b : b + '-' + a);
+      let cur = id(rint(R, W), rint(R, Hh));
+      const trail = [cur];
+      let guard = 0;
+      while (edges.size < target && guard++ < 400) {
+        const x = cur % W, y = Math.floor(cur / W);
+        const opts = [];
+        for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+          if (!dx && !dy) continue;
+          const nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= W || ny >= Hh) continue;
+          const nb = id(nx, ny);
+          if (edges.has(ek(cur, nb))) continue;
+          if (dx && dy && edges.has(ek(id(x + dx, y), id(x, y + dy)))) continue; // no crossing diagonals
+          opts.push(nb);
+        }
+        if (!opts.length) break;
+        const nb = opts[rint(R, opts.length)];
+        edges.add(ek(cur, nb)); cur = nb; trail.push(cur);
+      }
+      if (edges.size < lo) continue;
+      const deg = new Map();
+      for (const e of edges) for (const v of e.split('-').map(Number)) deg.set(v, (deg.get(v) || 0) + 1);
+      const branchy = [...deg.values()].filter((d) => d >= 3).length;
+      if (branchy < [1, 2, 3, 4][t]) continue;
+      const odd = [...deg.entries()].filter(([, d]) => d % 2).map(([v]) => v);
+      return { W, H: Hh, edges: [...edges].map((e) => e.split('-').map(Number)), nodes: [...deg.keys()], odd, trail, tier: t };
+    }
+  }
+
+  // ---------- TANGO (suns & moons) ----------
+  // values 0 = sun, 1 = moon. rows/cols: three of each, never three in a line. '=' same, '×' opposite.
+  function tangoCount(n, givens, signs, limit = 2) {
+    const g = new Array(n * n).fill(-1);
+    const sg = new Map(); // cell -> [[other, type]]
+    for (const [a, b, ty] of signs) { (sg.get(a) || sg.set(a, []).get(a)).push([b, ty]); (sg.get(b) || sg.set(b, []).get(b)).push([a, ty]); }
+    let count = 0;
+    const half = n / 2;
+    const ok = (i) => {
+      const r = Math.floor(i / n), c = i % n, v = g[i];
+      if (c >= 2 && g[i - 1] === v && g[i - 2] === v) return false;
+      if (r >= 2 && g[i - n] === v && g[i - 2 * n] === v) return false;
+      let rc = 0, cc = 0; for (let k = 0; k < n; k++) { if (g[r * n + k] === v) rc++; if (g[k * n + c] === v) cc++; }
+      if (rc > half || cc > half) return false;
+      for (const [o, ty] of sg.get(i) || []) if (g[o] >= 0 && (ty === '=' ? g[o] !== v : g[o] === v)) return false;
+      return true;
+    };
+    (function rec(i) {
+      if (count >= limit) return;
+      if (i === n * n) { count++; return; }
+      for (const v of givens[i] >= 0 ? [givens[i]] : [0, 1]) {
+        g[i] = v;
+        if (ok(i)) rec(i + 1);
+        g[i] = -1;
+        if (count >= limit) return;
+      }
+    })(0);
+    return count;
+  }
+  function genTango(t, num) {
+    const R = seedOf('tg', t, num);
+    const n = 6;
+    // random valid solution
+    const sol = new Array(n * n).fill(-1);
+    const none = new Array(n * n).fill(-1);
+    (function fill(i) {
+      if (i === n * n) return true;
+      for (const v of shuffle(R, [0, 1])) { sol[i] = v; if (tangoCountPartialOk(sol, n, i) && fill(i + 1)) return true; }
+      sol[i] = -1; return false;
+    })(0);
+    const pool = [];
+    for (let i = 0; i < n * n; i++) pool.push(['g', i]);
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+      const i = r * n + c;
+      if (c < n - 1) pool.push(['s', i, i + 1]);
+      if (r < n - 1) pool.push(['s', i, i + n]);
+    }
+    const build = (set) => {
+      const giv = new Array(n * n).fill(-1), signs = [];
+      for (const cl of set) { if (cl[0] === 'g') giv[cl[1]] = sol[cl[1]]; else signs.push([cl[1], cl[2], sol[cl[1]] === sol[cl[2]] ? '=' : '×']); }
+      return [giv, signs];
+    };
+    const signBias = [0.3, 0.45, 0.55, 0.65][t];
+    const order = shuffle(R, pool.slice()).sort((a, b) => (a[0] === 's' ? signBias : 1 - signBias) * R() - (b[0] === 's' ? signBias : 1 - signBias) * R());
+    let set = [];
+    for (const cl of order) { set.push(cl); if (set.length >= 6 && tangoCount(n, ...build(set)) === 1) break; }
+    // minimise
+    for (const cl of shuffle(R, set.slice())) {
+      const trial = set.filter((x) => x !== cl);
+      if (tangoCount(n, ...build(trial)) === 1) set = trial;
+    }
+    // easier tiers keep extra givens
+    const extra = [7, 4, 1, 0][t];
+    const rest = shuffle(R, pool.filter((cl) => cl[0] === 'g' && !set.includes(cl)));
+    set = set.concat(rest.slice(0, extra));
+    const [givens, signs] = build(set);
+    return { n, givens, signs, solution: sol, tier: t };
+  }
+  function tangoCountPartialOk(g, n, i) {
+    const r = Math.floor(i / n), c = i % n, v = g[i];
+    if (c >= 2 && g[i - 1] === v && g[i - 2] === v) return false;
+    if (r >= 2 && g[i - n] === v && g[i - 2 * n] === v) return false;
+    let rc = 0, cc = 0; for (let k = 0; k < n; k++) { if (g[r * n + k] === v) rc++; if (g[k * n + c] === v) cc++; }
+    return rc <= n / 2 && cc <= n / 2;
+  }
+  function tangoCheck(n, g) { // -> {bad:Set, full}
+    const bad = new Set(); let full = true;
+    for (let i = 0; i < n * n; i++) if (g[i] < 0) full = false;
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+      const i = r * n + c, v = g[i]; if (v < 0) continue;
+      if (c >= 2 && g[i - 1] === v && g[i - 2] === v) [i, i - 1, i - 2].forEach((x) => bad.add(x));
+      if (r >= 2 && g[i - n] === v && g[i - 2 * n] === v) [i, i - n, i - 2 * n].forEach((x) => bad.add(x));
+    }
+    for (let k = 0; k < n; k++) for (const v of [0, 1]) {
+      const row = [], col = [];
+      for (let j = 0; j < n; j++) { if (g[k * n + j] === v) row.push(k * n + j); if (g[j * n + k] === v) col.push(j * n + k); }
+      if (row.length > n / 2) row.forEach((x) => bad.add(x));
+      if (col.length > n / 2) col.forEach((x) => bad.add(x));
+    }
+    return { bad, full };
+  }
+
+  // ---------- HUE (restore the gradient) ----------
+  function genHue(t, num) {
+    const R = seedOf('hu', t, num);
+    const [W, Hh] = [[5, 6], [5, 7], [6, 8], [7, 9]][t];
+    const h0 = R() * 360;
+    const hsl = (h, s, l) => { h = ((h % 360) + 360) % 360 / 360; const f = (n) => { const k = (n + h * 12) % 12, a = s * Math.min(l, 1 - l); return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); }; return [f(0), f(8), f(4)].map((x) => Math.round(x * 255)); };
+    const spread = [110, 95, 80, 70][t];
+    const corners = [hsl(h0, 0.85, 0.72), hsl(h0 + spread, 0.8, 0.55), hsl(h0 - spread, 0.75, 0.45), hsl(h0 + 180, 0.8, 0.3)];
+    const colors = [];
+    for (let y = 0; y < Hh; y++) for (let x = 0; x < W; x++) {
+      const u = x / (W - 1), v = y / (Hh - 1);
+      colors.push([0, 1, 2].map((k) => Math.round(corners[0][k] * (1 - u) * (1 - v) + corners[1][k] * u * (1 - v) + corners[2][k] * (1 - u) * v + corners[3][k] * u * v)));
+    }
+    const fixed = new Array(W * Hh).fill(false);
+    const corner = (i) => [0, W - 1, W * (Hh - 1), W * Hh - 1].includes(i);
+    for (let i = 0; i < W * Hh; i++) {
+      const x = i % W, y = Math.floor(i / W), border = x === 0 || y === 0 || x === W - 1 || y === Hh - 1;
+      if (corner(i)) fixed[i] = true;
+      else if (t === 0 && border) fixed[i] = true;
+      else if (t === 1 && border && (x + y) % 2 === 0) fixed[i] = true;
+      else if (t === 2 && border && (x + y) % 3 === 0) fixed[i] = true;
+    }
+    const movable = [...Array(W * Hh).keys()].filter((i) => !fixed[i]);
+    const perm = shuffle(R, movable.slice());
+    // board[pos] = tile id (tile id = home position)
+    const board = [...Array(W * Hh).keys()];
+    movable.forEach((pos, k) => (board[pos] = perm[k]));
+    // par = movable - cycles
+    const seen = new Set(); let cycles = 0;
+    for (const p of movable) { if (seen.has(p)) continue; cycles++; let q = p; while (!seen.has(q)) { seen.add(q); q = board[q]; } }
+    const misplaced = movable.filter((p) => board[p] !== p).length;
+    return { W, H: Hh, colors: colors.map((c) => `rgb(${c[0]},${c[1]},${c[2]})`), fixed, board, par: movable.length - cycles, misplaced, tier: t };
+  }
+
+  // ---------- UNBLOCK (bank lookup) ----------
+  function getUnblock(bank, t, num) {
+    const list = bank[t];
+    const [par, enc] = list[(num - 1) % list.length].split(':');
+    const vehicles = [];
+    for (let k = 0; k < enc.length; k += 4) vehicles.push({ r: +enc[k], c: +enc[k + 1], len: +enc[k + 2], h: enc[k + 3] === 'h' });
+    return { par: +par, vehicles, tier: t, bankSize: list.length };
+  }
+
+  return { rng, hashStr, TIER_NAMES, seedOf, genOneLine, genTango, tangoCount, tangoCheck, genHue, getUnblock, loToggle, genLightsOut, ubSolve, genQueens, queensCount, gen24, solve24, fr, fop, genKenKen, cageOk,
     genLinks, genPipes, pipesConnected, rotCW, genPour, pourOK, pourSolved, pourSolve, CAP, genFlood, floodRegion, floodApply };
 })();
 if (typeof module !== 'undefined') module.exports = Core;

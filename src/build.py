@@ -2,7 +2,7 @@
 import os, hashlib, re
 d = os.path.dirname(os.path.abspath(__file__))
 s = open(os.path.join(d, 'app.src.html')).read()
-s = s.replace('/*__CORE__*/', open(os.path.join(d, 'core.js')).read()).replace('/*__UBDATA__*/', open(os.path.join(d, 'unblock_data.json')).read())
+s = s.replace('/*__CORE__*/', open(os.path.join(d, 'core.js')).read()).replace('/*__UBDATA__*/', open(os.path.join(d, 'unblock_bank.json')).read())
 root = os.path.dirname(d)
 open(os.path.join(root, 'index.html'), 'w').write(s)
 ver = hashlib.sha1(s.encode()).hexdigest()[:10]
