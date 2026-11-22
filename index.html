@@ -65,7 +65,8 @@ input{font:inherit;color:inherit}
 /* ---------- GAME SHELL ---------- */
 .gbar{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin-bottom:10px}
 .ibtn{width:44px;height:44px;border-radius:14px;background:var(--s1);border:1px solid var(--line);display:grid;place-items:center;font-size:20px;font-weight:700}
-.gtitle{text-align:center;font-weight:800;font-size:18px}
+.gtitle{text-align:center;font-weight:800;font-size:18px;justify-self:center;padding:2px 10px;border-radius:12px}
+.gtitle:active{background:var(--s1)}
 .gtitle small{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);font-weight:800;margin-top:1px}
 .pnav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px}
 .pnav button{width:36px;height:32px;border-radius:10px;background:var(--s1);border:1px solid var(--line);font-weight:800;color:var(--mute)}
@@ -271,10 +272,13 @@ input{font:inherit;color:inherit}
 .hb-svg{display:block;width:min(100%,400px);aspect-ratio:1;background:#10131B;border-radius:18px;border:1px solid var(--line);touch-action:none}
 .hb-svg.done{box-shadow:0 0 0 2px var(--hb),0 0 40px -10px var(--hb)}
 /* ---------- NONOGRAM ---------- */
-.ng{display:grid;touch-action:none;user-select:none}
-.ng-corner{}
-.ng-cc{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:1px;padding-bottom:5px;font-size:12px;font-weight:800;color:#C9CDD8;line-height:1.05}
-.ng-rc{display:flex;justify-content:flex-end;align-items:center;gap:5px;padding-right:7px;font-size:12px;font-weight:800;color:#C9CDD8}
+.ng-view{width:100%;overflow:hidden;border-radius:10px;touch-action:none}
+.ng-view.zoomed{overflow:auto;max-height:62dvh;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.ng-view.panning{touch-action:pan-x pan-y}.ng-view.panning .ng{touch-action:pan-x pan-y}
+.ng{display:grid;touch-action:none;user-select:none;width:max-content;margin:0 auto}
+.ng-corner{position:sticky;left:0;top:0;z-index:3;background:var(--bg)}
+.ng-cc{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:1px;padding-bottom:4px;font-size:var(--fs);font-weight:800;color:#C9CDD8;line-height:1.05}
+.ng-rc{position:sticky;left:0;z-index:2;background:var(--bg);display:flex;justify-content:flex-end;align-items:center;gap:4px;padding-right:6px;font-size:var(--fs);font-weight:800;color:#C9CDD8}
 .ng-cc.ok,.ng-rc.ok{color:#4A5165}
 .ng-c{background:#1A1E29;border-right:1px solid #0B0D12;border-bottom:1px solid #0B0D12;position:relative}
 .ng-c.br{border-right:2px solid #5A6175}.ng-c.bb{border-bottom:2px solid #5A6175}
@@ -1190,10 +1194,10 @@ const Core = (() => {
   }
   function genNonogram(t, num) {
     const R = seedOf('ng', t, num);
-    const W = [5, 8, 10, 12][t], H = W;
+    const W = [5, 10, 15, 20][t], H = W;
     for (let attempt = 0; attempt < 400; attempt++) {
       // blobby picture: random seeds smoothed once, so it looks like shapes rather than noise
-      let g = Array.from({ length: W * H }, () => (R() < [0.62, 0.58, 0.55, 0.52][t] ? 1 : 0));
+      let g = Array.from({ length: W * H }, () => (R() < [0.62, 0.58, 0.56, 0.55][t] ? 1 : 0));
       if (t > 0) g = g.map((v, i) => { const r = Math.floor(i / W), c = i % W; let s = 0, k = 0; for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const rr = r + dr, cc = c + dc; if (rr >= 0 && cc >= 0 && rr < H && cc < W) { s += g[rr * W + cc]; k++; } } return s * 2 > k ? 1 : s * 2 === k ? v : 0; });
       const filled = g.filter(Boolean).length;
       if (filled < W * H * 0.35 || filled > W * H * 0.75) continue;
@@ -1507,7 +1511,7 @@ const GAMES = [...COLOUR_GAMES,
     rules: ['Fill every cell with a <b>☀</b> or a <b>☾</b>. Tap to cycle.', 'Each row and column has <b>3 of each</b>, and never <b>three in a row</b> of the same.', 'Cells joined by <b>=</b> are the same; joined by <b>×</b> they\'re opposite. There\'s exactly one answer. Fastest time wins.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="3" y="3" width="18.5" height="18.5" rx="4.5" fill="#262B38"/><rect x="24.5" y="3" width="18.5" height="18.5" rx="4.5" fill="#1C2130"/><rect x="3" y="24.5" width="18.5" height="18.5" rx="4.5" fill="#1C2130"/><rect x="24.5" y="24.5" width="18.5" height="18.5" rx="4.5" fill="#262B38"/><circle cx="12.25" cy="12.25" r="5" fill="#FFB86B"/><path d="M36.6 7.2a6 6 0 1 0 2.6 10.6 5 5 0 0 1-2.6-10.6Z" fill="#8FB8F0"/><path d="M15.1 28.7a6 6 0 1 0 2.6 10.6 5 5 0 0 1-2.6-10.6Z" fill="#8FB8F0"/><circle cx="33.75" cy="33.75" r="5" fill="#FFB86B"/><circle cx="23" cy="12.25" r="3.6" fill="#0B0D12"/><text x="23" y="14.6" font-size="6.5" font-weight="900" text-anchor="middle" fill="#C9CDD8" font-family="system-ui">=</text><circle cx="12.25" cy="23" r="3.6" fill="#0B0D12"/><text x="12.25" y="25.4" font-size="6.5" font-weight="900" text-anchor="middle" fill="#C9CDD8" font-family="system-ui">×</text></svg>`, mount: mountTG },
   { id: 'ng', sec: 'l', name: 'Nonogram', color: 'var(--ng)', metric: 'time', desc: 'Paint the hidden picture from the number clues.',
-    rules: ['The numbers beside each <b>row</b> and above each <b>column</b> are the runs of filled cells in it, in order — "3 1" means three filled, a gap, then one.', 'Fill cells (■) and cross out the ones you know are empty (×). Drag to paint several.', 'Every puzzle has one answer you can reach by logic. A clue turns grey when its line is right.'],
+    rules: ['The numbers beside each <b>row</b> and above each <b>column</b> are the runs of filled cells in it, in order — "3 1" means three filled, a gap, then one.', 'Fill cells (■) and cross out the ones you know are empty (×). Drag to paint several.', 'Every puzzle has one answer you can reach by logic. A clue turns grey when its line is right. Easy is 5×5, Medium 10×10, Hard 15×15, Expert 20×20 — on the big ones, <b>Zoom</b> enlarges the cells and <b>Move</b> lets you scroll.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#151924"/>${[[0,1,1,0],[1,1,1,1],[1,0,0,1],[0,1,1,0]].map((row,r)=>row.map((v,c)=>`<rect x="${13+c*7.5}" y="${13+r*7.5}" width="6.6" height="6.6" rx="1.2" fill="${v?'#F5E663':'#262B38'}"/>`).join('')).join('')}<text x="8" y="19" font-size="5.5" font-weight="800" text-anchor="middle" fill="#8C93A6" font-family="system-ui">2</text><text x="8" y="26.5" font-size="5.5" font-weight="800" text-anchor="middle" fill="#8C93A6" font-family="system-ui">4</text><text x="16.3" y="10" font-size="5.5" font-weight="800" text-anchor="middle" fill="#8C93A6" font-family="system-ui">2</text><text x="23.8" y="10" font-size="5.5" font-weight="800" text-anchor="middle" fill="#8C93A6" font-family="system-ui">3</text></svg>`, mount: mountNG },
   { id: 'ms', sec: 'l', name: 'Minesweeper', color: 'var(--ms)', metric: 'time', desc: 'Clear the field. Every board is solvable without guessing.',
     rules: ['Each number says how many <b>mines</b> touch that cell (including diagonals).', 'Dig every safe cell. <b>Long-press</b> (or use Flag mode) to flag a mine; tap a number whose mines are all flagged to clear around it.', 'The board opens with a safe area and never needs a guess. Hit a mine and the round is lost.'],
@@ -1604,15 +1608,17 @@ let tickTimer = null, editing = false;
 let popping = false;
 function navPush() { try { if (!history.state || !history.state.tt) history.pushState({ tt: 1 }, ''); } catch (e) {} }
 function goHome() { try { if (history.state && history.state.tt) { popping = true; history.back(); } } catch (e) {} renderHome(); }
-window.addEventListener('popstate', () => { if (popping) { popping = false; return; } renderHome(); });
+let curGame = null; // id of the game on screen, so "back" from a puzzle lands on that game's page
+function toMenu(gid) { renderHome(); openLobby(gid); }
+window.addEventListener('popstate', () => { if (popping) { popping = false; return; } const g = curGame; if (g) toMenu(g); else renderHome(); });
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   const vs = document.querySelectorAll('.veil');
-  if (vs.length && !vs[vs.length - 1].classList.contains('lobby-veil')) vs[vs.length - 1].remove(); else goHome();
+  if (vs.length && !vs[vs.length - 1].classList.contains('lobby-veil')) vs[vs.length - 1].remove(); else if (curGame && !vs.length) toMenu(curGame); else goHome();
 });
 function renderHome() {
   clearInterval(tickTimer); window.onkeydown = null;
-  document.querySelectorAll('.veil,.handoff,.solbar').forEach((v) => v.remove()); document.body.classList.remove('has-bar');
+  document.querySelectorAll('.veil,.handoff,.solbar').forEach((v) => v.remove()); document.body.classList.remove('has-bar'); curGame = null;
   document.documentElement.style.setProperty('--acc', '#FFC247');
   app.innerHTML = '';
   app.appendChild($('div', 'brand', `<div class="logo">✈︎</div><div><div class="t1">Tray Table</div><div class="t2">Offline puzzle arcade · ${GAMES.length} games</div></div>`));
@@ -1763,7 +1769,7 @@ function handoff(gid, ri, p) {
     <div class="who">${nm(p)}</div><div class="sub">your turn</div><div class="det">${what}</div>`;
   const go = $('button', 'go', cfg(gid).timer === 'now' ? 'Start — clock runs' : 'Start');
   h.appendChild(go);
-  const back = $('button', 'hback', '‹  Back to arcade'); back.onclick = () => { h.remove(); goHome(); };
+  const back = $('button', 'hback', `‹  ${g.name} menu`); back.onclick = () => { h.remove(); toMenu(gid); };
   h.appendChild(back);
   document.body.appendChild(h);
   const api = openGame({ gid, t: r.t, num: r.nums[p], p, ri });
@@ -1784,9 +1790,11 @@ function openGame(ctx) {
 
   const bar = $('div', 'gbar');
   navPush();
-  const back = $('button', 'ibtn back', '‹'); back.setAttribute('aria-label', 'Back to arcade'); back.onclick = () => goHome();
+  curGame = gid;
+  const back = $('button', 'ibtn back', '‹'); back.setAttribute('aria-label', `${g.name} menu`); back.onclick = () => toMenu(gid);
   const help = $('button', 'ibtn', '?'); help.onclick = () => showRules(g);
-  bar.append(back, $('div', 'gtitle', `${g.name}<small>${hasTiers(g) ? TN[t] : 'Classic'}</small>`), help);
+  const ttl = $('button', 'gtitle', `${g.name}<small>${hasTiers(g) ? TN[t] + ' ▾' : 'Classic'}</small>`); ttl.onclick = () => toMenu(gid);
+  bar.append(back, ttl, help);
   app.appendChild(bar);
 
   if (duel) {
@@ -1886,7 +1894,7 @@ function showGaveUp(ctx, r, title, st) {
   st.reveal();
   let nx = num + 1; while (getRes(gid, t, nx, 0)) nx++;
   const text = r.why === 'hit a mine' ? '<b>Boom!</b> Here’s the whole board.' : st.canReveal() ? '<b>Gave up.</b> Here’s the solution.' : '<b>Gave up.</b>';
-  showBar(text, [[`Next puzzle · #${nx}`, 'pri', () => openGame({ gid, t, num: nx, p: 0 })], ['Try again', '', () => openGame(ctx)], ['‹ Arcade', '', () => goHome()]]);
+  showBar(text, [[`Next puzzle · #${nx}`, 'pri', () => openGame({ gid, t, num: nx, p: 0 })], ['Try again', '', () => openGame(ctx)], ['‹ Menu', '', () => toMenu(gid)]]);
 }
 function showRules(g) {
   const btn = $('button', 'big pri', 'Got it');
@@ -1940,7 +1948,7 @@ function showResult(ctx, r, title, info, st) {
       btns.append(pass);
       if (r.x && round.mode === 'diff' && st.canReveal()) { // their own board, so no spoiler for the other player
         const see = $('button', 'big', 'Show the solution');
-        see.onclick = () => { v.remove(); st.reveal(); showBar(`<b>${nm(p)} ${r.why || 'conceded'}.</b> Here’s the solution.`, [[`Hand over to ${nm(other)} →`, 'pri', () => handoff(gid, ri, other), PC[other]], ['‹ Arcade', '', () => goHome()]]); };
+        see.onclick = () => { v.remove(); st.reveal(); showBar(`<b>${nm(p)} ${r.why || 'conceded'}.</b> Here’s the solution.`, [[`Hand over to ${nm(other)} →`, 'pri', () => handoff(gid, ri, other), PC[other]], ['‹ Menu', '', () => toMenu(gid)]]); };
         btns.append(see);
       }
     } else {
@@ -1961,12 +1969,12 @@ function showResult(ctx, r, title, info, st) {
       btns.append(nx);
       if (st.canReveal() && !st.solvedByPlayer) {
         const see = $('button', 'big', 'Show the solution');
-        see.onclick = () => { v.remove(); st.reveal(); showBar(`<b>Round ${ri + 1}</b> · here’s the solution${round.mode === 'diff' ? ` to ${nm(p)}’s puzzle` : ''}.`, [[`Next round · ${nm(first)} starts →`, 'pri', () => { const i = newRound(gid); handoff(gid, i, first); }, PC[first]], ['‹ Arcade', '', () => goHome()]]); };
+        see.onclick = () => { v.remove(); st.reveal(); showBar(`<b>Round ${ri + 1}</b> · here’s the solution${round.mode === 'diff' ? ` to ${nm(p)}’s puzzle` : ''}.`, [[`Next round · ${nm(first)} starts →`, 'pri', () => { const i = newRound(gid); handoff(gid, i, first); }, PC[first]], ['‹ Menu', '', () => toMenu(gid)]]); };
         btns.append(see);
       }
     }
   }
-  const home = $('button', 'big', '‹  Back to arcade'); home.onclick = () => { v.remove(); goHome(); };
+  const home = $('button', 'big', `‹  ${g.name} menu · change level`); home.onclick = () => { v.remove(); toMenu(gid); };
   btns.append(home);
   kids.push(btns);
   v = veil(kids);
@@ -2752,21 +2760,35 @@ function mountNG(stage, controls, P, api) {
   const { W, H } = P;
   let g = new Array(W * H).fill(0); // 0 empty, 1 filled, 2 crossed
   const hist = [];
-  let tool = 'fill';
+  let tool = 'fill', zoom = false;
   const maxR = Math.max(...P.rows.map((r) => Math.max(1, r.length))), maxC = Math.max(...P.cols.map((c) => Math.max(1, c.length)));
-  const avail = Math.min(window.innerWidth - 32, 420);
-  const clueW = maxR * 13 + 10;
-  const cs = Math.floor((avail - clueW) / W);
+  const avail = Math.min(window.innerWidth - 24, 440);
+  const view = $('div', 'ng-view');
   const wrap = $('div', 'ng');
-  wrap.style.gridTemplateColumns = `${clueW}px repeat(${W}, ${cs}px)`;
-  wrap.style.gridTemplateRows = `${maxC * 14 + 8}px repeat(${H}, ${cs}px)`;
-  wrap.style.setProperty('--cs', cs + 'px');
-  wrap.appendChild($('div', 'ng-corner'));
+  view.appendChild(wrap);
+  const corner = $('div', 'ng-corner'); wrap.appendChild(corner);
   const colEls = P.cols.map((c, x) => { const e = $('div', 'ng-cc' + (x % 5 === 4 && x < W - 1 ? ' b5' : ''), (c.length ? c : [0]).map((v) => `<span>${v}</span>`).join('')); wrap.appendChild(e); return e; });
   const rowEls = [], cells = [];
   for (let y = 0; y < H; y++) {
     const rc = $('div', 'ng-rc', (P.rows[y].length ? P.rows[y] : [0]).map((v) => `<span>${v}</span>`).join('')); wrap.appendChild(rc); rowEls.push(rc);
     for (let x = 0; x < W; x++) { const c = $('div', 'ng-c' + (x % 5 === 4 && x < W - 1 ? ' br' : '') + (y % 5 === 4 && y < H - 1 ? ' bb' : '')); c.dataset.i = y * W + x; wrap.appendChild(c); cells.push(c); }
+  }
+  // sizes: fit the whole board on screen; "Zoom" doubles small cells and lets you pan
+  let fitCs = 0;
+  function layout() {
+    const f = (cs) => (cs < 17 ? 10 : cs < 24 ? 11 : 12);
+    let cs = 46;
+    for (; cs > 8; cs--) { const fs = f(cs), clueW = maxR * (fs + 5) + 6; if (clueW + cs * W <= avail) break; }
+    fitCs = cs;
+    const use = zoom ? Math.max(30, cs) : cs, fs = f(use), clueW = maxR * (fs + 5) + 6, clueH = maxC * (fs + 3) + 8;
+    wrap.style.gridTemplateColumns = `${clueW}px repeat(${W}, ${use}px)`;
+    wrap.style.gridTemplateRows = `${clueH}px repeat(${H}, ${use}px)`;
+    wrap.style.setProperty('--cs', use + 'px'); wrap.style.setProperty('--fs', fs + 'px');
+    view.style.maxWidth = avail + 'px';
+    view.classList.toggle('zoomed', zoom);
+    zoomBtn.style.display = fitCs < 24 ? '' : 'none';
+    tMove.style.display = zoom ? '' : 'none';
+    if (!zoom && tool === 'move') setTool('fill');
   }
   const eq = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
   function paint() {
@@ -2780,7 +2802,7 @@ function mountNG(stage, controls, P, api) {
   let down = null;
   const cellAt = (e) => { const t = document.elementFromPoint(e.clientX, e.clientY); return t && t.classList.contains('ng-c') && wrap.contains(t) ? +t.dataset.i : null; };
   wrap.onpointerdown = (e) => {
-    if (api.done) return; const i = cellAt(e); if (i == null) return; e.preventDefault(); api.start();
+    if (api.done || tool === 'move') return; const i = cellAt(e); if (i == null) return; e.preventDefault(); api.start();
     hist.push(g.slice());
     const want = tool === 'fill' ? 1 : 2;
     down = { v: g[i] === want ? 0 : want, id: e.pointerId };
@@ -2791,13 +2813,14 @@ function mountNG(stage, controls, P, api) {
   const up = () => { if (down) { down = null; api.move(); } };
   wrap.onpointerup = up; wrap.onpointercancel = up;
   const tools = $('div', 'qn-tools');
-  const tF = $('button', 'on', '■ &nbsp;Fill'), tX = $('button', '', '× &nbsp;Cross out');
-  const setTool = (t) => { tool = t; tF.classList.toggle('on', t === 'fill'); tX.classList.toggle('on', t === 'x'); };
-  tF.onclick = () => setTool('fill'); tX.onclick = () => setTool('x');
-  tools.append(tF, tX);
-  tools.style.width = (clueW + cs * W) + 'px';
-  stage.append(wrap, tools);
-  paint();
+  const tF = $('button', 'on', '■ Fill'), tX = $('button', '', '× Cross'), tMove = $('button', '', '✋ Move'), zoomBtn = $('button', 'auto', '🔍 Zoom');
+  function setTool(t) { tool = t; tF.classList.toggle('on', t === 'fill'); tX.classList.toggle('on', t === 'x'); tMove.classList.toggle('on', t === 'move'); view.classList.toggle('panning', t === 'move'); }
+  tF.onclick = () => setTool('fill'); tX.onclick = () => setTool('x'); tMove.onclick = () => setTool('move');
+  zoomBtn.onclick = () => { zoom = !zoom; zoomBtn.classList.toggle('on', zoom); layout(); if (zoom) setTool('move'); };
+  tools.append(tF, tX, tMove, zoomBtn);
+  tools.style.width = `min(100%, ${avail}px)`;
+  stage.append(view, tools);
+  layout(); paint();
   api.solution(() => { g = P.solution.map((v) => (v ? 1 : 0)); paint(); wrap.classList.add('done'); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; g = hist.pop(); paint(); });
   api.btn('Clear', () => { if (api.done) return; hist.push(g.slice()); g.fill(0); paint(); });

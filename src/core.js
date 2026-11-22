@@ -845,10 +845,10 @@ const Core = (() => {
   }
   function genNonogram(t, num) {
     const R = seedOf('ng', t, num);
-    const W = [5, 8, 10, 12][t], H = W;
+    const W = [5, 10, 15, 20][t], H = W;
     for (let attempt = 0; attempt < 400; attempt++) {
       // blobby picture: random seeds smoothed once, so it looks like shapes rather than noise
-      let g = Array.from({ length: W * H }, () => (R() < [0.62, 0.58, 0.55, 0.52][t] ? 1 : 0));
+      let g = Array.from({ length: W * H }, () => (R() < [0.62, 0.58, 0.56, 0.55][t] ? 1 : 0));
       if (t > 0) g = g.map((v, i) => { const r = Math.floor(i / W), c = i % W; let s = 0, k = 0; for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const rr = r + dr, cc = c + dc; if (rr >= 0 && cc >= 0 && rr < H && cc < W) { s += g[rr * W + cc]; k++; } } return s * 2 > k ? 1 : s * 2 === k ? v : 0; });
       const filled = g.filter(Boolean).length;
       if (filled < W * H * 0.35 || filled > W * H * 0.75) continue;
