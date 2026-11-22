@@ -261,6 +261,10 @@ input{font:inherit;color:inherit}
 .cbtn.concede{color:#FF8A8A;border-color:#3A2A30}
 .cbtn.warn{background:#4A1D24;color:#fff;border-color:#FF6B6B}
 /* ---------- SHEETS ---------- */
+.sheet-x{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:var(--s2);border:1px solid var(--line);color:var(--mute);font-size:15px;font-weight:700;display:grid;place-items:center;z-index:2}
+.sheet>.kicker,.sheet>h2{padding-right:44px}
+.handoff .hback{margin-top:18px;height:44px;padding:0 20px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;font-weight:700;font-size:14px}
+
 .veil{position:fixed;inset:0;background:rgba(5,6,9,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;z-index:20;animation:fade .2s}
 @keyframes fade{from{opacity:0}}
 .sheet{width:100%;max-width:480px;background:var(--s1);border:1px solid var(--line);border-bottom:0;border-radius:28px 28px 0 0;padding:22px 20px calc(env(safe-area-inset-bottom) + 20px);position:relative;animation:up .28s cubic-bezier(.2,.9,.3,1.1)}
@@ -445,6 +449,16 @@ const scoreLine = (s) => `<span style="color:${PC[0]}">${nm(0)}</span> <b class=
 // ====================== HOME ======================
 const app = document.getElementById('app');
 let tickTimer = null, editing = false;
+// ---- navigation: phone back gesture / browser back / Esc all return to the arcade ----
+let popping = false;
+function navPush() { try { if (!history.state || !history.state.tt) history.pushState({ tt: 1 }, ''); } catch (e) {} }
+function goHome() { try { if (history.state && history.state.tt) { popping = true; history.back(); } } catch (e) {} renderHome(); }
+window.addEventListener('popstate', () => { if (popping) { popping = false; return; } renderHome(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const vs = document.querySelectorAll('.veil');
+  if (vs.length && !vs[vs.length - 1].classList.contains('lobby-veil')) vs[vs.length - 1].remove(); else goHome();
+});
 function renderHome() {
   clearInterval(tickTimer); window.onkeydown = null;
   document.querySelectorAll('.veil,.handoff').forEach((v) => v.remove());
@@ -513,13 +527,17 @@ function seg(options, value, onPick) {
   });
   return w;
 }
-function veil(inner, cls = '') {
-  const v = $('div', 'veil'); const sh = $('div', 'sheet ' + cls); sh.append(...inner); v.appendChild(sh);
-  v.onclick = (e) => { if (e.target === v) v.remove(); };
+function veil(inner, cls = '', onClose) {
+  const v = $('div', 'veil' + (cls === 'lobby' ? ' lobby-veil' : '')); const sh = $('div', 'sheet ' + cls);
+  const close = onClose || (() => v.remove());
+  const x = $('button', 'sheet-x', '✕'); x.setAttribute('aria-label', 'Close'); x.onclick = close;
+  sh.append(x, ...inner); v.appendChild(sh);
+  v.onclick = (e) => { if (e.target === v) close(); };
   document.body.appendChild(v); return v;
 }
 function openLobby(gid) {
   document.querySelectorAll('.veil').forEach((v) => v.remove());
+  navPush();
   const g = G[gid], c = cfg(gid);
   document.documentElement.style.setProperty('--acc', getComputedStyle(document.documentElement).getPropertyValue('--' + gid).trim());
   const kids = [$('div', 'kicker', S.duo ? 'Two players' : 'Solo'), $('h2', '', g.name)];
@@ -561,8 +579,10 @@ function openLobby(gid) {
     skip.onclick = () => { duelOf(gid).rounds.splice(ri, 1); store.save(); re(); renderHome(); openLobby(gid); };
     btns.appendChild(skip);
   }
+  const leave = $('button', 'big', '‹  Back to arcade'); leave.onclick = () => goHome();
+  btns.appendChild(leave);
   kids.push(btns);
-  const v = veil(kids, 'lobby');
+  const v = veil(kids, 'lobby', () => goHome());
 }
 
 // ====================== HAND-OFF ======================
@@ -576,7 +596,7 @@ function handoff(gid, ri, p) {
     <div class="who">${nm(p)}</div><div class="sub">your turn</div><div class="det">${what}</div>`;
   const go = $('button', 'go', cfg(gid).timer === 'now' ? 'Start — clock runs' : 'Start');
   h.appendChild(go);
-  const back = $('button', 'lnk', 'back to arcade'); back.onclick = () => { h.remove(); renderHome(); };
+  const back = $('button', 'hback', '‹  Back to arcade'); back.onclick = () => { h.remove(); goHome(); };
   h.appendChild(back);
   document.body.appendChild(h);
   const api = openGame({ gid, t: r.t, num: r.nums[p], p, ri });
@@ -596,7 +616,8 @@ function openGame(ctx) {
   const P = GEN[gid](t, num);
 
   const bar = $('div', 'gbar');
-  const back = $('button', 'ibtn', '‹'); back.onclick = renderHome;
+  navPush();
+  const back = $('button', 'ibtn back', '‹'); back.setAttribute('aria-label', 'Back to arcade'); back.onclick = () => goHome();
   const help = $('button', 'ibtn', '?'); help.onclick = () => showRules(g);
   bar.append(back, $('div', 'gtitle', `${g.name}<small>${hasTiers(g) ? TN[t] : 'Classic'}</small>`), help);
   app.appendChild(bar);
@@ -745,7 +766,7 @@ function showResult(ctx, r, title, info, st) {
       btns.append(nx);
     }
   }
-  const home = $('button', 'big', 'Arcade'); home.onclick = () => { v.remove(); renderHome(); };
+  const home = $('button', 'big', '‹  Back to arcade'); home.onclick = () => { v.remove(); goHome(); };
   btns.append(home);
   kids.push(btns);
   v = veil(kids);
