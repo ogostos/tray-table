@@ -1231,16 +1231,17 @@ function veil(inner, cls = '', onClose) {
   v.onclick = (e) => { if (e.target === v) close(); };
   document.body.appendChild(v); return v;
 }
-function openLobby(gid) {
-  document.querySelectorAll('.veil').forEach((v) => v.remove());
-  navPush();
+function openLobby(gid, refresh = false) {
+  // refresh = a setting changed: rebuild the sheet's contents in place (no close/re-open animation, keeps scroll)
+  const old = refresh ? document.querySelector('.veil.lobby-veil') : null;
+  if (!old) { document.querySelectorAll('.veil').forEach((v) => v.remove()); navPush(); }
   const g = G[gid], c = cfg(gid);
   document.documentElement.style.setProperty('--acc', getComputedStyle(document.documentElement).getPropertyValue('--' + gid).trim());
   const kids = [$('div', 'kicker', S.duo ? 'Two players' : 'Solo'), $('h2', '', g.name)];
   const rules = $('div', 'rules', g.rules.map((r) => `<p>${r}</p>`).join(''));
   kids.push(rules);
   const opt = (label, el) => { const o = $('div', 'opt'); o.append($('label', '', label), el); return o; };
-  const re = () => openLobby(gid);
+  const re = () => openLobby(gid, true);
   if (hasTiers(g)) kids.push(opt('Difficulty', seg(TN.map((n, t) => [t, n, S.duo ? null : `${solvedCount(gid, t, 0)} done`]), c.tier, (v) => { c.tier = v; store.save(); re(); })));
   kids.push(opt('Timer', seg([['now', 'Starts right away'], ['first', 'Starts on first move']], c.timer, (v) => { c.timer = v; store.save(); re(); })));
   let ri = null;
@@ -1272,13 +1273,15 @@ function openLobby(gid) {
   btns.appendChild(go);
   if (S.duo && ri != null) {
     const skip = $('button', 'big', 'Cancel this round');
-    skip.onclick = () => { duelOf(gid).rounds.splice(ri, 1); store.save(); re(); renderHome(); openLobby(gid); };
+    skip.onclick = () => { duelOf(gid).rounds.splice(ri, 1); store.save(); re(); };
     btns.appendChild(skip);
   }
   const leave = $('button', 'big', '‹  Back to arcade'); leave.onclick = () => goHome();
   btns.appendChild(leave);
   kids.push(btns);
-  const v = veil(kids, 'lobby', () => goHome());
+  let v = old;
+  if (old) { const sh = old.querySelector('.sheet'), top = sh.scrollTop; sh.replaceChildren(sh.querySelector('.sheet-x'), ...kids); sh.scrollTop = top; }
+  else v = veil(kids, 'lobby', () => goHome());
 }
 
 // ====================== HAND-OFF ======================
