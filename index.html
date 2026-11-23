@@ -1930,6 +1930,10 @@ function openLobby(gid, refresh = false) {
     const s = gameScore(gid);
     kids.push($('div', 'verdict', `${g.name} score: ${scoreLine(s)}`));
     ri = openRound(gid);
+    if (ri != null) { // nothing played or written in it yet → drop it, so new settings apply right away
+      const r0 = duelOf(gid).rounds[ri];
+      if (!r0.res[0] && !r0.res[1] && !(r0.words && (r0.words[0] || r0.words[1]))) { duelOf(gid).rounds.splice(ri, 1); store.save(); ri = null; }
+    }
   }
   const btns = $('div', 'btns');
   const go = $('button', 'big pri');
@@ -1984,10 +1988,10 @@ function handoff(gid, ri, p) {
 
 // the other player secretly types the word to guess
 function askWord(gid, ri, p) {
-  const r = duelOf(gid).rounds[ri], setter = 1 - p, lang = r.t >= 10 ? 'ru' : 'en';
+  const r = duelOf(gid).rounds[ri], setter = 1 - p, lang = cfg(gid).lang;
   const h = $('div', 'handoff setter');
   h.style.setProperty('--pc', PC[setter]);
-  h.innerHTML = `<div class="kick">${G[gid].name} · Round ${ri + 1} · ${lang === 'ru' ? 'Russian word' : 'English word'}</div>
+  h.innerHTML = `<div class="kick">${G[gid].name} · Round ${ri + 1} · ${lang === 'ru' ? 'русское слово' : 'English word'}</div>
     <div class="who">${nm(setter)}</div><div class="sub">write a secret word for ${nm(p)}</div><div class="det">${nm(p)}, look away 🙈</div>`;
   const form = $('form', 'wordform');
   form.innerHTML = `<div class="wf-row"><input class="wf-word" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="18" placeholder="${lang === 'ru' ? 'слово' : 'word'}" lang="${lang}"><button type="button" class="wf-eye" aria-label="Show or hide">👁</button></div>
@@ -2004,8 +2008,8 @@ function askWord(gid, ri, p) {
   form.onsubmit = (e) => {
     e.preventDefault();
     const w = inp.value.trim().toLowerCase().replace(/ё/g, 'е');
-    const ok = new RegExp(`^[${Core.ALPHA[lang]}]{3,18}$`).test(w);
-    if (!ok) { err.textContent = lang === 'ru' ? 'Only Russian letters, 3–18 of them, no spaces.' : 'Only English letters, 3–18 of them, no spaces.'; return; }
+    const ok = /^[а-я]{3,18}$/.test(w) || /^[a-z]{3,18}$/.test(w);
+    if (!ok) { err.textContent = /[а-я]/.test(w) && /[a-z]/.test(w) ? 'Use one alphabet — Russian or English, not both.' : 'Letters only, 3–18 of them, no spaces.'; return; }
     r.words[p] = { w, h: form.querySelector('.wf-hint').value.trim().slice(0, 24) };
     store.save(); h.remove(); handoff(gid, ri, p);
   };
@@ -2021,7 +2025,7 @@ function openGame(ctx) {
   document.documentElement.style.setProperty('--acc', getComputedStyle(document.documentElement).getPropertyValue('--' + gid).trim() || '#FFC247');
   app.innerHTML = '';
   const round = duel ? duelOf(gid).rounds[ri] : null, mode = round ? round.mode : 'same';
-  const P = round && round.mode === 'set' ? { word: round.words[p].w, cat: round.words[p].h || `${S.players[1 - p]}'s word`, lang: t >= 10 ? 'ru' : 'en', custom: 1 } : GEN[gid](t, num);
+  const P = round && round.mode === 'set' ? { word: round.words[p].w, cat: round.words[p].h || `${S.players[1 - p]}'s word`, lang: /[а-я]/.test(round.words[p].w) ? 'ru' : 'en', custom: 1 } : GEN[gid](t, num);
 
   const bar = $('div', 'gbar');
   navPush();
