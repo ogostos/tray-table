@@ -357,7 +357,7 @@ input{font:inherit;color:inherit}
 .wf-chip b{font-size:15px;color:#fff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wf-chip span{font-size:10.5px;color:#C3C7D2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wf-chip:active{background:rgba(255,255,255,.16)}
-.handoff.setter{justify-content:flex-start;padding-top:calc(env(safe-area-inset-top) + 40px);overflow:auto}
+.handoff.setter{overflow:auto}
 
 .upd{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 8px);z-index:40;background:#fff;color:#0B0D12;font-weight:800;font-size:14px;padding:11px 18px;border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.5);white-space:nowrap}
 
@@ -1638,7 +1638,7 @@ const UB_BANK = [["8:222h142v122h333h322v053v312v302v032h002h112v442h512h","8:22
 </script>
 <script>
 // ====================== STATE ======================
-const APP_VERSION = '070bd92385';
+const APP_VERSION = '884a1390b7';
 const KEY = 'traytable.v2';
 const store = (() => {
   let mem = null;
@@ -1998,6 +1998,7 @@ function openLobby(gid, refresh = false) {
 
 // ====================== HAND-OFF ======================
 function handoff(gid, ri, p) {
+  window.onkeydown = null;
   const g = G[gid], r = duelOf(gid).rounds[ri];
   if (r.mode === 'set' && !r.words[p]) { askWord(gid, ri, p); return; }
   const other = 1 - p, otherDone = r.res[other];
@@ -2027,6 +2028,7 @@ function scriptOf(w) {
 const normWord = (v) => v.trim().toLowerCase().replace(/ё/g, 'е').replace(/և/g, 'եւ');
 // the other player secretly types the word to guess — any language.
 function askWord(gid, ri, p) {
+  window.onkeydown = null;
   const r = duelOf(gid).rounds[ri], setter = 1 - p, lang = langOf(r.t);
   const h = $('div', 'handoff setter');
   h.style.setProperty('--pc', PC[setter]);
@@ -2202,6 +2204,7 @@ function resCard(g, x, label, opts = {}) {
   return `<div class="res ${opts.best ? 'best' : ''} ${x && x.x ? 'lost' : ''}" ${opts.pc ? `style="--rc:${opts.pc}"` : ''}><label><span>${label}</span>${opts.tag ? `<em>${opts.tag}</em>` : ''}</label><b class="num">${x ? fmtMain(g, x) : '—'}</b><span class="num">${x ? fmtSub(g, x, opts.mode) : 'not played yet'}</span></div>`;
 }
 function showResult(ctx, r, title, info, st) {
+  window.onkeydown = null;
   const { gid, t, num, p, ri } = ctx;
   const g = G[gid];
   const kids = [];
@@ -3278,7 +3281,11 @@ function mountHM(stage, controls, P, api) {
     if ([...inWord].every((c) => tried.has(c))) { over = true; wordEl.classList.add('won'); api.win({ m: misses }); }
     else if (misses >= MAX) { over = true; paint(true); fig.classList.add('lost'); setTimeout(() => api.fail('Hanged', 'was hanged'), 1100); }
   }
-  window.onkeydown = (e) => { const ch = e.key.toLowerCase().replace('ё', 'е'); if (keys.has(ch)) { e.preventDefault(); guess(ch); } };
+  window.onkeydown = (e) => {
+    if (e.target && e.target.closest && e.target.closest('input, textarea')) return; // typing a word — never ours
+    if (over || api.done || !kb.isConnected) return;                                    // game finished or left
+    const ch = e.key.toLowerCase().replace('ё', 'е'); if (keys.has(ch)) { e.preventDefault(); guess(ch); }
+  };
   if (KB[lang] == null) kb.classList.add('kb-wide');
   stage.append(cat, fig, wordEl, kb);
   paint();
@@ -3467,7 +3474,7 @@ function mountG2(stage, controls, P, api) {
     move(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 1 : 3) : (dy > 0 ? 2 : 0));
   };
   board.addEventListener('pointerup', end); board.addEventListener('pointercancel', () => (sw = null));
-  window.onkeydown = (e) => { const k = { ArrowUp: 0, ArrowRight: 1, ArrowDown: 2, ArrowLeft: 3 }[e.key]; if (k != null) { e.preventDefault(); move(k); } };
+  window.onkeydown = (e) => { if (e.target && e.target.closest && e.target.closest('input, textarea')) return; if (!board.isConnected) return; const k = { ArrowUp: 0, ArrowRight: 1, ArrowDown: 2, ArrowLeft: 3 }[e.key]; if (k != null) { e.preventDefault(); move(k); } };
   stage.appendChild(board);
   reset();
   api.btn('↺  Restart', () => { if (api.done) return; reset(); api.resetMoves(); });
