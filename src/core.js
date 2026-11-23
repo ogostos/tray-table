@@ -983,7 +983,7 @@ const Core = (() => {
 
 
   // ---------- word games ----------
-  const ALPHA = { en: 'abcdefghijklmnopqrstuvwxyz', ru: 'абвгдежзийклмнопрстуфхцчшщъыьэюя' };
+  const ALPHA = { en: 'abcdefghijklmnopqrstuvwxyz', ru: 'абвгдежзийклмнопрстуфхцчшщъыьэюя', hy: 'աբգդեզէըթժիլխծկհձղճմյնշոչպջռսվտրցւփքօֆ' };
   function wordPool(WL, lang) { const out = []; for (const [cat, str] of Object.entries(WL[lang])) for (const w of str.split(/\s+/)) if (w) out.push([w, cat]); return out; }
   const HM_LEN = [[4, 5], [6, 7], [8, 9], [10, 99]];
   function genHangman(WL, lang, t, num) {

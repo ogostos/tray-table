@@ -349,6 +349,16 @@ input{font:inherit;color:inherit}
 .wf-err{min-height:18px;color:#FFD0D0;font-size:13px}
 .wordform .go{width:100%}
 /* ---------- SHEETS ---------- */
+.wf-ideas{margin-top:14px;text-align:left}
+.wf-il{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:#D9DCE5;font-size:13px;font-weight:700}
+.wf-more{color:#fff;font-weight:800;font-size:13px;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.12)}
+.wf-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.wf-chip{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:9px 6px;display:flex;flex-direction:column;gap:3px;align-items:center;min-width:0}
+.wf-chip b{font-size:15px;color:#fff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wf-chip span{font-size:10.5px;color:#C3C7D2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wf-chip:active{background:rgba(255,255,255,.16)}
+.handoff.setter{justify-content:flex-start;padding-top:calc(env(safe-area-inset-top) + 40px);overflow:auto}
+
 .upd{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 8px);z-index:40;background:#fff;color:#0B0D12;font-weight:800;font-size:14px;padding:11px 18px;border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.5);white-space:nowrap}
 
 .solbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--s1);border-top:1px solid var(--line);padding:12px 16px calc(env(safe-area-inset-bottom) + 12px);box-shadow:0 -12px 30px rgba(0,0,0,.45);animation:up .25s ease-out}
@@ -420,6 +430,18 @@ const WORDS = {
     'Музыка и искусство': 'песня танец опера балет концерт оркестр хор гитара скрипка пианино рояль барабан флейта труба арфа виолончель саксофон аккордеон баян гармонь мелодия ритм нота музыка картина кисть краска холст портрет пейзаж скульптура статуя галерея театр сцена роман стих поэма симфония фестиваль микрофон композитор фортепиано барабанщик иллюстрация фотография натюрморт балалайка ксилофон',
     'Тело и одежда': 'рука нога глаз ухо нос рот зуб губа лоб щека шея плечо локоть палец колено спина живот сердце волосы ресница бровь шапка шарф перчатки варежки куртка пальто плащ свитер рубашка футболка платье юбка брюки джинсы носки ботинки сапоги кроссовки туфли пижама галстук пуговица карман ремень зонт очки сумка подбородок позвоночник босоножки водолазка толстовка комбинезон кардиган рукавицы ожерелье',
     'Наука и техника': 'атом ген вирус клетка робот лазер ракета планета комета орбита магнит мотор двигатель телефон радио камера ноутбук планшет экран кабель батарейка принтер компьютер интернет программа спутник телескоп микроскоп электрон молекула кислород водород гравитация галактика вселенная астероид алгоритм калькулятор наушники лаборатория эксперимент электричество астрономия термометр смартфон клавиатура изобретение микросхема физика химия',
+  },
+  hy: {
+    'Կենդանիներ': 'կատու շուն կով խոզ ձի ոչխար այծ էշ ուղտ առյուծ վագր արջ գայլ աղվես նապաստակ ճագար սկյուռ կապիկ փիղ ընձուղտ զեբրա կոկորդիլոս օձ մողես կրիա գորտ ձուկ շնաձուկ կետ դելֆին ծիծեռնակ աղավնի արծիվ բու ագռավ սագ բադ հավ աքաղաղ հնդկահավ թութակ սիրամարգ կարապ պինգվին ջայլամ մրջյուն մեղու թիթեռ սարդ մոծակ ճանճ խխունջ ութոտնուկ կարիճ ոզնի կուղբ եղնիկ եղջերու կենգուրու կոալա պանդա ռնգեղջյուր գետաձի ընձառյուծ հովազ բորենի մուկ առնետ համստեր ճնճղուկ կաչաղակ փայտփորիկ սոխակ կաքավ ֆլամինգո դինոզավր',
+    'Ուտելիք եւ խմիչք': 'հաց պանիր կաթ մածուն թան կարագ ձու միս բրինձ ապուր սուրճ թեյ ջուր հյութ գինի գարեջուր աղ շաքար մեղր մուրաբա տորթ թխվածք կարկանդակ խնձոր տանձ սալոր ծիրան դեղձ բալ կեռաս խաղող նուռ թուզ սեխ ձմերուկ ելակ մորի կիտրոն նարինջ մանդարին բանան արքայախնձոր լոլիկ վարունգ կարտոֆիլ գազար սոխ սխտոր կաղամբ բադրիջան պղպեղ ճակնդեղ լոբի ոլոռ եգիպտացորեն ընկույզ նուշ պիստակ շոկոլադ կոնֆետ պաղպաղակ բլիթ լավաշ խորոված տոլմա խաշ հարիսա քյաբաբ գաթա փախլավա սպաս մակարոն կոտլետ երշիկ ձվածեղ աղցան սպանախ կանաչի մաղադանոս համեմ ռեհան դարչին ձիթապտուղ դդում ալյուր',
+    'Տուն': 'տուն դուռ պատուհան պատ հատակ առաստաղ տանիք սեղան աթոռ բազմոց մահճակալ պահարան դարակ լամպ հայելի գորգ վարագույր բարձ վերմակ սրբիչ բաժակ ափսե գդալ պատառաքաղ դանակ թեյնիկ կաթսա տապակ սառնարան վառարան լվացարան լոգարան խոհանոց ննջասենյակ պատշգամբ աստիճան բանալի կողպեք ժամացույց հեռուստացույց փոշեկուլ արդուկ զամբյուղ մոմ ծաղկաման աման շերեփ սկուտեղ բուխարի ներքնակ',
+    'Բնություն եւ եղանակ': 'արեւ լուսին աստղ երկինք ամպ անձրեւ ձյուն քամի մառախուղ կարկուտ ամպրոպ կայծակ ծիածան սառույց սար լեռ բլուր ձոր դաշտ անտառ գետ լիճ ծով օվկիանոս կղզի ափ ավազ քար ժայռ հրաբուխ սառցադաշտ անապատ ջրվեժ աղբյուր առու ծառ տերեւ ծաղիկ խոտ վարդ կակաչ մանուշակ ձնծաղիկ կաղնի սոճի եղեւնի կեչի ուռենի արեւածագ մայրամուտ հորիզոն գիշեր առավոտ երեկո գարուն ամառ աշուն ձմեռ փոթորիկ երկրաշարժ ջրհեղեղ եղյամ ցող',
+    'Մասնագիտություններ': 'բժիշկ ուսուցիչ վարորդ խոհարար հացթուխ դերասան երգիչ պարող նկարիչ գրող լրագրող լուսանկարիչ ծրագրավորող ճարտարապետ ինժեներ շինարար հյուսն դերձակ վարսահարդար ատամնաբույժ անասնաբույժ դեղագործ իրավաբան դատավոր ոստիկան հրշեջ զինվոր օդաչու նավաստի տիեզերագնաց գիտնական հաշվապահ վաճառող մատուցող այգեպան ֆերմեր հովիվ դարբին էլեկտրիկ մեխանիկ գրադարանավար թարգմանիչ փոստատար բուժքույր մարզիչ երաժիշտ դիրիժոր քանդակագործ',
+    'Ճանապարհորդություն': 'քաղաք գյուղ մայրաքաղաք փողոց ճանապարհ կամուրջ հրապարակ թանգարան տաճար եկեղեցի ամրոց բերդ հուշարձան շատրվան այգի զբոսայգի հյուրանոց օդանավակայան կայարան նավահանգիստ ինքնաթիռ գնացք ավտոբուս տաքսի մետրո տրամվայ նավ ուղղաթիռ հեծանիվ մոտոցիկլ մեքենա ճամպրուկ ուսապարկ անձնագիր տոմս քարտեզ կողմնացույց վրան զբոսաշրջիկ էքսկուրսիա ուղեցույց հուշանվեր սահման արձակուրդ ծովափ լողափ երթուղի փարոս երկնաքեր',
+    'Սպորտ եւ խաղեր': 'ֆուտբոլ բասկետբոլ վոլեյբոլ թենիս հոկեյ բռնցքամարտ ըմբշամարտ լող վազք մարմնամարզություն ծանրամարտ շախմատ նարդի դահուկ չմուշկ հեծանվասպորտ սուսերամարտ գնդակ դարպաս մրցավար մարզադաշտ թիմ մրցանակ մեդալ գավաթ չեմպիոն մարաթոն ռեկորդ մրցույթ մարզում ատլետիկա կարատե գոլֆ ձիասպորտ լեռնագնացություն դոմինո թղթախաղ հանելուկ խաղալիք ճոճանակ',
+    'Երաժշտություն եւ արվեստ': 'երգ պար երաժշտություն մեղեդի ռիթմ նոտա կիթառ ջութակ դաշնամուր թմբուկ շվի դուդուկ զուռնա քանոն թառ քամանչա սրինգ շեփոր սաքսոֆոն ակորդեոն նվագախումբ երգչախումբ համերգ օպերա բալետ թատրոն բեմ ֆիլմ կինոթատրոն նկար կտավ վրձին ներկ դիմանկար բնանկար քանդակ արձան պատկերասրահ պոեմ բանաստեղծություն վեպ պատմվածք հեքիաթ փառատոն խոսափող սիմֆոնիա',
+    'Մարմին եւ հագուստ': 'գլուխ մազ աչք ականջ քիթ բերան շրթունք ատամ լեզու դեմք ճակատ այտ կզակ պարանոց ուս ձեռք մատ եղունգ արմունկ ոտք ծունկ մեջք փոր սիրտ ուղեղ ոսկոր հոնք թարթիչ գլխարկ շարֆ ձեռնոց բաճկոն վերարկու սվիտեր վերնաշապիկ շապիկ զգեստ կիսաշրջազգեստ տաբատ ջինս գուլպա կոշիկ երկարաճիտք հողաթափ գոտի փողկապ կոճակ գրպան անձրեւանոց ակնոց պայուսակ մանյակ ականջօղ ապարանջան մատանի',
+    'Գիտություն եւ տեխնիկա': 'ատոմ մոլեկուլ բջիջ վիրուս գեն էլեկտրոն թթվածին ջրածին մագնիս ձգողություն մոլորակ գիսաստղ գալակտիկա տիեզերք արբանյակ հրթիռ աստղադիտակ մանրադիտակ ջերմաչափ հաշվիչ համակարգիչ նոութբուք պլանշետ հեռախոս էկրան ստեղնաշար մալուխ մարտկոց տպիչ ինտերնետ ծրագիր ռոբոտ լազեր շարժիչ ռադիո տեսախցիկ ականջակալ լաբորատորիա փորձարկում գյուտ քիմիա ֆիզիկա կենսաբանություն աստղագիտություն էլեկտրականություն ալգորիթմ',
   },
 };
 if (typeof module !== 'undefined') module.exports = WORDS;
@@ -1409,7 +1431,7 @@ const Core = (() => {
 
 
   // ---------- word games ----------
-  const ALPHA = { en: 'abcdefghijklmnopqrstuvwxyz', ru: 'абвгдежзийклмнопрстуфхцчшщъыьэюя' };
+  const ALPHA = { en: 'abcdefghijklmnopqrstuvwxyz', ru: 'абвгдежзийклмнопрстуфхцчшщъыьэюя', hy: 'աբգդեզէըթժիլխծկհձղճմյնշոչպջռսվտրցւփքօֆ' };
   function wordPool(WL, lang) { const out = []; for (const [cat, str] of Object.entries(WL[lang])) for (const w of str.split(/\s+/)) if (w) out.push([w, cat]); return out; }
   const HM_LEN = [[4, 5], [6, 7], [8, 9], [10, 99]];
   function genHangman(WL, lang, t, num) {
@@ -1616,7 +1638,7 @@ const UB_BANK = [["8:222h142v122h333h322v053v312v302v032h002h112v442h512h","8:22
 </script>
 <script>
 // ====================== STATE ======================
-const APP_VERSION = '60a3fff95b';
+const APP_VERSION = '070bd92385';
 const KEY = 'traytable.v2';
 const store = (() => {
   let mem = null;
@@ -1725,7 +1747,7 @@ const GEN = {
   lo: Core.genLightsOut, qn: Core.genQueens, t24: Core.gen24, kk: Core.genKenKen, lk: Core.genLinks, pp: Core.genPipes, pr: Core.genPour,
   fl: Core.genFlood, ol: Core.genOneLine, tg: Core.genTango, hu: Core.genHue,
   zp: Core.genZip, hb: Core.genBridges, ng: Core.genNonogram, sk: Core.genShikaku, ms: Core.genMines, tn: Core.genTents,
-  hm: (t, n) => Core.genHangman(WORDS, t >= 10 ? 'ru' : 'en', t % 10, n), ws: (t, n) => Core.genWordSearch(WORDS, t >= 10 ? 'ru' : 'en', t % 10, n),
+  hm: (t, n) => Core.genHangman(WORDS, langOf(t), t % 10, n), ws: (t, n) => Core.genWordSearch(WORDS, langOf(t), t % 10, n),
   ub: (t, n) => Core.getUnblock(UB_BANK, t, n),
   g2: (t, n) => ({ seed: 'g2-' + n }),
 };
@@ -1742,9 +1764,13 @@ function cfg(gid) {
   return c;
 }
 // word games keep English and Russian progress apart: Russian levels are stored as tier + 10
-const tkey = (g, c) => (hasTiers(g) ? c.tier : 0) + (g.lang && c.lang === 'ru' ? 10 : 0);
-const tName = (g, t) => (hasTiers(g) ? TN[t % 10] : 'Classic') + (g.lang ? (t >= 10 ? ' · RU' : ' · EN') : '');
-const LANGS = [['en', 'English'], ['ru', 'Русский']];
+// word games keep each language's progress apart: level + 0 (English), + 10 (Russian), + 20 (Armenian)
+const LOFF = { en: 0, ru: 10, hy: 20 };
+function langOf(t) { return ['en', 'ru', 'hy'][Math.floor(t / 10)] || 'en'; }
+const tkey = (g, c) => (hasTiers(g) ? c.tier : 0) + (g.lang ? LOFF[c.lang] || 0 : 0);
+const tName = (g, t) => (hasTiers(g) ? TN[t % 10] : 'Classic') + (g.lang ? ' · ' + langOf(t).toUpperCase() : '');
+const LANGS = [['en', 'English'], ['ru', 'Русский'], ['hy', 'Հայերեն']];
+const LNAME = { en: 'English', ru: 'Russian', hy: 'Armenian' };
 const rkey = (t, n) => t + ':' + n;
 function getRes(gid, t, n, p) { return ((S.res[gid] || {})[rkey(t, n)] || [])[p] || null; }
 function putRes(gid, t, n, p, r) {
@@ -1794,7 +1820,7 @@ function gameScore(gid) {
 }
 function totalScore() { const s = [0, 0, 0]; for (const g of GAMES) { const x = gameScore(g.id); s[0] += x[0]; s[1] += x[1]; s[2] += x[2]; } return s; }
 function newRound(gid) {
-  const c = cfg(gid), g = G[gid], t = c.mode === 'set' ? (c.lang === 'ru' ? 10 : 0) : tkey(g, c), d = duelOf(gid);
+  const c = cfg(gid), g = G[gid], t = c.mode === 'set' ? LOFF[c.lang] || 0 : tkey(g, c), d = duelOf(gid);
   const used = new Set(); d.rounds.forEach((r) => { if (r.t === t) r.nums.forEach((n) => used.add(n)); });
   const free = () => { for (let n = 1; ; n++) if (!used.has(n) && !getRes(gid, t, n, 0) && !getRes(gid, t, n, 1)) { used.add(n); return n; } };
   if (c.mode === 'set') { d.rounds.push({ t, mode: 'set', nums: [0, 0], words: [null, null], res: [null, null], first: c.first }); store.save(); return d.rounds.length - 1; }
@@ -1920,13 +1946,13 @@ function openLobby(gid, refresh = false) {
   kids.push(rules);
   const opt = (label, el) => { const o = $('div', 'opt'); o.append($('label', '', label), el); return o; };
   const re = () => openLobby(gid, true);
-  if (g.lang && !(S.duo && c.mode === 'set')) kids.push(opt('Language', seg(LANGS, c.lang, (v) => { c.lang = v; store.save(); re(); })));
-  const off = g.lang && c.lang === 'ru' ? 10 : 0;
+  if (g.lang) kids.push(opt('Language', seg(LANGS, c.lang, (v) => { c.lang = v; store.save(); re(); })));
+  const off = g.lang ? LOFF[c.lang] || 0 : 0;
   if (hasTiers(g) && !(S.duo && c.mode === 'set')) kids.push(opt(g.tierHint ? 'Difficulty · word length' : 'Difficulty', seg(TN.map((n, t) => [t, n, g.tierHint ? g.tierHint[t] : S.duo ? null : `${solvedCount(gid, t + off, 0)} done`]), c.tier, (v) => { c.tier = v; store.save(); re(); })));
   kids.push(opt('Timer', seg([['now', 'Starts right away'], ['first', 'Starts on first move']], c.timer, (v) => { c.timer = v; store.save(); re(); })));
   let ri = null;
   if (S.duo) {
-    const modes = g.setMode ? [['set', 'Write words', 'any language'], ['same', 'Same word', 'app picks'], ['diff', 'Own words', 'app picks']] : [['same', 'Same puzzle', 'take turns'], ['diff', 'Different puzzles', 'same difficulty — watch each other']];
+    const modes = g.setMode ? [['set', 'Write words', 'for each other'], ['same', 'Same word', 'app picks'], ['diff', 'Own words', 'app picks']] : [['same', 'Same puzzle', 'take turns'], ['diff', 'Different puzzles', 'same difficulty — watch each other']];
     if (!modes.some(([m]) => m === c.mode)) c.mode = modes[0][0];
     kids.push(opt('Duel mode', seg(modes, c.mode, (v) => { c.mode = v; store.save(); re(); })));
     kids.push(opt('Who goes first', seg([[0, `${S.players[0]}`], [1, `${S.players[1]}`]], c.first, (v) => { c.first = v; store.save(); re(); })));
@@ -1942,14 +1968,14 @@ function openLobby(gid, refresh = false) {
   const go = $('button', 'big pri');
   if (!S.duo) {
     const t = tkey(g, c), n = nextNum(gid, t, 0);
-    go.textContent = hasTiers(g) ? `Play ${TN[t % 10]}${g.lang ? (t >= 10 ? ' · RU' : ' · EN') : ''} #${n}` : 'New game';
+    go.textContent = hasTiers(g) ? `Play ${tName(g, t)} #${n}` : 'New game';
     go.onclick = () => { v.remove(); openGame({ gid, t, num: n, p: 0 }); };
   } else if (ri != null) {
     const d = duelOf(gid), r = d.rounds[ri], p = turnOf(r);
     go.innerHTML = `Continue round ${ri + 1} · ${nm(p)}'s turn`;
     go.style.background = PC[p]; go.style.borderColor = PC[p];
     go.onclick = () => { v.remove(); handoff(gid, ri, p); };
-    if ((r.mode !== 'set' && r.t !== tkey(g, c)) || r.mode !== c.mode) btns.appendChild($('div', 'note', `This round was started as ${r.mode === 'set' ? 'write-a-word' : tName(g, r.t)} · ${r.mode === 'same' ? 'same puzzle' : r.mode === 'diff' ? 'different puzzles' : 'write words'}. New settings apply from the next round.`));
+    if ((r.mode !== 'set' && r.t !== tkey(g, c)) || (r.mode === 'set' && langOf(r.t) !== c.lang) || r.mode !== c.mode) btns.appendChild($('div', 'note', `This round was started as ${r.mode === 'set' ? 'write-a-word' : tName(g, r.t)} · ${r.mode === 'same' ? 'same puzzle' : r.mode === 'diff' ? 'different puzzles' : 'write words in ' + LNAME[langOf(r.t)]}. New settings apply from the next round.`));
   } else {
     const n = duelOf(gid).rounds.length + 1;
     go.innerHTML = `Start round ${n} · ${nm(c.first)} first`;
@@ -2001,31 +2027,41 @@ function scriptOf(w) {
 const normWord = (v) => v.trim().toLowerCase().replace(/ё/g, 'е').replace(/և/g, 'եւ');
 // the other player secretly types the word to guess — any language.
 function askWord(gid, ri, p) {
-  const r = duelOf(gid).rounds[ri], setter = 1 - p;
+  const r = duelOf(gid).rounds[ri], setter = 1 - p, lang = langOf(r.t);
   const h = $('div', 'handoff setter');
   h.style.setProperty('--pc', PC[setter]);
-  h.innerHTML = `<div class="kick">${G[gid].name} · Round ${ri + 1} · any language</div>
+  h.innerHTML = `<div class="kick">${G[gid].name} · Round ${ri + 1} · ${LNAME[lang]} word</div>
     <div class="who">${nm(setter)}</div><div class="sub">write a secret word for ${nm(p)}</div><div class="det">${nm(p)}, look away 🙈</div>`;
   const form = $('form', 'wordform');
-  form.innerHTML = `<input class="wf-word" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="18" placeholder="secret word">
+  form.innerHTML = `<input class="wf-word" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="18" placeholder="${{ en: 'secret word', ru: 'загаданное слово', hy: 'գաղտնի բառ' }[lang]}">
     <input class="wf-hint" type="text" autocomplete="off" maxlength="24" placeholder="Hint for ${esc(S.players[p])} (optional)">
-    <div class="wf-err"></div>`;
-  const go = $('button', 'go', 'Done — hand over'); go.type = 'submit'; form.appendChild(go);
+    <div class="wf-err"></div>
+    <div class="wf-ideas"><div class="wf-il"><span>Need an idea?</span><button type="button" class="wf-more">↻ 3 more</button></div><div class="wf-chips"></div></div>`;
+  const go = $('button', 'go', 'Done — hand over'); go.type = 'submit'; form.insertBefore(go, form.querySelector('.wf-ideas'));
   h.appendChild(form);
   const back = $('button', 'hback', `‹  ${G[gid].name} menu`); back.onclick = () => { h.remove(); toMenu(gid); };
   h.appendChild(back);
   document.body.appendChild(h);
-  const inp = form.querySelector('.wf-word'), err = form.querySelector('.wf-err');
+  const inp = form.querySelector('.wf-word'), hint = form.querySelector('.wf-hint'), err = form.querySelector('.wf-err'), chips = form.querySelector('.wf-chips');
   inp.addEventListener('input', () => (err.textContent = ''));
+  // three random words from the solo lists (any theme, any length), each with its theme as a hint
+  const pool = []; for (const [cat, str] of Object.entries(WORDS[lang])) for (const w of str.split(/\s+/)) if ([...w].length >= 4) pool.push([w, cat]);
+  const deal = () => {
+    const pick = []; while (pick.length < 3) { const x = pool[Math.floor(Math.random() * pool.length)]; if (!pick.includes(x)) pick.push(x); }
+    chips.innerHTML = ''; for (const [w, cat] of pick) { const b = $('button', 'wf-chip', `<b>${w}</b><span>${esc(cat)}</span>`); b.type = 'button'; b.onclick = () => { inp.value = w; hint.value = cat; err.textContent = ''; }; chips.appendChild(b); }
+  };
+  form.querySelector('.wf-more').onclick = deal; deal();
   setTimeout(() => inp.focus(), 50);
   form.onsubmit = (e) => {
     e.preventDefault();
-    const w = normWord(inp.value), sc = scriptOf(w), len = [...w].length;
-    if (!sc || len < 3 || len > 18) {
-      err.textContent = /\s/.test(w) ? 'One word only — no spaces.' : /\p{L}/u.test(w) && !/^\p{L}+$/u.test(w) ? 'Letters only — no digits or symbols.' : !sc && /^\p{L}+$/u.test(w) ? 'Use one alphabet, not a mix.' : 'Between 3 and 18 letters, please.';
+    const w = normWord(inp.value), len = [...w].length;
+    if (scriptOf(w) !== lang) {
+      const other = scriptOf(w);
+      err.textContent = !w ? 'Type a word first.' : /\s/.test(w) ? 'One word only — no spaces.' : other && other !== 'x' ? `This round is in ${LNAME[lang]} — switch your keyboard to ${LNAME[lang]}.` : `Only ${LNAME[lang]} letters, please.`;
       return;
     }
-    r.words[p] = { w, h: form.querySelector('.wf-hint').value.trim().slice(0, 24) };
+    if (len < 3 || len > 18) { err.textContent = 'Between 3 and 18 letters, please.'; return; }
+    r.words[p] = { w, h: hint.value.trim().slice(0, 24) };
     store.save(); h.remove(); handoff(gid, ri, p);
   };
 }
@@ -2040,7 +2076,7 @@ function openGame(ctx) {
   document.documentElement.style.setProperty('--acc', getComputedStyle(document.documentElement).getPropertyValue('--' + gid).trim() || '#FFC247');
   app.innerHTML = '';
   const round = duel ? duelOf(gid).rounds[ri] : null, mode = round ? round.mode : 'same';
-  const P = round && round.mode === 'set' ? { word: round.words[p].w, cat: round.words[p].h || `${S.players[1 - p]}'s word`, lang: scriptOf(round.words[p].w) || 'x', custom: 1 } : GEN[gid](t, num);
+  const P = round && round.mode === 'set' ? { word: round.words[p].w, cat: round.words[p].h || `${S.players[1 - p]}'s word`, lang: langOf(t), custom: 1 } : GEN[gid](t, num);
 
   const bar = $('div', 'gbar');
   navPush();
