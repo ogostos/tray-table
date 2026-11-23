@@ -982,6 +982,111 @@ const Core = (() => {
   }
 
 
+  // ---------- word games ----------
+  const ALPHA = { en: 'abcdefghijklmnopqrstuvwxyz', ru: 'абвгдежзийклмнопрстуфхцчшщъыьэюя' };
+  function wordPool(WL, lang) { const out = []; for (const [cat, str] of Object.entries(WL[lang])) for (const w of str.split(/\s+/)) if (w) out.push([w, cat]); return out; }
+  const HM_LEN = [[4, 5], [6, 7], [8, 9], [10, 99]];
+  function genHangman(WL, lang, t, num) {
+    const [a, b] = HM_LEN[t];
+    const pool = wordPool(WL, lang).filter(([w]) => w.length >= a && w.length <= b);
+    const perm = shuffle(seedOf('hm-' + lang, t, 0), [...pool.keys()]); // fixed order per level: no repeats until the list runs out
+    const [word, cat] = pool[perm[(num - 1) % pool.length]];
+    return { word, cat, lang, tier: t, poolSize: pool.length };
+  }
+  function genWordSearch(WL, lang, t, num) {
+    const R = seedOf('ws-' + lang, t, num);
+    const n = [8, 10, 12, 14][t], want = [6, 8, 10, 12][t];
+    const D8 = [[0, 1], [1, 0], [1, 1], [-1, 1], [0, -1], [-1, 0], [-1, -1], [1, -1]];
+    const dirs = [D8.slice(0, 2), D8.slice(0, 3), D8.slice(0, 6), D8][t];
+    const cats = Object.keys(WL[lang]);
+    const letters = Object.values(WL[lang]).join('').replace(/\s/g, ''); // natural letter frequencies for the filler
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const cat = cats[rint(R, cats.length)];
+      const words = shuffle(R, WL[lang][cat].split(/\s+/).filter((w) => w.length >= 3 && w.length <= n));
+      const grid = new Array(n * n).fill(''), placed = [];
+      for (const w of words) {
+        if (placed.length >= want) break;
+        if (placed.some((p) => p.w.includes(w) || w.includes(p.w))) continue;
+        for (let tr = 0; tr < 150; tr++) {
+          const [dy, dx] = dirs[rint(R, dirs.length)], y0 = rint(R, n), x0 = rint(R, n);
+          const ye = y0 + dy * (w.length - 1), xe = x0 + dx * (w.length - 1);
+          if (ye < 0 || ye >= n || xe < 0 || xe >= n) continue;
+          const cells = [...w].map((_, k) => (y0 + dy * k) * n + x0 + dx * k);
+          if (cells.some((c, k) => grid[c] && grid[c] !== w[k])) continue;
+          cells.forEach((c, k) => (grid[c] = w[k]));
+          placed.push({ w, cells });
+          break;
+        }
+      }
+      if (placed.length < want) continue;
+      for (let i = 0; i < n * n; i++) if (!grid[i]) grid[i] = letters[rint(R, letters.length)];
+      // make sure no word appears twice (a filler letter could accidentally spell one again)
+      return { n, grid, words: placed.sort((a, b) => (a.w < b.w ? -1 : 1)), cat, lang, tier: t };
+    }
+  }
+
+  // ---------- TENTS ----------
+  function tentsMatch(n, trees, tents) { // perfect tent↔tree pairing, orthogonal neighbours only
+    const treeIdx = new Map(trees.map((c, i) => [c, i])), adj = tents.map((c) => { const r = Math.floor(c / n), x = c % n; return [[r - 1, x], [r + 1, x], [r, x - 1], [r, x + 1]].filter(([a, b]) => a >= 0 && b >= 0 && a < n && b < n).map(([a, b]) => treeIdx.get(a * n + b)).filter((v) => v != null); });
+    const own = new Array(trees.length).fill(-1);
+    const aug = (u, seen) => { for (const v of adj[u]) { if (seen[v]) continue; seen[v] = 1; if (own[v] < 0 || aug(own[v], seen)) { own[v] = u; return true; } } return false; };
+    for (let u = 0; u < tents.length; u++) if (!aug(u, new Array(trees.length).fill(0))) return false;
+    return tents.length === trees.length;
+  }
+  function tentsCount(n, trees, rows, cols, limit = 2) {
+    const isTree = new Set(trees), cand = new Array(n * n).fill(false);
+    for (const c of trees) { const r = Math.floor(c / n), x = c % n; for (const [a, b] of [[r - 1, x], [r + 1, x], [r, x - 1], [r, x + 1]]) if (a >= 0 && b >= 0 && a < n && b < n && !isTree.has(a * n + b)) cand[a * n + b] = true; }
+    // cells left in each column (for pruning)
+    const colLeft = new Array(n * n).fill(0);
+    for (let x = 0; x < n; x++) { let k = 0; for (let r = n - 1; r >= 0; r--) { colLeft[r * n + x] = k; if (cand[r * n + x]) k++; } }
+    const tent = new Uint8Array(n * n), rc = new Array(n).fill(0), cc = new Array(n).fill(0);
+    let count = 0;
+    const touches = (r, x) => [[r - 1, x - 1], [r - 1, x], [r - 1, x + 1], [r, x - 1]].some(([a, b]) => a >= 0 && b >= 0 && b < n && tent[a * n + b]);
+    (function rec(i) {
+      if (count >= limit) return;
+      if (i === n * n) { if (cc.every((v, x) => v === cols[x])) { const ts = []; tent.forEach((v, k) => v && ts.push(k)); if (tentsMatch(n, trees, ts)) count++; } return; }
+      const r = Math.floor(i / n), x = i % n;
+      const endRow = x === n - 1;
+      const tryV = (v) => {
+        if (v) { tent[i] = 1; rc[r]++; cc[x]++; }
+        const ok = (!endRow || rc[r] === rows[r]) && cc[x] + colLeft[i] >= cols[x] && cc[x] <= cols[x];
+        if (ok) rec(i + 1);
+        if (v) { tent[i] = 0; rc[r]--; cc[x]--; }
+      };
+      if (cand[i] && rc[r] < rows[r] && cc[x] < cols[x] && !touches(r, x)) tryV(1);
+      if (count < limit) tryV(0);
+    })(0);
+    return count;
+  }
+  function genTents(t, num) {
+    const R = seedOf('tn', t, num);
+    const n = [6, 8, 10, 12][t];
+    for (let attempt = 0; attempt < 400; attempt++) {
+      const tents = [], isT = new Uint8Array(n * n);
+      const target = Math.round(n * n * [0.17, 0.18, 0.19, 0.2][t]);
+      for (const c of shuffle(R, [...Array(n * n).keys()])) {
+        if (tents.length >= target) break;
+        const r = Math.floor(c / n), x = c % n;
+        let ok = true;
+        for (let dy = -1; dy <= 1 && ok; dy++) for (let dx = -1; dx <= 1; dx++) { const a = r + dy, b = x + dx; if (a >= 0 && b >= 0 && a < n && b < n && isT[a * n + b]) { ok = false; break; } }
+        if (ok) { isT[c] = 1; tents.push(c); }
+      }
+      const isTree = new Uint8Array(n * n), trees = [];
+      let ok = true;
+      for (const c of shuffle(R, tents.slice())) {
+        const r = Math.floor(c / n), x = c % n;
+        const opts = [[r - 1, x], [r + 1, x], [r, x - 1], [r, x + 1]].filter(([a, b]) => a >= 0 && b >= 0 && a < n && b < n && !isT[a * n + b] && !isTree[a * n + b]);
+        if (!opts.length) { ok = false; break; }
+        const [a, b] = opts[rint(R, opts.length)]; isTree[a * n + b] = 1; trees.push(a * n + b);
+      }
+      if (!ok) continue;
+      const rows = new Array(n).fill(0), cols = new Array(n).fill(0);
+      tents.forEach((c) => { rows[Math.floor(c / n)]++; cols[c % n]++; });
+      if (tentsCount(n, trees, rows, cols, 2) !== 1) continue;
+      return { n, trees: trees.sort((a, b) => a - b), rows, cols, solution: tents.sort((a, b) => a - b), tier: t };
+    }
+  }
+
   // ---------- solution helpers (used by "Give up" to show the answer) ----------
   function loPlan(board, n) { // fewest presses that clear the board
     const N = n * n, rows = [];
@@ -1076,7 +1181,7 @@ const Core = (() => {
     return { par: +par, vehicles, tier: t, bankSize: list.length };
   }
 
-  return { rng, hashStr, TIER_NAMES, seedOf, loPlan, ubPath, pourPlan, floodPlan, genZip, genBridges, bridgeNeighbours, bridgesCross, genNonogram, lineClue, nonogramSolvable, genShikaku, shikakuCount, genMines, msNeighbours, genOneLine, genTango, tangoCount, tangoCheck, genHue, getUnblock, loToggle, genLightsOut, ubSolve, genQueens, queensCount, gen24, solve24, fr, fop, genKenKen, cageOk,
+  return { rng, hashStr, TIER_NAMES, seedOf, ALPHA, genHangman, genWordSearch, genTents, tentsCount, tentsMatch, loPlan, ubPath, pourPlan, floodPlan, genZip, genBridges, bridgeNeighbours, bridgesCross, genNonogram, lineClue, nonogramSolvable, genShikaku, shikakuCount, genMines, msNeighbours, genOneLine, genTango, tangoCount, tangoCheck, genHue, getUnblock, loToggle, genLightsOut, ubSolve, genQueens, queensCount, gen24, solve24, fr, fop, genKenKen, cageOk,
     genLinks, genPipes, pipesConnected, rotCW, genPour, pourOK, pourSolved, pourSolve, CAP, genFlood, floodRegion, floodApply };
 })();
 if (typeof module !== 'undefined') module.exports = Core;

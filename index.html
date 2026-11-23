@@ -15,7 +15,7 @@
 <style>
 :root{
   --bg:#0B0D12;--s1:#12151D;--s2:#191D28;--s3:#222735;--line:#262B39;--tx:#ECEEF3;--mute:#8C93A6;--dim:#596075;
-  --lo:#FFC247;--ub:#FF6B5E;--qn:#B794FF;--t24:#3BE3C3;--kk:#A6E35B;--lk:#FF6FB5;--pp:#4CA8FF;--pr:#FF9F43;--fl:#3DDC84;--g2:#F2B179;--zp:#7C8CFF;--hb:#C7A27A;--sk:#FF8A65;--ng:#F5E663;--ms:#9AA5B8;--ol:#9EE7FF;--tg:#FFB86B;--hu:#E58CFF;--acc:#FFC247;
+  --lo:#FFC247;--ub:#FF6B5E;--qn:#B794FF;--t24:#3BE3C3;--kk:#A6E35B;--lk:#FF6FB5;--pp:#4CA8FF;--pr:#FF9F43;--fl:#3DDC84;--g2:#F2B179;--hm:#FF8FA3;--ws:#5EB1FF;--tn:#3DDC84;--zp:#7C8CFF;--hb:#C7A27A;--sk:#FF8A65;--ng:#F5E663;--ms:#9AA5B8;--ol:#9EE7FF;--tg:#FFB86B;--hu:#E58CFF;--acc:#FFC247;
   --font:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -303,6 +303,51 @@ input{font:inherit;color:inherit}
 .ms-c.mine{background:#3A1A20}.ms-c.mine::after{content:"✸";color:#FF6B6B}
 .ms-c.boom{background:#FF5A5F}.ms-c.boom::after{color:#fff}
 .ms-grid.done .ms-c:not(.o){background:#2A4A3A}
+
+/* ---------- HANGMAN ---------- */
+.hm-cat{font-size:13px;font-weight:700;color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,var(--s1));border:1px solid color-mix(in srgb,var(--acc) 35%,transparent);padding:6px 12px;border-radius:999px}
+.hm-fig{width:min(100%,240px)}.hm-fig svg{display:block;width:100%}
+.hm-fig .gal path{stroke:#5A6175;stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.hm-fig .man *{stroke:#FF8FA3;stroke-width:5;fill:none;stroke-linecap:round;animation:pop .25s}
+.hm-fig.lost .man *{stroke:#FF5A5F}.hm-fig .eyes path{stroke:#FF5A5F;stroke-width:2;stroke-linecap:round}
+.hm-word{display:flex;gap:min(6px,1.2vw);justify-content:center;flex-wrap:nowrap;width:100%}
+.hm-word span{flex:0 1 calc((100% - 8px * var(--n)) / var(--n));max-width:34px;height:42px;border-bottom:3px solid #4A5165;display:grid;place-items:end center;padding-bottom:3px;font-size:clamp(17px,6vw,26px);font-weight:800;text-transform:uppercase}
+.hm-word span.on{border-color:var(--acc)}.hm-word span.missed{color:#FF6B6B;border-color:#FF6B6B}
+.hm-word.won span{color:#3DDC84;border-color:#3DDC84}
+.hm-kb{display:flex;flex-direction:column;gap:6px;width:100%}
+.hm-row{display:flex;gap:4px;justify-content:center}
+.hm-key{flex:1 1 0;max-width:38px;height:46px;border-radius:9px;background:#2C3242;font-weight:800;font-size:17px;text-transform:uppercase;box-shadow:inset 0 -2px 0 rgba(0,0,0,.3)}
+.hm-key:active{background:#3A4152}
+.hm-key.hit{background:#1E4A33;color:#3DDC84;box-shadow:none}.hm-key.miss{background:#2A1A1E;color:#7A4A52;box-shadow:none}
+/* ---------- WORD SEARCH ---------- */
+.ws-board{position:relative;width:min(100%,410px);aspect-ratio:1;background:#12151D;border-radius:16px;border:1px solid var(--line);touch-action:none}
+.ws-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.ws-svg line.f{opacity:.45}
+.ws-letters{position:absolute;inset:0;display:grid;grid-template-columns:repeat(var(--n),1fr)}
+.ws-letters span{display:grid;place-items:center;font-weight:800;font-size:calc(min(100vw - 32px, 410px) / var(--n) * .5);color:#ECEEF3;pointer-events:none}
+.ws-board.done{box-shadow:0 0 0 2px var(--ws),0 0 40px -10px var(--ws)}
+.ws-list{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:410px}
+.ws-list span{padding:5px 10px;border-radius:999px;background:var(--s1);border:1px solid var(--line);font-size:13.5px;font-weight:700;color:#C9CDD8}
+.ws-list span.done{text-decoration:line-through;color:#0B0D12;background:var(--fc);border-color:var(--fc);opacity:.85}
+/* ---------- TENTS ---------- */
+.tn{display:grid;gap:3px;width:min(100%,400px);touch-action:none}
+.tn-cnt{display:grid;place-items:center;font-weight:800;font-size:14px;color:#C9CDD8;min-height:22px}
+.tn-cnt.ok{color:#4A5165}.tn-cnt.over{color:#FF6B6B}
+.tn-c{aspect-ratio:1;border-radius:6px;background:#1A2A20;display:grid;place-items:center;padding:12%;position:relative}
+.tn-c svg{width:100%;height:100%;display:block}
+.tn-c.tree{background:#163322}
+.tn-c.grass{background:#25472F}.tn-c.grass::after{content:"";width:22%;height:22%;border-radius:50%;background:#3E7A4F}
+.tn-c.tent{background:#3A2E18}.tn-c.bad{box-shadow:inset 0 0 0 2px #FF6B6B}
+.tn.done .tn-c.grass::after{opacity:0}
+/* ---------- WRITE A WORD ---------- */
+.wordform{display:flex;flex-direction:column;gap:10px;width:min(100%,340px);margin-top:6px}
+.wf-row{display:flex;gap:8px}
+.wordform input{flex:1;min-width:0;width:100%;height:54px;border-radius:14px;border:1.5px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;font-size:22px;font-weight:800;text-align:center;letter-spacing:.08em;outline:none;text-transform:lowercase}
+.wordform .wf-word{-webkit-text-security:disc}.wordform .wf-word.shown{-webkit-text-security:none}
+.wordform .wf-hint{font-size:15px;font-weight:600;letter-spacing:0;height:46px;text-transform:none;flex:none}
+.wf-eye{flex:none;width:54px;border-radius:14px;background:rgba(255,255,255,.12);font-size:20px}
+.wf-err{min-height:18px;color:#FFD0D0;font-size:13px}
+.wordform .go{width:100%}
 /* ---------- SHEETS ---------- */
 .solbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--s1);border-top:1px solid var(--line);padding:12px 16px calc(env(safe-area-inset-bottom) + 12px);box-shadow:0 -12px 30px rgba(0,0,0,.45);animation:up .25s ease-out}
 .solbar .sbt{max-width:448px;margin:0 auto 10px;font-size:14.5px;color:var(--mute)}.solbar .sbt b{color:var(--tx)}
@@ -347,6 +392,36 @@ body.has-bar #app{padding-bottom:170px}
 <body>
 <div id="app"></div>
 <script>
+// Word lists for Hangman and Word Search — common nouns only, grouped by theme.
+// Russian uses е for ё (players type е).
+const WORDS = {
+  en: {
+    'Animals': 'cat dog cow pig owl fox bear wolf lion frog duck goat deer seal crab swan horse tiger zebra camel whale shark eagle mouse sheep snake otter panda koala lemur moose bison goose raven rabbit donkey turtle parrot beaver monkey badger jaguar falcon lizard salmon walrus spider dolphin giraffe penguin hamster leopard octopus peacock gorilla buffalo cheetah ostrich lobster panther squirrel elephant flamingo kangaroo hedgehog antelope reindeer scorpion mosquito dinosaur crocodile chameleon butterfly porcupine alligator chimpanzee rhinoceros salamander woodpecker hummingbird caterpillar grasshopper hippopotamus armadillo orangutan rattlesnake stegosaurus tarantula',
+    'Food & drink': 'egg tea jam rice soup cake milk beer wine fish meat corn salt pear plum lime bread pasta pizza honey onion lemon mango melon olive apple grape bacon toast sushi steak juice coffee cheese butter cookie orange banana carrot potato tomato garlic pepper cherry noodle waffle muffin yogurt walnut almond peanut chicken lettuce cabbage biscuit pancake sausage avocado popcorn lasagna dumpling sandwich omelette pineapple chocolate spaghetti hamburger croissant raspberry blueberry cucumber zucchini broccoli mushroom pistachio watermelon strawberry gingerbread cauliflower marshmallow cheesecake grapefruit pomegranate tangerine blackberry peppermint buttermilk cinnamon meatball pepperoni lemonade milkshake cappuccino',
+    'At home': 'bed cup key lamp sofa door wall roof sink bath fork bowl desk shelf chair table plate spoon towel clock knife glass stove oven pillow mirror carpet window drawer kettle candle basket bucket ladder hammer blanket curtain cushion freezer toaster cupboard doorbell mattress umbrella fireplace staircase bookshelf wardrobe microwave dishwasher refrigerator thermometer screwdriver wallpaper lampshade nightstand tablecloth houseplant windowsill chandelier toothbrush thermostat',
+    'Nature & weather': 'sun sky sea rain snow wind fog ice hill lake moon star leaf tree rock sand wave cloud storm frost river ocean beach field grass flower forest island desert valley canyon meadow jungle glacier volcano thunder rainbow sunrise sunset blizzard mountain lightning waterfall avalanche hurricane snowflake earthquake tornado landscape horizon peninsula thunderstorm rainforest sandstorm constellation archipelago countryside snowstorm',
+    'Jobs': 'chef cook judge pilot nurse baker actor guard tailor farmer doctor dancer singer artist lawyer dentist plumber teacher soldier painter barber banker waiter cashier sailor writer surgeon builder engineer designer gardener mechanic musician scientist architect carpenter detective firefighter journalist programmer accountant electrician pharmacist astronaut librarian photographer veterinarian mathematician psychologist receptionist hairdresser translator lifeguard shopkeeper policeman archaeologist',
+    'Travel & places': 'map bus taxi city town road park port hotel train plane museum bridge castle harbor airport station village capital country tourist passport luggage suitcase backpack compass tunnel highway airline cathedral monument lighthouse destination adventure souvenir sightseeing skyscraper motorcycle helicopter submarine roundabout itinerary boulevard marketplace underground',
+    'Sports & games': 'ball goal golf chess race team ski skate tennis hockey soccer boxing karate cycling archery fencing surfing bowling running jogging rowing climbing swimming marathon football baseball handball volleyball basketball skateboard snowboard trampoline gymnastics wrestling badminton champion stadium referee trophy medal puzzle domino tournament goalkeeper motorsport decathlon parachute scoreboard crossword backgammon',
+    'Music & art': 'song band drum harp opera piano flute guitar violin cello rhythm melody choir dance poem novel paint brush canvas statue gallery concert trumpet orchestra saxophone keyboard harmonica accordion symphony microphone sculpture portrait painting festival ballet theater xylophone tambourine masterpiece photography composition watercolor illustration calligraphy',
+    'Body & clothes': 'arm leg eye ear nose hand foot knee neck hair face lip toe tooth heart brain shirt dress skirt scarf glove jacket sweater trousers pocket button collar boots shoes socks hat coat belt necklace bracelet earring sneakers pyjamas raincoat sunglasses shoulder elbow finger stomach eyebrow skeleton moustache fingernail eyelashes waistcoat tracksuit turtleneck nightgown cardigan shoelace handkerchief wristwatch',
+    'Science & tech': 'atom cell gene virus robot laser rocket planet comet orbit magnet engine motor phone radio camera laptop tablet screen cable battery printer computer internet software satellite telescope microscope electron molecule oxygen hydrogen gravity galaxy universe asteroid algorithm calculator spaceship headphones electricity experiment laboratory chemistry astronomy technology smartphone magnetism evolution spacecraft',
+  },
+  ru: {
+    'Животные': 'кот пес еж лев волк лиса заяц тигр слон конь бобр енот лось олень медведь корова коза свинья утка гусь сова орел ворона лебедь курица петух собака кошка мышь крыса белка хомяк кролик лошадь осел верблюд жираф зебра обезьяна пингвин дельфин кит акула тюлень морж черепаха ящерица змея крокодил носорог бегемот кенгуру панда коала леопард гепард ягуар пантера павлин попугай фламинго страус барсук хорек выдра бизон лягушка паук бабочка муравей пчела стрекоза кузнечик комар улитка осьминог медуза краб омар дятел соловей воробей снегирь хамелеон аллигатор муравьед гиппопотам тираннозавр дикобраз броненосец орангутанг шимпанзе гусеница головастик росомаха',
+    'Еда и напитки': 'суп чай сок сыр хлеб мясо рыба рис мед торт каша борщ блин масло яйцо соль сахар молоко кофе пирог пицца салат котлета пельмени вареники сосиска колбаса омлет макароны картошка морковь капуста свекла огурец помидор перец лук чеснок яблоко груша слива вишня малина клубника черника арбуз дыня банан апельсин лимон виноград ананас абрикос персик орех шоколад конфета печенье мороженое варенье йогурт творог сметана кефир компот лимонад бутерброд шашлык пирожок сырник оладьи сгущенка мармелад простокваша фрикаделька земляника запеканка смородина газировка грейпфрут мандарин вермишель гамбургер баклажан кукуруза',
+    'Дом': 'дом стол стул шкаф диван кровать лампа дверь окно стена пол потолок крыша ковер зеркало полка кресло ванна душ кран чашка тарелка ложка вилка нож кастрюля сковорода чайник плита духовка холодильник подушка одеяло занавеска шторы часы ключ лестница балкон подвал чердак камин гардероб комод вешалка табуретка микроволновка пылесос утюг телевизор посудомойка подоконник выключатель сковородка подсвечник пододеяльник наволочка умывальник светильник',
+    'Природа и погода': 'лес луг поле река озеро море океан гора холм остров берег пляж песок камень скала вулкан ледник пустыня степь болото ручей водопад небо солнце луна звезда облако туча дождь снег ветер град туман гроза радуга молния гром мороз иней сугроб метель буря ураган листопад рассвет закат горизонт цветок трава дерево береза дуб сосна ель клен ромашка подснежник землетрясение наводнение полнолуние колокольчик одуванчик незабудка созвездие заморозки',
+    'Профессии': 'врач повар пилот судья актер певец юрист моряк швея пекарь портной учитель продавец водитель строитель инженер художник музыкант писатель журналист фотограф программист бухгалтер парикмахер почтальон пожарный полицейский космонавт архитектор садовник фермер плотник сантехник электрик механик официант библиотекарь стоматолог ветеринар аптекарь переводчик дирижер экскурсовод дрессировщик стюардесса тракторист спасатель экономист кондитер психолог',
+    'Путешествия': 'карта город улица мост порт вокзал поезд самолет автобус такси метро трамвай отель билет багаж чемодан рюкзак паспорт виза граница столица деревня музей замок собор площадь памятник фонтан маяк аэропорт турист экскурсия путеводитель компас палатка маршрут сувенир открытка гостиница каникулы отпуск небоскреб электричка автостанция набережная пересадка путешествие бронирование вертолет мотоцикл теплоход',
+    'Спорт и игры': 'мяч гол лыжи коньки хоккей футбол теннис бокс бег плавание борьба гимнастика волейбол баскетбол гандбол бадминтон шахматы шашки домино стадион команда тренер медаль кубок рекорд марафон велосипед самокат скейтборд сноуборд батут фехтование каратэ гольф регби серфинг альпинизм чемпион тренировка соревнование олимпиада болельщик чемпионат скалолазание фигурист биатлон триатлон кроссворд',
+    'Музыка и искусство': 'песня танец опера балет концерт оркестр хор гитара скрипка пианино рояль барабан флейта труба арфа виолончель саксофон аккордеон баян гармонь мелодия ритм нота музыка картина кисть краска холст портрет пейзаж скульптура статуя галерея театр сцена роман стих поэма симфония фестиваль микрофон композитор фортепиано барабанщик иллюстрация фотография натюрморт балалайка ксилофон',
+    'Тело и одежда': 'рука нога глаз ухо нос рот зуб губа лоб щека шея плечо локоть палец колено спина живот сердце волосы ресница бровь шапка шарф перчатки варежки куртка пальто плащ свитер рубашка футболка платье юбка брюки джинсы носки ботинки сапоги кроссовки туфли пижама галстук пуговица карман ремень зонт очки сумка подбородок позвоночник босоножки водолазка толстовка комбинезон кардиган рукавицы ожерелье',
+    'Наука и техника': 'атом ген вирус клетка робот лазер ракета планета комета орбита магнит мотор двигатель телефон радио камера ноутбук планшет экран кабель батарейка принтер компьютер интернет программа спутник телескоп микроскоп электрон молекула кислород водород гравитация галактика вселенная астероид алгоритм калькулятор наушники лаборатория эксперимент электричество астрономия термометр смартфон клавиатура изобретение микросхема физика химия',
+  },
+};
+if (typeof module !== 'undefined') module.exports = WORDS;
+
 // ===== Shared puzzle core: seeded generators + solvers (works in browser and node) =====
 const Core = (() => {
   function hashStr(s) {
@@ -1331,6 +1406,111 @@ const Core = (() => {
   }
 
 
+  // ---------- word games ----------
+  const ALPHA = { en: 'abcdefghijklmnopqrstuvwxyz', ru: 'абвгдежзийклмнопрстуфхцчшщъыьэюя' };
+  function wordPool(WL, lang) { const out = []; for (const [cat, str] of Object.entries(WL[lang])) for (const w of str.split(/\s+/)) if (w) out.push([w, cat]); return out; }
+  const HM_LEN = [[4, 5], [6, 7], [8, 9], [10, 99]];
+  function genHangman(WL, lang, t, num) {
+    const [a, b] = HM_LEN[t];
+    const pool = wordPool(WL, lang).filter(([w]) => w.length >= a && w.length <= b);
+    const perm = shuffle(seedOf('hm-' + lang, t, 0), [...pool.keys()]); // fixed order per level: no repeats until the list runs out
+    const [word, cat] = pool[perm[(num - 1) % pool.length]];
+    return { word, cat, lang, tier: t, poolSize: pool.length };
+  }
+  function genWordSearch(WL, lang, t, num) {
+    const R = seedOf('ws-' + lang, t, num);
+    const n = [8, 10, 12, 14][t], want = [6, 8, 10, 12][t];
+    const D8 = [[0, 1], [1, 0], [1, 1], [-1, 1], [0, -1], [-1, 0], [-1, -1], [1, -1]];
+    const dirs = [D8.slice(0, 2), D8.slice(0, 3), D8.slice(0, 6), D8][t];
+    const cats = Object.keys(WL[lang]);
+    const letters = Object.values(WL[lang]).join('').replace(/\s/g, ''); // natural letter frequencies for the filler
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const cat = cats[rint(R, cats.length)];
+      const words = shuffle(R, WL[lang][cat].split(/\s+/).filter((w) => w.length >= 3 && w.length <= n));
+      const grid = new Array(n * n).fill(''), placed = [];
+      for (const w of words) {
+        if (placed.length >= want) break;
+        if (placed.some((p) => p.w.includes(w) || w.includes(p.w))) continue;
+        for (let tr = 0; tr < 150; tr++) {
+          const [dy, dx] = dirs[rint(R, dirs.length)], y0 = rint(R, n), x0 = rint(R, n);
+          const ye = y0 + dy * (w.length - 1), xe = x0 + dx * (w.length - 1);
+          if (ye < 0 || ye >= n || xe < 0 || xe >= n) continue;
+          const cells = [...w].map((_, k) => (y0 + dy * k) * n + x0 + dx * k);
+          if (cells.some((c, k) => grid[c] && grid[c] !== w[k])) continue;
+          cells.forEach((c, k) => (grid[c] = w[k]));
+          placed.push({ w, cells });
+          break;
+        }
+      }
+      if (placed.length < want) continue;
+      for (let i = 0; i < n * n; i++) if (!grid[i]) grid[i] = letters[rint(R, letters.length)];
+      // make sure no word appears twice (a filler letter could accidentally spell one again)
+      return { n, grid, words: placed.sort((a, b) => (a.w < b.w ? -1 : 1)), cat, lang, tier: t };
+    }
+  }
+
+  // ---------- TENTS ----------
+  function tentsMatch(n, trees, tents) { // perfect tent↔tree pairing, orthogonal neighbours only
+    const treeIdx = new Map(trees.map((c, i) => [c, i])), adj = tents.map((c) => { const r = Math.floor(c / n), x = c % n; return [[r - 1, x], [r + 1, x], [r, x - 1], [r, x + 1]].filter(([a, b]) => a >= 0 && b >= 0 && a < n && b < n).map(([a, b]) => treeIdx.get(a * n + b)).filter((v) => v != null); });
+    const own = new Array(trees.length).fill(-1);
+    const aug = (u, seen) => { for (const v of adj[u]) { if (seen[v]) continue; seen[v] = 1; if (own[v] < 0 || aug(own[v], seen)) { own[v] = u; return true; } } return false; };
+    for (let u = 0; u < tents.length; u++) if (!aug(u, new Array(trees.length).fill(0))) return false;
+    return tents.length === trees.length;
+  }
+  function tentsCount(n, trees, rows, cols, limit = 2) {
+    const isTree = new Set(trees), cand = new Array(n * n).fill(false);
+    for (const c of trees) { const r = Math.floor(c / n), x = c % n; for (const [a, b] of [[r - 1, x], [r + 1, x], [r, x - 1], [r, x + 1]]) if (a >= 0 && b >= 0 && a < n && b < n && !isTree.has(a * n + b)) cand[a * n + b] = true; }
+    // cells left in each column (for pruning)
+    const colLeft = new Array(n * n).fill(0);
+    for (let x = 0; x < n; x++) { let k = 0; for (let r = n - 1; r >= 0; r--) { colLeft[r * n + x] = k; if (cand[r * n + x]) k++; } }
+    const tent = new Uint8Array(n * n), rc = new Array(n).fill(0), cc = new Array(n).fill(0);
+    let count = 0;
+    const touches = (r, x) => [[r - 1, x - 1], [r - 1, x], [r - 1, x + 1], [r, x - 1]].some(([a, b]) => a >= 0 && b >= 0 && b < n && tent[a * n + b]);
+    (function rec(i) {
+      if (count >= limit) return;
+      if (i === n * n) { if (cc.every((v, x) => v === cols[x])) { const ts = []; tent.forEach((v, k) => v && ts.push(k)); if (tentsMatch(n, trees, ts)) count++; } return; }
+      const r = Math.floor(i / n), x = i % n;
+      const endRow = x === n - 1;
+      const tryV = (v) => {
+        if (v) { tent[i] = 1; rc[r]++; cc[x]++; }
+        const ok = (!endRow || rc[r] === rows[r]) && cc[x] + colLeft[i] >= cols[x] && cc[x] <= cols[x];
+        if (ok) rec(i + 1);
+        if (v) { tent[i] = 0; rc[r]--; cc[x]--; }
+      };
+      if (cand[i] && rc[r] < rows[r] && cc[x] < cols[x] && !touches(r, x)) tryV(1);
+      if (count < limit) tryV(0);
+    })(0);
+    return count;
+  }
+  function genTents(t, num) {
+    const R = seedOf('tn', t, num);
+    const n = [6, 8, 10, 12][t];
+    for (let attempt = 0; attempt < 400; attempt++) {
+      const tents = [], isT = new Uint8Array(n * n);
+      const target = Math.round(n * n * [0.17, 0.18, 0.19, 0.2][t]);
+      for (const c of shuffle(R, [...Array(n * n).keys()])) {
+        if (tents.length >= target) break;
+        const r = Math.floor(c / n), x = c % n;
+        let ok = true;
+        for (let dy = -1; dy <= 1 && ok; dy++) for (let dx = -1; dx <= 1; dx++) { const a = r + dy, b = x + dx; if (a >= 0 && b >= 0 && a < n && b < n && isT[a * n + b]) { ok = false; break; } }
+        if (ok) { isT[c] = 1; tents.push(c); }
+      }
+      const isTree = new Uint8Array(n * n), trees = [];
+      let ok = true;
+      for (const c of shuffle(R, tents.slice())) {
+        const r = Math.floor(c / n), x = c % n;
+        const opts = [[r - 1, x], [r + 1, x], [r, x - 1], [r, x + 1]].filter(([a, b]) => a >= 0 && b >= 0 && a < n && b < n && !isT[a * n + b] && !isTree[a * n + b]);
+        if (!opts.length) { ok = false; break; }
+        const [a, b] = opts[rint(R, opts.length)]; isTree[a * n + b] = 1; trees.push(a * n + b);
+      }
+      if (!ok) continue;
+      const rows = new Array(n).fill(0), cols = new Array(n).fill(0);
+      tents.forEach((c) => { rows[Math.floor(c / n)]++; cols[c % n]++; });
+      if (tentsCount(n, trees, rows, cols, 2) !== 1) continue;
+      return { n, trees: trees.sort((a, b) => a - b), rows, cols, solution: tents.sort((a, b) => a - b), tier: t };
+    }
+  }
+
   // ---------- solution helpers (used by "Give up" to show the answer) ----------
   function loPlan(board, n) { // fewest presses that clear the board
     const N = n * n, rows = [];
@@ -1425,7 +1605,7 @@ const Core = (() => {
     return { par: +par, vehicles, tier: t, bankSize: list.length };
   }
 
-  return { rng, hashStr, TIER_NAMES, seedOf, loPlan, ubPath, pourPlan, floodPlan, genZip, genBridges, bridgeNeighbours, bridgesCross, genNonogram, lineClue, nonogramSolvable, genShikaku, shikakuCount, genMines, msNeighbours, genOneLine, genTango, tangoCount, tangoCheck, genHue, getUnblock, loToggle, genLightsOut, ubSolve, genQueens, queensCount, gen24, solve24, fr, fop, genKenKen, cageOk,
+  return { rng, hashStr, TIER_NAMES, seedOf, ALPHA, genHangman, genWordSearch, genTents, tentsCount, tentsMatch, loPlan, ubPath, pourPlan, floodPlan, genZip, genBridges, bridgeNeighbours, bridgesCross, genNonogram, lineClue, nonogramSolvable, genShikaku, shikakuCount, genMines, msNeighbours, genOneLine, genTango, tangoCount, tangoCheck, genHue, getUnblock, loToggle, genLightsOut, ubSolve, genQueens, queensCount, gen24, solve24, fr, fop, genKenKen, cageOk,
     genLinks, genPipes, pipesConnected, rotCW, genPour, pourOK, pourSolved, pourSolve, CAP, genFlood, floodRegion, floodApply };
 })();
 if (typeof module !== 'undefined') module.exports = Core;
@@ -1494,7 +1674,21 @@ COLOUR_GAMES.push(
     rules: ['Divide the whole grid into <b>rectangles</b>.', 'Every rectangle holds <b>exactly one number</b>, and that number is its <b>area</b> (a 6 can be 2×3 or 1×6).', 'Drag from corner to corner to draw a rectangle; tap one to remove it. Fastest time wins.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#10131B"/><rect x="5" y="5" width="17" height="24" rx="3" fill="#FF8A65" opacity=".85"/><rect x="24" y="5" width="17" height="11" rx="3" fill="#5EB1FF" opacity=".85"/><rect x="24" y="18" width="17" height="23" rx="3" fill="#3DDC84" opacity=".85"/><rect x="5" y="31" width="17" height="10" rx="3" fill="#FFC247" opacity=".85"/>${[[13.5,19,6],[32.5,13.5,2],[32.5,31.5,4],[13.5,38.5,2]].map(([x,y,k])=>`<text x="${x}" y="${y}" font-size="9" font-weight="900" text-anchor="middle" fill="#0B0D12" font-family="system-ui">${k}</text>`).join('')}</svg>`, mount: mountSK },
 );
-const GAMES = [...COLOUR_GAMES,
+COLOUR_GAMES.push(
+  { id: 'tn', sec: 'c', name: 'Tents', color: 'var(--tn)', metric: 'time', desc: 'Pitch a tent beside every tree. Tents never touch.',
+    rules: ['Every <b>tree</b> gets its own <b>tent</b> right next to it (up, down, left or right).', 'Tents <b>never touch</b> each other — not even diagonally.', 'The numbers say how many tents are in each <b>row</b> and <b>column</b>. Tap once for grass (a note), twice for a tent; drag to paint grass. One answer per puzzle.'],
+    icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#14221A"/><g transform="translate(4 5) scale(.5)">${'<path d="M20 4 31 19h-5l7 9H7l7-9H9Z" fill="#3DDC84"/><rect x="18" y="28" width="4" height="7" rx="1" fill="#A0724A"/>'}</g><g transform="translate(22 5) scale(.5)"><path d="M20 7 36 33H4Z" fill="#FFB020"/><path d="M20 15 27 33H13Z" fill="#7A4A10"/></g><g transform="translate(22 23) scale(.5)">${'<path d="M20 4 31 19h-5l7 9H7l7-9H9Z" fill="#3DDC84"/><rect x="18" y="28" width="4" height="7" rx="1" fill="#A0724A"/>'}</g><g transform="translate(4 23) scale(.5)"><path d="M20 7 36 33H4Z" fill="#FFB020"/><path d="M20 15 27 33H13Z" fill="#7A4A10"/></g></svg>`, mount: mountTN },
+);
+const WORD_GAMES = [
+  { id: 'hm', sec: 'w', lang: 1, setMode: 1, name: 'Hangman', color: 'var(--hm)', metric: 'moves', mlabel: 'Misses', mword: 'misses', mword1: 'miss', tierHint: ['4–5 letters', '6–7', '8–9', '10+'],
+    desc: 'Guess the word letter by letter. English or Russian.',
+    rules: ['Guess the hidden word one <b>letter</b> at a time. Right letters appear in the word; every wrong one adds a piece to the gallows.', 'Six misses and you\'re hanged. The keyboard shows what you\'ve tried: <b style="color:#3DDC84">green</b> is in the word, <b style="color:#FF6B6B">red</b> isn\'t.', 'Solo, the app picks a word and tells you its theme. With two players, each of you can secretly <b>write a word</b> for the other. Fewer misses wins.'],
+    icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#151924"/><path d="M8 38H24M14 38V8H30V13" stroke="#8C93A6" stroke-width="2.4" fill="none" stroke-linecap="round"/><g stroke="#FF8FA3" stroke-width="2.4" fill="none" stroke-linecap="round"><circle cx="30" cy="17.5" r="4.2"/><path d="M30 22V31M30 25l-5 4M30 25l5 4M30 31l-4 6"/></g><path d="M8 42h4M15 42h4M22 42h4" stroke="#ECEEF3" stroke-width="1.8" stroke-linecap="round"/></svg>`, mount: mountHM },
+  { id: 'ws', sec: 'w', lang: 1, name: 'Word Search', color: 'var(--ws)', metric: 'time', desc: 'Find the hidden words in the letter grid. English or Russian.',
+    rules: ['Every grid hides a list of words on one <b>theme</b>.', 'Drag across the letters in a straight line to circle a word. Easy uses across and down only; harder levels add diagonals and backwards words.', 'Find them all. Fastest time wins.'],
+    icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#151924"/><line x1="10" y1="15" x2="36" y2="15" stroke="#5EB1FF" stroke-width="7" stroke-linecap="round" opacity=".55"/><line x1="10" y1="22" x2="30" y2="38" stroke="#FF8A65" stroke-width="7" stroke-linecap="round" opacity=".55"/>${['CAT','OWL','DOG'].map((w,r)=>[...w].map((ch,c)=>`<text x="${11+c*12.5}" y="${18+r*10}" font-size="8" font-weight="900" text-anchor="middle" fill="#ECEEF3" font-family="system-ui">${ch}</text>`).join('')).join('')}</svg>`, mount: mountWS },
+];
+const GAMES = [...WORD_GAMES, ...COLOUR_GAMES,
   { id: 'g2', sec: 'l', unit: 'Game', name: '2048', color: 'var(--g2)', metric: 'score', desc: 'Swipe, merge equal tiles, chase 2048 and beyond.',
     rules: ['<b>Swipe</b> to slide every tile.', 'Two equal tiles that touch <b>merge</b> — 2+2 = 4, 4+4 = 8, all the way up.', 'Reach <b>2048</b>, then keep going. It ends when no move is left. Highest score wins.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#151924"/>${[['#2A2F3D','#F2B179','#2A2F3D'],['#FF8A3D','#2A2F3D','#FFE14D'],['#2A2F3D','#FF5A5F','#F2B179']].map((row,r)=>row.map((f,c)=>`<rect x="${5+c*12.5}" y="${5+r*12.5}" width="11" height="11" rx="2.5" fill="${f}"/>`).join('')).join('')}</svg>`, mount: mountG2 },
@@ -1527,7 +1721,8 @@ const G = Object.fromEntries(GAMES.map((g) => [g.id, g]));
 const GEN = {
   lo: Core.genLightsOut, qn: Core.genQueens, t24: Core.gen24, kk: Core.genKenKen, lk: Core.genLinks, pp: Core.genPipes, pr: Core.genPour,
   fl: Core.genFlood, ol: Core.genOneLine, tg: Core.genTango, hu: Core.genHue,
-  zp: Core.genZip, hb: Core.genBridges, ng: Core.genNonogram, sk: Core.genShikaku, ms: Core.genMines,
+  zp: Core.genZip, hb: Core.genBridges, ng: Core.genNonogram, sk: Core.genShikaku, ms: Core.genMines, tn: Core.genTents,
+  hm: (t, n) => Core.genHangman(WORDS, t >= 10 ? 'ru' : 'en', t % 10, n), ws: (t, n) => Core.genWordSearch(WORDS, t >= 10 ? 'ru' : 'en', t % 10, n),
   ub: (t, n) => Core.getUnblock(UB_BANK, t, n),
   g2: (t, n) => ({ seed: 'g2-' + n }),
 };
@@ -1539,9 +1734,14 @@ function cfg(gid) {
   if (c.tier == null) c.tier = 0;
   if (!c.timer) c.timer = 'now';
   if (c.first == null) c.first = 0;
-  if (!c.mode) c.mode = 'same';
+  if (!c.mode) c.mode = G[gid] && G[gid].setMode ? 'set' : 'same';
+  if (!c.lang) c.lang = 'en';
   return c;
 }
+// word games keep English and Russian progress apart: Russian levels are stored as tier + 10
+const tkey = (g, c) => (hasTiers(g) ? c.tier : 0) + (g.lang && c.lang === 'ru' ? 10 : 0);
+const tName = (g, t) => (hasTiers(g) ? TN[t % 10] : 'Classic') + (g.lang ? (t >= 10 ? ' · RU' : ' · EN') : '');
+const LANGS = [['en', 'English'], ['ru', 'Русский']];
 const rkey = (t, n) => t + ':' + n;
 function getRes(gid, t, n, p) { return ((S.res[gid] || {})[rkey(t, n)] || [])[p] || null; }
 function putRes(gid, t, n, p, r) {
@@ -1564,8 +1764,8 @@ function cmp(g, a, b, mode = 'same') {
   const sec = (x) => Math.round(x.t);
   if (g.metric === 'moves') {
     const ka = a.m - (mode === 'diff' ? a.p || 0 : 0), kb = b.m - (mode === 'diff' ? b.p || 0 : 0);
-    if (ka !== kb) return { c: ka - kb, why: mode === 'diff' ? 'fewer moves over par' : 'fewer moves' };
-    if (sec(a) !== sec(b)) return { c: sec(a) - sec(b), why: 'same moves — faster' };
+    if (ka !== kb) return { c: ka - kb, why: g.mword ? `fewer ${g.mword} (${a.m} vs ${b.m})` : mode === 'diff' ? 'fewer moves over par' : 'fewer moves' };
+    if (sec(a) !== sec(b)) return { c: sec(a) - sec(b), why: `same ${g.mword || 'moves'} — faster` };
     return { c: 0, why: 'Same moves, same time' };
   }
   if (g.metric === 'score') {
@@ -1577,7 +1777,7 @@ function cmp(g, a, b, mode = 'same') {
   if ((a.a || 0) !== (b.a || 0)) return { c: (a.a || 0) - (b.a || 0), why: `same time — fewer moves (${a.a || 0} vs ${b.a || 0})` };
   return { c: 0, why: 'Same time, same number of moves' };
 }
-const fmtMain = (g, x) => x.x ? (x.why === 'hit a mine' ? 'Boom' : 'Conceded') : g.metric === 'moves' ? `${x.m} moves` : g.metric === 'score' ? x.m.toLocaleString('en-US') : fmtT(x.t);
+const fmtMain = (g, x) => x.x ? (x.why === 'hit a mine' ? 'Boom' : x.why === 'was hanged' ? 'Hanged' : 'Conceded') : g.metric === 'moves' ? `${x.m} ${x.m === 1 && g.mword1 ? g.mword1 : g.mword || 'moves'}` : g.metric === 'score' ? x.m.toLocaleString('en-US') : fmtT(x.t);
 const fmtSub = (g, x, mode) => x.x ? `after ${fmtT(x.t)}` : g.metric === 'moves' ? `${fmtT(x.t)}${mode === 'diff' && x.p != null ? ` · par ${x.p}` : ''}` : g.metric === 'score' ? `points · ${fmtT(x.t)}` : `${x.a || 0} moves`;
 
 // ---------- duels ----------
@@ -1591,9 +1791,10 @@ function gameScore(gid) {
 }
 function totalScore() { const s = [0, 0, 0]; for (const g of GAMES) { const x = gameScore(g.id); s[0] += x[0]; s[1] += x[1]; s[2] += x[2]; } return s; }
 function newRound(gid) {
-  const c = cfg(gid), g = G[gid], t = hasTiers(g) ? c.tier : 0, d = duelOf(gid);
+  const c = cfg(gid), g = G[gid], t = c.mode === 'set' ? (c.lang === 'ru' ? 10 : 0) : tkey(g, c), d = duelOf(gid);
   const used = new Set(); d.rounds.forEach((r) => { if (r.t === t) r.nums.forEach((n) => used.add(n)); });
   const free = () => { for (let n = 1; ; n++) if (!used.has(n) && !getRes(gid, t, n, 0) && !getRes(gid, t, n, 1)) { used.add(n); return n; } };
+  if (c.mode === 'set') { d.rounds.push({ t, mode: 'set', nums: [0, 0], words: [null, null], res: [null, null], first: c.first }); store.save(); return d.rounds.length - 1; }
   const a = free(), b = c.mode === 'diff' ? free() : a;
   d.rounds.push({ t, mode: c.mode, nums: [a, b], res: [null, null], first: c.first });
   store.save();
@@ -1652,7 +1853,7 @@ function renderHome() {
   }
   app.appendChild(duel);
   S.fav = (S.fav || []).filter((id) => G[id]);
-  const SECS = [['f', 'Favourites', 'tap ☆ on any game to pin it here'], ['c', 'Colour & shape', 'drag, pour, paint'], ['l', 'Logic & numbers', 'think, then tap']];
+  const SECS = [['f', 'Favourites', 'tap ☆ on any game to pin it here'], ['w', 'Words', 'English · Русский'], ['c', 'Colour & shape', 'drag, pour, paint'], ['l', 'Logic & numbers', 'think, then tap']];
   for (const [sid, sname, shint] of SECS) {
     const list = sid === 'f' ? S.fav.map((id) => G[id]) : GAMES.filter((x) => x.sec === sid && !S.fav.includes(x.id));
     if (!list.length) continue;
@@ -1668,7 +1869,7 @@ function renderHome() {
       } else if (!hasTiers(g)) {
         const b = bestScore(g.id, 0);
         meta = `<b class="num">${b ? b.toLocaleString('en-US') : 'Play'}</b><span>${b ? 'best score' : 'new game'}</span>`;
-      } else meta = `<b class="num">#${nextNum(g.id, cf.tier, 0)}</b><span>${TN[cf.tier]}</span>`;
+      } else meta = `<b class="num">#${nextNum(g.id, tkey(g, cf), 0)}</b><span>${tName(g, tkey(g, cf))}</span>`;
       const isFav = S.fav.includes(g.id);
       c.innerHTML = `<div class="ico">${g.icon}</div><div><div class="cname">${g.name}</div><div class="cdesc">${g.desc}</div></div><div class="cmeta">${meta}</div>`;
       const star = $('span', 'fav' + (isFav ? ' on' : ''), isFav ? '★' : '☆');
@@ -1716,11 +1917,15 @@ function openLobby(gid, refresh = false) {
   kids.push(rules);
   const opt = (label, el) => { const o = $('div', 'opt'); o.append($('label', '', label), el); return o; };
   const re = () => openLobby(gid, true);
-  if (hasTiers(g)) kids.push(opt('Difficulty', seg(TN.map((n, t) => [t, n, S.duo ? null : `${solvedCount(gid, t, 0)} done`]), c.tier, (v) => { c.tier = v; store.save(); re(); })));
+  if (g.lang) kids.push(opt('Language', seg(LANGS, c.lang, (v) => { c.lang = v; store.save(); re(); })));
+  const off = g.lang && c.lang === 'ru' ? 10 : 0;
+  if (hasTiers(g) && !(S.duo && c.mode === 'set')) kids.push(opt(g.tierHint ? 'Difficulty · word length' : 'Difficulty', seg(TN.map((n, t) => [t, n, g.tierHint ? g.tierHint[t] : S.duo ? null : `${solvedCount(gid, t + off, 0)} done`]), c.tier, (v) => { c.tier = v; store.save(); re(); })));
   kids.push(opt('Timer', seg([['now', 'Starts right away'], ['first', 'Starts on first move']], c.timer, (v) => { c.timer = v; store.save(); re(); })));
   let ri = null;
   if (S.duo) {
-    kids.push(opt('Duel mode', seg([['same', 'Same puzzle', 'take turns'], ['diff', 'Different puzzles', 'same difficulty — watch each other']], c.mode, (v) => { c.mode = v; store.save(); re(); })));
+    const modes = g.setMode ? [['set', 'Write words', 'for each other'], ['same', 'Same word', 'app picks'], ['diff', 'Own words', 'app picks']] : [['same', 'Same puzzle', 'take turns'], ['diff', 'Different puzzles', 'same difficulty — watch each other']];
+    if (!modes.some(([m]) => m === c.mode)) c.mode = modes[0][0];
+    kids.push(opt('Duel mode', seg(modes, c.mode, (v) => { c.mode = v; store.save(); re(); })));
     kids.push(opt('Who goes first', seg([[0, `${S.players[0]}`], [1, `${S.players[1]}`]], c.first, (v) => { c.first = v; store.save(); re(); })));
     const s = gameScore(gid);
     kids.push($('div', 'verdict', `${g.name} score: ${scoreLine(s)}`));
@@ -1729,15 +1934,15 @@ function openLobby(gid, refresh = false) {
   const btns = $('div', 'btns');
   const go = $('button', 'big pri');
   if (!S.duo) {
-    const t = hasTiers(g) ? c.tier : 0, n = nextNum(gid, t, 0);
-    go.textContent = hasTiers(g) ? `Play ${TN[t]} #${n}` : 'New game';
+    const t = tkey(g, c), n = nextNum(gid, t, 0);
+    go.textContent = hasTiers(g) ? `Play ${TN[t % 10]}${g.lang ? (t >= 10 ? ' · RU' : ' · EN') : ''} #${n}` : 'New game';
     go.onclick = () => { v.remove(); openGame({ gid, t, num: n, p: 0 }); };
   } else if (ri != null) {
     const d = duelOf(gid), r = d.rounds[ri], p = turnOf(r);
     go.innerHTML = `Continue round ${ri + 1} · ${nm(p)}'s turn`;
     go.style.background = PC[p]; go.style.borderColor = PC[p];
     go.onclick = () => { v.remove(); handoff(gid, ri, p); };
-    if (r.t !== c.tier || r.mode !== c.mode) btns.appendChild($('div', 'note', `This round was started as ${TN[r.t]} · ${r.mode === 'same' ? 'same puzzle' : 'different puzzles'}. New settings apply from the next round.`));
+    if ((r.mode !== 'set' && r.t !== tkey(g, c)) || r.mode !== c.mode) btns.appendChild($('div', 'note', `This round was started as ${r.mode === 'set' ? 'write-a-word' : tName(g, r.t)} · ${r.mode === 'same' ? 'same puzzle' : r.mode === 'diff' ? 'different puzzles' : (r.t >= 10 ? 'Russian' : 'English')}. New settings apply from the next round.`));
   } else {
     const n = duelOf(gid).rounds.length + 1;
     go.innerHTML = `Start round ${n} · ${nm(c.first)} first`;
@@ -1761,11 +1966,12 @@ function openLobby(gid, refresh = false) {
 // ====================== HAND-OFF ======================
 function handoff(gid, ri, p) {
   const g = G[gid], r = duelOf(gid).rounds[ri];
+  if (r.mode === 'set' && !r.words[p]) { askWord(gid, ri, p); return; }
   const other = 1 - p, otherDone = r.res[other];
   const h = $('div', 'handoff');
   h.style.setProperty('--pc', PC[p]);
-  const what = r.mode === 'same' ? (otherDone ? `Same puzzle ${nm(other)} just played` : 'Same puzzle for both of you') : 'Your own puzzle — same difficulty';
-  h.innerHTML = `<div class="kick">${g.name} · Round ${ri + 1}${hasTiers(g) ? ' · ' + TN[r.t] : ''}</div>
+  const what = r.mode === 'set' ? `Guess the word ${nm(other)} wrote` : r.mode === 'same' ? (otherDone ? `Same puzzle ${nm(other)} just played` : 'Same puzzle for both of you') : 'Your own puzzle — same difficulty';
+  h.innerHTML = `<div class="kick">${g.name} · Round ${ri + 1}${r.mode === 'set' ? '' : ' · ' + tName(g, r.t)}</div>
     <div class="who">${nm(p)}</div><div class="sub">your turn</div><div class="det">${what}</div>`;
   const go = $('button', 'go', cfg(gid).timer === 'now' ? 'Start — clock runs' : 'Start');
   h.appendChild(go);
@@ -1774,6 +1980,35 @@ function handoff(gid, ri, p) {
   document.body.appendChild(h);
   const api = openGame({ gid, t: r.t, num: r.nums[p], p, ri });
   go.onclick = () => { h.remove(); if (cfg(gid).timer === 'now') api.start(); };
+}
+
+// the other player secretly types the word to guess
+function askWord(gid, ri, p) {
+  const r = duelOf(gid).rounds[ri], setter = 1 - p, lang = r.t >= 10 ? 'ru' : 'en';
+  const h = $('div', 'handoff setter');
+  h.style.setProperty('--pc', PC[setter]);
+  h.innerHTML = `<div class="kick">${G[gid].name} · Round ${ri + 1} · ${lang === 'ru' ? 'Russian word' : 'English word'}</div>
+    <div class="who">${nm(setter)}</div><div class="sub">write a secret word for ${nm(p)}</div><div class="det">${nm(p)}, look away 🙈</div>`;
+  const form = $('form', 'wordform');
+  form.innerHTML = `<div class="wf-row"><input class="wf-word" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="18" placeholder="${lang === 'ru' ? 'слово' : 'word'}" lang="${lang}"><button type="button" class="wf-eye" aria-label="Show or hide">👁</button></div>
+    <input class="wf-hint" autocomplete="off" maxlength="24" placeholder="Hint for ${esc(S.players[p])} (optional)">
+    <div class="wf-err"></div>`;
+  const go = $('button', 'go', 'Done — hand over'); go.type = 'submit'; form.appendChild(go);
+  h.appendChild(form);
+  const back = $('button', 'hback', `‹  ${G[gid].name} menu`); back.onclick = () => { h.remove(); toMenu(gid); };
+  h.appendChild(back);
+  document.body.appendChild(h);
+  const inp = form.querySelector('.wf-word'), err = form.querySelector('.wf-err');
+  form.querySelector('.wf-eye').onclick = () => inp.classList.toggle('shown');
+  setTimeout(() => inp.focus(), 50);
+  form.onsubmit = (e) => {
+    e.preventDefault();
+    const w = inp.value.trim().toLowerCase().replace(/ё/g, 'е');
+    const ok = new RegExp(`^[${Core.ALPHA[lang]}]{3,18}$`).test(w);
+    if (!ok) { err.textContent = lang === 'ru' ? 'Only Russian letters, 3–18 of them, no spaces.' : 'Only English letters, 3–18 of them, no spaces.'; return; }
+    r.words[p] = { w, h: form.querySelector('.wf-hint').value.trim().slice(0, 24) };
+    store.save(); h.remove(); handoff(gid, ri, p);
+  };
 }
 
 // ====================== GAME SHELL ======================
@@ -1786,14 +2021,14 @@ function openGame(ctx) {
   document.documentElement.style.setProperty('--acc', getComputedStyle(document.documentElement).getPropertyValue('--' + gid).trim() || '#FFC247');
   app.innerHTML = '';
   const round = duel ? duelOf(gid).rounds[ri] : null, mode = round ? round.mode : 'same';
-  const P = GEN[gid](t, num);
+  const P = round && round.mode === 'set' ? { word: round.words[p].w, cat: round.words[p].h || `${S.players[1 - p]}'s word`, lang: t >= 10 ? 'ru' : 'en', custom: 1 } : GEN[gid](t, num);
 
   const bar = $('div', 'gbar');
   navPush();
   curGame = gid;
   const back = $('button', 'ibtn back', '‹'); back.setAttribute('aria-label', `${g.name} menu`); back.onclick = () => toMenu(gid);
   const help = $('button', 'ibtn', '?'); help.onclick = () => showRules(g);
-  const ttl = $('button', 'gtitle', `${g.name}<small>${hasTiers(g) ? TN[t] + ' ▾' : 'Classic'}</small>`); ttl.onclick = () => toMenu(gid);
+  const ttl = $('button', 'gtitle', `${g.name}<small>${round && round.mode === 'set' ? `${S.players[1 - p]}'s word` : tName(g, t)} ▾</small>`); ttl.onclick = () => toMenu(gid);
   bar.append(back, ttl, help);
   app.appendChild(bar);
 
@@ -1819,10 +2054,10 @@ function openGame(ctx) {
   const sMain = $('div', 'stat'), sTime = $('div', 'stat'), sThird = $('div', 'stat');
   if (duel) {
     const o = round.res[1 - p];
-    sThird.innerHTML = `<label>${nm(1 - p)}</label><b class="num">${o ? (o.x ? '—' : fmtMain(g, o).replace(' moves', '<i>mv</i>')) : '…'}</b>`;
+    sThird.innerHTML = `<label>${nm(1 - p)}</label><b class="num">${o ? (o.x ? '—' : fmtMain(g, o).replace(' ' + (g.mword || 'moves'), `<i>${g.mword ? 'miss' : 'mv'}</i>`)) : '…'}</b>`;
   } else {
     const mine = getRes(gid, t, num, 0);
-    sThird.innerHTML = `<label>Best</label><b class="num">${mine ? fmtMain(g, mine).replace(' moves', '<i>moves</i>') : '—'}</b>`;
+    sThird.innerHTML = `<label>Best</label><b class="num">${mine ? fmtMain(g, mine).replace(' ' + (g.mword || 'moves'), `<i>${g.mword || 'moves'}</i>`) : '—'}</b>`;
   }
   stats.append(sMain, sTime, sThird);
   const stage = $('div', 'stage');
@@ -1832,7 +2067,7 @@ function openGame(ctx) {
   const st = { moves: 0, par: null, started: false, t0: 0, acc: 0, penalty: 0, done: false };
   const elapsed = () => st.acc + (st.started && !st.paused ? (performance.now() - st.t0) / 1000 : 0) + st.penalty;
   const paint = () => {
-    if (g.metric === 'moves') sMain.innerHTML = `<label>Moves</label><b class="num">${st.moves}${st.par != null ? `<i>/ ${st.parLabel || 'par'} ${st.par}</i>` : ''}</b>`;
+    if (g.metric === 'moves') sMain.innerHTML = `<label>${g.mlabel || 'Moves'}</label><b class="num">${st.moves}${st.par != null ? `<i>/ ${st.parLabel || 'par'} ${st.par}</i>` : st.cap ? `<i>/ ${st.cap}</i>` : ''}</b>`;
     else sMain.innerHTML = `<label>${st.extraLabel || 'Status'}</label><b class="num">${st.extra || '—'}</b>`;
     sTime.innerHTML = `<label>Time</label><b class="num">${st.started || st.done ? fmtT(elapsed()) : '0:00'}</b>`;
   };
@@ -1840,7 +2075,7 @@ function openGame(ctx) {
     st.acc = elapsed() - st.penalty; st.started = false; st.done = true; paint();
     r.t = Math.round(elapsed() * 10) / 10; r.a = st.moves; if (st.par != null) r.p = st.par;
     let info = {};
-    if (!r.x) { info = putRes(gid, t, num, p, r); st.solvedByPlayer = true; }
+    if (!r.x) { if (!(round && round.mode === 'set')) info = putRes(gid, t, num, p, r); st.solvedByPlayer = true; }
     if (duel) round.res[p] = r;
     store.save();
     if (r.x && !duel) { setTimeout(() => showGaveUp(ctx, r, title, st), 60); return; } // solo: straight to the answer
@@ -1856,6 +2091,7 @@ function openGame(ctx) {
     move(n = 1) { if (st.done) return; api.start(); st.moves = Math.max(0, st.moves + n); paint(); },
     resetMoves() { st.moves = 0; paint(); },
     setPar(v, label) { st.par = v; st.parLabel = label; paint(); },
+    setCap(v) { st.cap = v; paint(); },
     setExtra(label, v) { st.extraLabel = label; st.extra = v; paint(); },
     penalty(s) { api.start(); st.penalty += s; paint(); },
     btn(label, fn, cls = '') { const b = $('button', 'cbtn ' + cls, label); b.onclick = fn; controls.appendChild(b); return b; },
@@ -1893,7 +2129,7 @@ function showGaveUp(ctx, r, title, st) {
   const { gid, t, num } = ctx, g = G[gid];
   st.reveal();
   let nx = num + 1; while (getRes(gid, t, nx, 0)) nx++;
-  const text = r.why === 'hit a mine' ? '<b>Boom!</b> Here’s the whole board.' : st.canReveal() ? '<b>Gave up.</b> Here’s the solution.' : '<b>Gave up.</b>';
+  const text = r.why === 'hit a mine' ? '<b>Boom!</b> Here’s the whole board.' : r.why === 'was hanged' ? '<b>Hanged!</b> Here’s the word.' : st.canReveal() ? '<b>Gave up.</b> Here’s the solution.' : '<b>Gave up.</b>';
   showBar(text, [[`Next puzzle · #${nx}`, 'pri', () => openGame({ gid, t, num: nx, p: 0 })], ['Try again', '', () => openGame(ctx)], ['‹ Menu', '', () => toMenu(gid)]]);
 }
 function showRules(g) {
@@ -1919,7 +2155,7 @@ function showResult(ctx, r, title, info, st) {
   if (ri == null) {
     // ---- solo ----
     if (!r.x) kids.push(burstEl());
-    kids.push($('div', 'kicker', `${g.name} · ${hasTiers(g) ? TN[t] + ' · ' : ''}${g.unit || 'Puzzle'} #${num}`), $('h2', '', r.x ? title || 'Gave up' : title || 'Solved'));
+    kids.push($('div', 'kicker', `${g.name} · ${hasTiers(g) ? tName(g, t) + ' · ' : ''}${g.unit || 'Puzzle'} #${num}`), $('h2', '', r.x ? title || 'Gave up' : title || 'Solved'));
     const verdict = [];
     if (!r.x && g.metric === 'moves' && st.par != null) { const pl = st.parLabel || 'par'; verdict.push(r.m < st.par ? `Under the ${pl} by ${st.par - r.m}!` : r.m === st.par ? `Right on ${pl}.` : `${pl[0].toUpperCase() + pl.slice(1)} is ${st.par} — ${r.m - st.par} over.`); }
     if (!r.x && info.isBest && info.prev) verdict.push('New personal best!');
@@ -1936,7 +2172,7 @@ function showResult(ctx, r, title, info, st) {
   } else {
     // ---- duel ----
     const round = duelOf(gid).rounds[ri], other = 1 - p, o = round.res[other];
-    const head = `${g.name} · Round ${ri + 1}${hasTiers(g) ? ' · ' + TN[round.t] : ''}`;
+    const head = `${g.name} · Round ${ri + 1}${round.mode === 'set' ? '' : ' · ' + tName(g, round.t)}`;
     if (!o) {
       if (!r.x) kids.push(burstEl());
       kids.push($('div', 'kicker', head), $('h2', '', r.x ? `${nm(p)} ${r.why || 'conceded'}` : `${nm(p)} is done`));
@@ -1946,7 +2182,7 @@ function showResult(ctx, r, title, info, st) {
       pass.style.background = PC[other]; pass.style.borderColor = PC[other];
       pass.onclick = () => { v.remove(); handoff(gid, ri, other); };
       btns.append(pass);
-      if (r.x && round.mode === 'diff' && st.canReveal()) { // their own board, so no spoiler for the other player
+      if (r.x && (round.mode === 'diff' || round.mode === 'set') && st.canReveal()) { // their own board, so no spoiler for the other player
         const see = $('button', 'big', 'Show the solution');
         see.onclick = () => { v.remove(); st.reveal(); showBar(`<b>${nm(p)} ${r.why || 'conceded'}.</b> Here’s the solution.`, [[`Hand over to ${nm(other)} →`, 'pri', () => handoff(gid, ri, other), PC[other]], ['‹ Menu', '', () => toMenu(gid)]]); };
         btns.append(see);
@@ -2944,6 +3180,136 @@ function mountMS(stage, controls, P, api) {
   stage.append(grid, tools, $('div', 'toast', 'Long-press a cell to flag it · tap a finished number to clear around it'));
   api.solution(() => { for (let i = 0; i < N; i++) { if (P.mines[i]) flag[i] = 1; else open[i] = 1; } paint(); });
   paint();
+}
+
+// ====================== HANGMAN ======================
+const KB = { en: ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'], ru: ['йцукенгшщзх', 'фывапролджэ', 'ячсмитьбюъ'] };
+function mountHM(stage, controls, P, api) {
+  const word = P.word, lang = P.lang, MAX = 6, inWord = new Set(word);
+  const tried = new Set();
+  let misses = 0, over = false;
+  api.setCap(MAX);
+  const cat = $('div', 'hm-cat', `${esc(P.cat)} · ${word.length} letters`);
+  const fig = $('div', 'hm-fig');
+  const wordEl = $('div', 'hm-word');
+  const kb = $('div', 'hm-kb');
+  const keys = new Map();
+  for (const row of KB[lang]) { const r = $('div', 'hm-row'); for (const ch of row) { const k = $('button', 'hm-key', ch); k.onclick = () => guess(ch); keys.set(ch, k); r.appendChild(k); } kb.appendChild(r); }
+  const parts = [
+    '<circle cx="132" cy="58" r="15"/>', '<path d="M132 73V121"/>', '<path d="M132 86L112 106"/>', '<path d="M132 86L152 106"/>', '<path d="M132 121L116 150"/>', '<path d="M132 121L148 150"/>'];
+  function paint(reveal) {
+    fig.innerHTML = `<svg viewBox="0 0 200 170"><g class="gal"><path d="M24 162H112M50 162V12H132V28"/></g><g class="man">${parts.slice(0, misses).join('')}</g>${misses >= MAX ? '<g class="eyes"><path d="M125 53l5 5M130 53l-5 5M134 53l5 5M139 53l-5 5"/></g>' : ''}</svg>`;
+    wordEl.innerHTML = [...word].map((ch) => { const show = tried.has(ch) || reveal; return `<span class="${show ? 'on' : ''} ${reveal && !tried.has(ch) ? 'missed' : ''}">${show ? ch : ''}</span>`; }).join('');
+    wordEl.style.setProperty('--n', word.length);
+    keys.forEach((k, ch) => { k.className = 'hm-key' + (tried.has(ch) ? (inWord.has(ch) ? ' hit' : ' miss') : ''); k.disabled = tried.has(ch) || over; });
+    api.setExtra && null;
+  }
+  function guess(ch) {
+    if (over || api.done || tried.has(ch)) return;
+    api.start();
+    tried.add(ch);
+    if (!inWord.has(ch)) { misses++; api.move(); }
+    paint();
+    if ([...inWord].every((c) => tried.has(c))) { over = true; wordEl.classList.add('won'); api.win({ m: misses }); }
+    else if (misses >= MAX) { over = true; paint(true); fig.classList.add('lost'); setTimeout(() => api.fail('Hanged', 'was hanged'), 1100); }
+  }
+  window.onkeydown = (e) => { const ch = e.key.toLowerCase().replace('ё', 'е'); if (keys.has(ch)) { e.preventDefault(); guess(ch); } };
+  stage.append(cat, fig, wordEl, kb);
+  paint();
+  api.solution(() => { over = true; paint(true); });
+}
+
+// ====================== WORD SEARCH ======================
+function mountWS(stage, controls, P, api) {
+  const n = P.n, found = new Map(); // word -> colour index
+  const board = $('div', 'ws-board');
+  board.style.setProperty('--n', n);
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('viewBox', `0 0 ${n} ${n}`); svg.setAttribute('class', 'ws-svg');
+  const letters = $('div', 'ws-letters');
+  letters.innerHTML = P.grid.map((ch) => `<span>${ch.toUpperCase()}</span>`).join('');
+  board.append(svg, letters);
+  const list = $('div', 'ws-list');
+  const cxy = (i) => [(i % n) + 0.5, Math.floor(i / n) + 0.5];
+  let drag = null;
+  const cap = (a, b, col, cls = '') => { const [x1, y1] = cxy(a), [x2, y2] = cxy(b); return `<line class="${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="0.78" stroke-linecap="round"/>`; };
+  function render() {
+    let h = '';
+    let k = 0;
+    for (const w of P.words) { if (found.has(w.w)) h += cap(w.cells[0], w.cells[w.cells.length - 1], SKC[found.get(w.w) % SKC.length], 'f'); k++; }
+    if (drag && drag.b != null) h += cap(drag.a, drag.b, 'rgba(255,255,255,.28)', 'p');
+    svg.innerHTML = h;
+    list.innerHTML = P.words.map((w) => `<span class="${found.has(w.w) ? 'done' : ''}" ${found.has(w.w) ? `style="--fc:${SKC[found.get(w.w) % SKC.length]}"` : ''}>${w.w}</span>`).join('');
+    api.setExtra('Found', `${found.size}<i>/ ${P.words.length}</i>`);
+  }
+  const cellAt = (e) => { const r = board.getBoundingClientRect(); const x = Math.floor((e.clientX - r.left) / r.width * n), y = Math.floor((e.clientY - r.top) / r.height * n); return x < 0 || y < 0 || x >= n || y >= n ? null : y * n + x; };
+  const line = (a, b) => { // cells from a to b if they lie on a straight or diagonal line
+    const ax = a % n, ay = Math.floor(a / n), bx = b % n, by = Math.floor(b / n), dx = Math.sign(bx - ax), dy = Math.sign(by - ay);
+    if (!(ax === bx || ay === by || Math.abs(bx - ax) === Math.abs(by - ay))) return null;
+    const len = Math.max(Math.abs(bx - ax), Math.abs(by - ay)) + 1, out = [];
+    for (let k = 0; k < len; k++) out.push((ay + dy * k) * n + ax + dx * k);
+    return out;
+  };
+  board.onpointerdown = (e) => { if (api.done) return; e.preventDefault(); const c = cellAt(e); if (c == null) return; api.start(); drag = { a: c, b: c, id: e.pointerId }; try { board.setPointerCapture(e.pointerId); } catch (_) {} render(); };
+  board.onpointermove = (e) => { if (!drag || e.pointerId !== drag.id) return; const c = cellAt(e); if (c == null || c === drag.b) return; if (line(drag.a, c)) { drag.b = c; render(); } };
+  const up = () => {
+    if (!drag) return; const cells = line(drag.a, drag.b); drag = null;
+    if (cells && cells.length > 1) {
+      const str = cells.map((c) => P.grid[c]).join(''), rev = [...str].reverse().join('');
+      const hit = P.words.find((w) => !found.has(w.w) && (w.w === str || w.w === rev));
+      if (hit) { hit.cells = cells; found.set(hit.w, found.size); }
+      api.move();
+    }
+    render();
+    if (found.size === P.words.length) { board.classList.add('done'); api.win(); }
+  };
+  board.onpointerup = up; board.onpointercancel = up;
+  stage.append($('div', 'hm-cat', `Theme: ${esc(P.cat)}`), board, list);
+  render();
+  api.solution(() => { P.words.forEach((w) => { if (!found.has(w.w)) found.set(w.w, found.size); }); render(); board.classList.add('done'); });
+}
+
+// ====================== TENTS ======================
+const TREE_SVG = '<svg viewBox="0 0 40 40"><path d="M20 4 31 19h-5l7 9H7l7-9H9Z" fill="#3DDC84"/><rect x="18" y="28" width="4" height="7" rx="1" fill="#A0724A"/></svg>';
+const TENT_SVG = '<svg viewBox="0 0 40 40"><path d="M20 7 36 33H4Z" fill="#FFB020"/><path d="M20 15 27 33H13Z" fill="#7A4A10"/></svg>';
+function mountTN(stage, controls, P, api) {
+  const n = P.n, isTree = new Set(P.trees);
+  let st = new Array(n * n).fill(0); // 0 empty, 1 grass, 2 tent
+  const hist = [];
+  const wrap = $('div', 'tn');
+  wrap.style.gridTemplateColumns = `26px repeat(${n}, minmax(0,1fr))`;
+  wrap.appendChild($('div'));
+  const colEls = P.cols.map((v) => { const e = $('div', 'tn-cnt', v); wrap.appendChild(e); return e; });
+  const rowEls = [], cells = [];
+  for (let r = 0; r < n; r++) {
+    const e = $('div', 'tn-cnt', P.rows[r]); wrap.appendChild(e); rowEls.push(e);
+    for (let c = 0; c < n; c++) { const i = r * n + c; const el = $('div', 'tn-c' + (isTree.has(i) ? ' tree' : '')); el.dataset.i = i; if (isTree.has(i)) el.innerHTML = TREE_SVG; wrap.appendChild(el); cells.push(el); }
+  }
+  function paint() {
+    const tents = []; st.forEach((v, i) => v === 2 && tents.push(i));
+    const tset = new Set(tents), bad = new Set();
+    for (const t of tents) { const r = Math.floor(t / n), c = t % n; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { if (!dy && !dx) continue; const rr = r + dy, cc = c + dx; if (rr >= 0 && cc >= 0 && rr < n && cc < n && tset.has(rr * n + cc)) bad.add(t); } }
+    cells.forEach((el, i) => { if (isTree.has(i)) return; el.className = 'tn-c' + (st[i] === 1 ? ' grass' : st[i] === 2 ? ' tent' : '') + (bad.has(i) ? ' bad' : ''); el.innerHTML = st[i] === 2 ? TENT_SVG : ''; });
+    let ok = bad.size === 0;
+    for (let r = 0; r < n; r++) { let k = 0; for (let c = 0; c < n; c++) if (st[r * n + c] === 2) k++; rowEls[r].className = 'tn-cnt' + (k === P.rows[r] ? ' ok' : k > P.rows[r] ? ' over' : ''); if (k !== P.rows[r]) ok = false; }
+    for (let c = 0; c < n; c++) { let k = 0; for (let r = 0; r < n; r++) if (st[r * n + c] === 2) k++; colEls[c].className = 'tn-cnt' + (k === P.cols[c] ? ' ok' : k > P.cols[c] ? ' over' : ''); if (k !== P.cols[c]) ok = false; }
+    api.setExtra('Tents', `${tents.length}<i>/ ${P.trees.length}</i>`);
+    if (ok && tents.length === P.trees.length && Core.tentsMatch(n, P.trees, tents)) { wrap.classList.add('done'); api.win(); }
+  }
+  let down = null;
+  const cellAt = (e) => { const t = document.elementFromPoint(e.clientX, e.clientY); const el = t && t.closest('.tn-c'); return el && wrap.contains(el) ? +el.dataset.i : null; };
+  wrap.onpointerdown = (e) => { if (api.done) return; const i = cellAt(e); if (i == null || isTree.has(i)) return; e.preventDefault(); api.start(); hist.push(st.slice()); down = { i, moved: false, id: e.pointerId, paint: st[i] === 0 ? 1 : 0 }; try { wrap.setPointerCapture(e.pointerId); } catch (_) {} };
+  wrap.onpointermove = (e) => {
+    if (!down || e.pointerId !== down.id) return; const i = cellAt(e); if (i == null || isTree.has(i)) return;
+    if (i !== down.i || down.moved) { if (!down.moved) { down.moved = true; if (down.paint === 1 ? st[down.i] === 0 : true) st[down.i] = down.paint; } if (down.paint === 1 ? st[i] === 0 : true) st[i] = down.paint; paint(); }
+  };
+  const up = () => { if (!down) return; if (!down.moved) { st[down.i] = (st[down.i] + 1) % 3; paint(); } api.move(); down = null; };
+  wrap.onpointerup = up; wrap.onpointercancel = up;
+  stage.appendChild(wrap);
+  paint();
+  api.solution(() => { const s = new Set(P.solution); st = st.map((_, i) => (isTree.has(i) ? 0 : s.has(i) ? 2 : 1)); paint(); wrap.classList.add('done'); });
+  api.btn('↶  Undo', () => { if (api.done || !hist.length) return; st = hist.pop(); paint(); });
+  api.btn('Clear', () => { if (api.done) return; hist.push(st.slice()); st.fill(0); paint(); });
 }
 
 // ====================== 2048 ======================
