@@ -349,6 +349,8 @@ input{font:inherit;color:inherit}
 .wf-err{min-height:18px;color:#FFD0D0;font-size:13px}
 .wordform .go{width:100%}
 /* ---------- SHEETS ---------- */
+.upd{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 8px);z-index:40;background:#fff;color:#0B0D12;font-weight:800;font-size:14px;padding:11px 18px;border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.5);white-space:nowrap}
+
 .solbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--s1);border-top:1px solid var(--line);padding:12px 16px calc(env(safe-area-inset-bottom) + 12px);box-shadow:0 -12px 30px rgba(0,0,0,.45);animation:up .25s ease-out}
 .solbar .sbt{max-width:448px;margin:0 auto 10px;font-size:14.5px;color:var(--mute)}.solbar .sbt b{color:var(--tx)}
 .solbar .sbb{max-width:448px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
@@ -397,6 +399,7 @@ const UB_BANK = /*__UBDATA__*/;
 </script>
 <script>
 // ====================== STATE ======================
+const APP_VERSION = '/*__VERSION__*/';
 const KEY = 'traytable.v2';
 const store = (() => {
   let mem = null;
@@ -668,7 +671,7 @@ function renderHome() {
     }
     app.appendChild(cards);
   }
-  app.appendChild($('div', 'foot', 'WORKS OFFLINE · NEW PUZZLES FOREVER'));
+  app.appendChild($('div', 'foot', `WORKS OFFLINE · NEW PUZZLES FOREVER<br>VERSION ${APP_VERSION.slice(0, 7)}`));
 }
 
 // ====================== LOBBY (per-game settings) ======================
@@ -2196,8 +2199,27 @@ function mountG2(stage, controls, P, api) {
 }
 
 renderHome();
+// ---- offline + self-updating ----
+// The installed app can sit in the background for days running old code. Every time it comes back
+// to the screen it asks for a new version; once one is installed it reloads itself if you're on the
+// arcade or a game's menu, or offers a one-tap update if you're mid-puzzle.
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost') && !/claude/.test(location.hostname)) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  let reg = null, hadController = !!navigator.serviceWorker.controller, reloading = false;
+  const check = () => { if (reg && navigator.onLine !== false) reg.update().catch(() => {}); };
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').then((r) => { reg = r; check(); }).catch(() => {}));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
+  window.addEventListener('online', check);
+  setInterval(check, 10 * 60 * 1000);
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) { hadController = true; return; } // first install, nothing old to replace
+    if (reloading) return;
+    const busy = !!document.querySelector('.stage') && !document.querySelector('.solbar') && !document.querySelector('.veil');
+    if (!busy) { reloading = true; location.reload(); return; }
+    if (document.querySelector('.upd')) return;
+    const u = $('button', 'upd', '↻ New version ready — tap to update');
+    u.onclick = () => { reloading = true; location.reload(); };
+    document.body.appendChild(u);
+  });
 }
 </script>
 </body>
