@@ -316,7 +316,7 @@ input{font:inherit;color:inherit}
 .hm-word.won span{color:#3DDC84;border-color:#3DDC84}
 .hm-kb{display:flex;flex-direction:column;gap:6px;width:100%}
 .hm-row{display:flex;gap:4px;justify-content:center}
-.hm-key{flex:1 1 0;max-width:38px;height:46px;border-radius:9px;background:#2C3242;font-weight:800;font-size:17px;text-transform:uppercase;box-shadow:inset 0 -2px 0 rgba(0,0,0,.3)}
+.hm-key{flex:1 1 0;min-width:0;max-width:38px;height:46px;border-radius:9px;background:#2C3242;font-weight:800;font-size:17px;text-transform:uppercase;box-shadow:inset 0 -2px 0 rgba(0,0,0,.3)}
 .hm-key:active{background:#3A4152}
 .hm-key.hit{background:#1E4A33;color:#3DDC84;box-shadow:none}.hm-key.miss{background:#2A1A1E;color:#7A4A52;box-shadow:none}
 /* ---------- WORD SEARCH ---------- */
@@ -343,7 +343,11 @@ input{font:inherit;color:inherit}
 .wordform{display:flex;flex-direction:column;gap:10px;width:min(100%,340px);margin-top:6px}
 .wf-row{display:flex;gap:8px}
 .wordform input{flex:1;min-width:0;width:100%;height:54px;border-radius:14px;border:1.5px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;font-size:22px;font-weight:800;text-align:center;letter-spacing:.08em;outline:none;text-transform:lowercase}
-.wordform .wf-word{-webkit-text-security:disc}.wordform .wf-word.shown{-webkit-text-security:none}
+.wf-box{position:relative;flex:1;min-width:0;display:flex}
+.wordform .wf-box .wf-word{color:transparent;caret-color:#fff;text-transform:none}
+.wf-dots{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;color:#fff;font-size:18px;letter-spacing:.18em}
+.wf-box.shown .wf-word{color:#fff}.wf-box.shown .wf-dots,.wf-box.empty .wf-dots{display:none}
+.wordform .wf-word::placeholder{color:rgba(255,255,255,.45)}
 .wordform .wf-hint{font-size:15px;font-weight:600;letter-spacing:0;height:46px;text-transform:none;flex:none}
 .wf-eye{flex:none;width:54px;border-radius:14px;background:rgba(255,255,255,.12);font-size:20px}
 .wf-err{min-height:18px;color:#FFD0D0;font-size:13px}
@@ -1616,7 +1620,7 @@ const UB_BANK = [["8:222h142v122h333h322v053v312v302v032h002h112v442h512h","8:22
 </script>
 <script>
 // ====================== STATE ======================
-const APP_VERSION = 'c5be645475';
+const APP_VERSION = '6fc5b0d2e8';
 const KEY = 'traytable.v2';
 const store = (() => {
   let mem = null;
@@ -1920,13 +1924,13 @@ function openLobby(gid, refresh = false) {
   kids.push(rules);
   const opt = (label, el) => { const o = $('div', 'opt'); o.append($('label', '', label), el); return o; };
   const re = () => openLobby(gid, true);
-  if (g.lang) kids.push(opt('Language', seg(LANGS, c.lang, (v) => { c.lang = v; store.save(); re(); })));
+  if (g.lang && !(S.duo && c.mode === 'set')) kids.push(opt('Language', seg(LANGS, c.lang, (v) => { c.lang = v; store.save(); re(); })));
   const off = g.lang && c.lang === 'ru' ? 10 : 0;
   if (hasTiers(g) && !(S.duo && c.mode === 'set')) kids.push(opt(g.tierHint ? 'Difficulty · word length' : 'Difficulty', seg(TN.map((n, t) => [t, n, g.tierHint ? g.tierHint[t] : S.duo ? null : `${solvedCount(gid, t + off, 0)} done`]), c.tier, (v) => { c.tier = v; store.save(); re(); })));
   kids.push(opt('Timer', seg([['now', 'Starts right away'], ['first', 'Starts on first move']], c.timer, (v) => { c.timer = v; store.save(); re(); })));
   let ri = null;
   if (S.duo) {
-    const modes = g.setMode ? [['set', 'Write words', 'for each other'], ['same', 'Same word', 'app picks'], ['diff', 'Own words', 'app picks']] : [['same', 'Same puzzle', 'take turns'], ['diff', 'Different puzzles', 'same difficulty — watch each other']];
+    const modes = g.setMode ? [['set', 'Write words', 'any language'], ['same', 'Same word', 'app picks'], ['diff', 'Own words', 'app picks']] : [['same', 'Same puzzle', 'take turns'], ['diff', 'Different puzzles', 'same difficulty — watch each other']];
     if (!modes.some(([m]) => m === c.mode)) c.mode = modes[0][0];
     kids.push(opt('Duel mode', seg(modes, c.mode, (v) => { c.mode = v; store.save(); re(); })));
     kids.push(opt('Who goes first', seg([[0, `${S.players[0]}`], [1, `${S.players[1]}`]], c.first, (v) => { c.first = v; store.save(); re(); })));
@@ -1949,7 +1953,7 @@ function openLobby(gid, refresh = false) {
     go.innerHTML = `Continue round ${ri + 1} · ${nm(p)}'s turn`;
     go.style.background = PC[p]; go.style.borderColor = PC[p];
     go.onclick = () => { v.remove(); handoff(gid, ri, p); };
-    if ((r.mode !== 'set' && r.t !== tkey(g, c)) || r.mode !== c.mode) btns.appendChild($('div', 'note', `This round was started as ${r.mode === 'set' ? 'write-a-word' : tName(g, r.t)} · ${r.mode === 'same' ? 'same puzzle' : r.mode === 'diff' ? 'different puzzles' : (r.t >= 10 ? 'Russian' : 'English')}. New settings apply from the next round.`));
+    if ((r.mode !== 'set' && r.t !== tkey(g, c)) || r.mode !== c.mode) btns.appendChild($('div', 'note', `This round was started as ${r.mode === 'set' ? 'write-a-word' : tName(g, r.t)} · ${r.mode === 'same' ? 'same puzzle' : r.mode === 'diff' ? 'different puzzles' : 'write words'}. New settings apply from the next round.`));
   } else {
     const n = duelOf(gid).rounds.length + 1;
     go.innerHTML = `Start round ${n} · ${nm(c.first)} first`;
@@ -1990,29 +1994,44 @@ function handoff(gid, ri, p) {
 }
 
 // the other player secretly types the word to guess
+// which alphabet a written word uses → which keyboard the guesser gets
+function scriptOf(w) {
+  if (/^[a-z]+$/.test(w)) return 'en';
+  if (/^[а-я]+$/.test(w)) return 'ru';
+  if (/^[ա-ֆ]+$/.test(w)) return 'hy';
+  if (/[a-z]/.test(w) || /[а-я]/.test(w) || /[\u0561-\u0586]/.test(w)) return null; // a mix of alphabets
+  return /^\p{L}+$/u.test(w) ? 'x' : null;
+}
+const normWord = (v) => v.trim().toLowerCase().replace(/ё/g, 'е').replace(/և/g, 'եւ');
+// the other player secretly types the word to guess — any language.
+// No password-style field here: on iPhone those only allow the English keyboard.
 function askWord(gid, ri, p) {
-  const r = duelOf(gid).rounds[ri], setter = 1 - p, lang = cfg(gid).lang;
+  const r = duelOf(gid).rounds[ri], setter = 1 - p;
   const h = $('div', 'handoff setter');
   h.style.setProperty('--pc', PC[setter]);
-  h.innerHTML = `<div class="kick">${G[gid].name} · Round ${ri + 1} · ${lang === 'ru' ? 'русское слово' : 'English word'}</div>
+  h.innerHTML = `<div class="kick">${G[gid].name} · Round ${ri + 1} · any language</div>
     <div class="who">${nm(setter)}</div><div class="sub">write a secret word for ${nm(p)}</div><div class="det">${nm(p)}, look away 🙈</div>`;
   const form = $('form', 'wordform');
-  form.innerHTML = `<div class="wf-row"><input class="wf-word" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="18" placeholder="${lang === 'ru' ? 'слово' : 'word'}" lang="${lang}"><button type="button" class="wf-eye" aria-label="Show or hide">👁</button></div>
-    <input class="wf-hint" autocomplete="off" maxlength="24" placeholder="Hint for ${esc(S.players[p])} (optional)">
+  form.innerHTML = `<div class="wf-row"><div class="wf-box"><input class="wf-word" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="18" placeholder="secret word"><div class="wf-dots" aria-hidden="true"></div></div><button type="button" class="wf-eye" aria-label="Show or hide">👁</button></div>
+    <input class="wf-hint" type="text" autocomplete="off" maxlength="24" placeholder="Hint for ${esc(S.players[p])} (optional)">
     <div class="wf-err"></div>`;
   const go = $('button', 'go', 'Done — hand over'); go.type = 'submit'; form.appendChild(go);
   h.appendChild(form);
   const back = $('button', 'hback', `‹  ${G[gid].name} menu`); back.onclick = () => { h.remove(); toMenu(gid); };
   h.appendChild(back);
   document.body.appendChild(h);
-  const inp = form.querySelector('.wf-word'), err = form.querySelector('.wf-err');
-  form.querySelector('.wf-eye').onclick = () => inp.classList.toggle('shown');
+  const inp = form.querySelector('.wf-word'), dots = form.querySelector('.wf-dots'), box = form.querySelector('.wf-box'), err = form.querySelector('.wf-err');
+  const mask = () => { dots.textContent = '●'.repeat([...inp.value].length); box.classList.toggle('empty', !inp.value); err.textContent = ''; };
+  inp.addEventListener('input', mask); mask();
+  form.querySelector('.wf-eye').onclick = () => { box.classList.toggle('shown'); inp.focus(); };
   setTimeout(() => inp.focus(), 50);
   form.onsubmit = (e) => {
     e.preventDefault();
-    const w = inp.value.trim().toLowerCase().replace(/ё/g, 'е');
-    const ok = /^[а-я]{3,18}$/.test(w) || /^[a-z]{3,18}$/.test(w);
-    if (!ok) { err.textContent = /[а-я]/.test(w) && /[a-z]/.test(w) ? 'Use one alphabet — Russian or English, not both.' : 'Letters only, 3–18 of them, no spaces.'; return; }
+    const w = normWord(inp.value), sc = scriptOf(w), len = [...w].length;
+    if (!sc || len < 3 || len > 18) {
+      err.textContent = /\s/.test(w) ? 'One word only — no spaces.' : /\p{L}/u.test(w) && !/^\p{L}+$/u.test(w) ? 'Letters only — no digits or symbols.' : !sc && /^\p{L}+$/u.test(w) ? 'Use one alphabet, not a mix.' : 'Between 3 and 18 letters, please.';
+      return;
+    }
     r.words[p] = { w, h: form.querySelector('.wf-hint').value.trim().slice(0, 24) };
     store.save(); h.remove(); handoff(gid, ri, p);
   };
@@ -2028,7 +2047,7 @@ function openGame(ctx) {
   document.documentElement.style.setProperty('--acc', getComputedStyle(document.documentElement).getPropertyValue('--' + gid).trim() || '#FFC247');
   app.innerHTML = '';
   const round = duel ? duelOf(gid).rounds[ri] : null, mode = round ? round.mode : 'same';
-  const P = round && round.mode === 'set' ? { word: round.words[p].w, cat: round.words[p].h || `${S.players[1 - p]}'s word`, lang: /[а-я]/.test(round.words[p].w) ? 'ru' : 'en', custom: 1 } : GEN[gid](t, num);
+  const P = round && round.mode === 'set' ? { word: round.words[p].w, cat: round.words[p].h || `${S.players[1 - p]}'s word`, lang: scriptOf(round.words[p].w) || 'x', custom: 1 } : GEN[gid](t, num);
 
   const bar = $('div', 'gbar');
   navPush();
@@ -3190,24 +3209,34 @@ function mountMS(stage, controls, P, api) {
 }
 
 // ====================== HANGMAN ======================
-const KB = { en: ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'], ru: ['йцукенгшщзх', 'фывапролджэ', 'ячсмитьбюъ'] };
+const KB = { en: ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'], ru: ['йцукенгшщзх', 'фывапролджэ', 'ячсмитьбюъ'], hy: ['աբգդեզէըթժ', 'իլխծկհձղճմ', 'յնշոչպջռսվ', 'տրցւփքօֆ'] };
+// any other alphabet: the word's own letters plus look-alike decoys from the same Unicode block
+function kbFor(word) {
+  const own = [...new Set(word)], cps = own.map((ch) => ch.codePointAt(0)), pool = [];
+  for (let c = Math.min(...cps) - 8; c <= Math.max(...cps) + 8; c++) { const ch = String.fromCodePoint(c); if (/\p{Ll}|\p{Lo}/u.test(ch) && ch.toLowerCase() === ch && !own.includes(ch)) pool.push(ch); }
+  const R = Core.rng(Core.hashStr(word)), extra = [];
+  while (pool.length && extra.length < Math.max(10, 26 - own.length)) extra.push(pool.splice(Math.floor(R() * pool.length), 1)[0]);
+  const all = [...own, ...extra].sort((a, b) => a.localeCompare(b)), rows = [];
+  for (let i = 0; i < all.length; i += 10) rows.push(all.slice(i, i + 10).join(''));
+  return rows;
+}
 function mountHM(stage, controls, P, api) {
-  const word = P.word, lang = P.lang, MAX = 6, inWord = new Set(word);
+  const word = P.word, lang = P.lang, MAX = 6, inWord = new Set([...word]);
   const tried = new Set();
   let misses = 0, over = false;
   api.setCap(MAX);
-  const cat = $('div', 'hm-cat', `${esc(P.cat)} · ${word.length} letters`);
+  const cat = $('div', 'hm-cat', `${esc(P.cat)} · ${[...word].length} letters`);
   const fig = $('div', 'hm-fig');
   const wordEl = $('div', 'hm-word');
   const kb = $('div', 'hm-kb');
   const keys = new Map();
-  for (const row of KB[lang]) { const r = $('div', 'hm-row'); for (const ch of row) { const k = $('button', 'hm-key', ch); k.onclick = () => guess(ch); keys.set(ch, k); r.appendChild(k); } kb.appendChild(r); }
+  for (const row of KB[lang] || kbFor(word)) { const r = $('div', 'hm-row'); for (const ch of [...row]) { const k = $('button', 'hm-key', ch); k.onclick = () => guess(ch); keys.set(ch, k); r.appendChild(k); } kb.appendChild(r); }
   const parts = [
     '<circle cx="132" cy="58" r="15"/>', '<path d="M132 73V121"/>', '<path d="M132 86L112 106"/>', '<path d="M132 86L152 106"/>', '<path d="M132 121L116 150"/>', '<path d="M132 121L148 150"/>'];
   function paint(reveal) {
     fig.innerHTML = `<svg viewBox="0 0 200 170"><g class="gal"><path d="M24 162H112M50 162V12H132V28"/></g><g class="man">${parts.slice(0, misses).join('')}</g>${misses >= MAX ? '<g class="eyes"><path d="M125 53l5 5M130 53l-5 5M134 53l5 5M139 53l-5 5"/></g>' : ''}</svg>`;
     wordEl.innerHTML = [...word].map((ch) => { const show = tried.has(ch) || reveal; return `<span class="${show ? 'on' : ''} ${reveal && !tried.has(ch) ? 'missed' : ''}">${show ? ch : ''}</span>`; }).join('');
-    wordEl.style.setProperty('--n', word.length);
+    wordEl.style.setProperty('--n', [...word].length);
     keys.forEach((k, ch) => { k.className = 'hm-key' + (tried.has(ch) ? (inWord.has(ch) ? ' hit' : ' miss') : ''); k.disabled = tried.has(ch) || over; });
     api.setExtra && null;
   }
@@ -3221,6 +3250,7 @@ function mountHM(stage, controls, P, api) {
     else if (misses >= MAX) { over = true; paint(true); fig.classList.add('lost'); setTimeout(() => api.fail('Hanged', 'was hanged'), 1100); }
   }
   window.onkeydown = (e) => { const ch = e.key.toLowerCase().replace('ё', 'е'); if (keys.has(ch)) { e.preventDefault(); guess(ch); } };
+  if (KB[lang] == null) kb.classList.add('kb-wide');
   stage.append(cat, fig, wordEl, kb);
   paint();
   api.solution(() => { over = true; paint(true); });
