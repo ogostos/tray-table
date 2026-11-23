@@ -343,13 +343,9 @@ input{font:inherit;color:inherit}
 .wordform{display:flex;flex-direction:column;gap:10px;width:min(100%,340px);margin-top:6px}
 .wf-row{display:flex;gap:8px}
 .wordform input{flex:1;min-width:0;width:100%;height:54px;border-radius:14px;border:1.5px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;font-size:22px;font-weight:800;text-align:center;letter-spacing:.08em;outline:none;text-transform:lowercase}
-.wf-box{position:relative;flex:1;min-width:0;display:flex}
-.wordform .wf-box .wf-word{color:transparent;caret-color:#fff;text-transform:none}
-.wf-dots{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;color:#fff;font-size:18px;letter-spacing:.18em}
-.wf-box.shown .wf-word{color:#fff}.wf-box.shown .wf-dots,.wf-box.empty .wf-dots{display:none}
+.wordform .wf-word{flex:none;text-transform:none}
 .wordform .wf-word::placeholder{color:rgba(255,255,255,.45)}
 .wordform .wf-hint{font-size:15px;font-weight:600;letter-spacing:0;height:46px;text-transform:none;flex:none}
-.wf-eye{flex:none;width:54px;border-radius:14px;background:rgba(255,255,255,.12);font-size:20px}
 .wf-err{min-height:18px;color:#FFD0D0;font-size:13px}
 .wordform .go{width:100%}
 /* ---------- SHEETS ---------- */
@@ -1620,7 +1616,7 @@ const UB_BANK = [["8:222h142v122h333h322v053v312v302v032h002h112v442h512h","8:22
 </script>
 <script>
 // ====================== STATE ======================
-const APP_VERSION = '6fc5b0d2e8';
+const APP_VERSION = '60a3fff95b';
 const KEY = 'traytable.v2';
 const store = (() => {
   let mem = null;
@@ -2004,7 +2000,6 @@ function scriptOf(w) {
 }
 const normWord = (v) => v.trim().toLowerCase().replace(/ё/g, 'е').replace(/և/g, 'եւ');
 // the other player secretly types the word to guess — any language.
-// No password-style field here: on iPhone those only allow the English keyboard.
 function askWord(gid, ri, p) {
   const r = duelOf(gid).rounds[ri], setter = 1 - p;
   const h = $('div', 'handoff setter');
@@ -2012,7 +2007,7 @@ function askWord(gid, ri, p) {
   h.innerHTML = `<div class="kick">${G[gid].name} · Round ${ri + 1} · any language</div>
     <div class="who">${nm(setter)}</div><div class="sub">write a secret word for ${nm(p)}</div><div class="det">${nm(p)}, look away 🙈</div>`;
   const form = $('form', 'wordform');
-  form.innerHTML = `<div class="wf-row"><div class="wf-box"><input class="wf-word" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="18" placeholder="secret word"><div class="wf-dots" aria-hidden="true"></div></div><button type="button" class="wf-eye" aria-label="Show or hide">👁</button></div>
+  form.innerHTML = `<input class="wf-word" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="18" placeholder="secret word">
     <input class="wf-hint" type="text" autocomplete="off" maxlength="24" placeholder="Hint for ${esc(S.players[p])} (optional)">
     <div class="wf-err"></div>`;
   const go = $('button', 'go', 'Done — hand over'); go.type = 'submit'; form.appendChild(go);
@@ -2020,10 +2015,8 @@ function askWord(gid, ri, p) {
   const back = $('button', 'hback', `‹  ${G[gid].name} menu`); back.onclick = () => { h.remove(); toMenu(gid); };
   h.appendChild(back);
   document.body.appendChild(h);
-  const inp = form.querySelector('.wf-word'), dots = form.querySelector('.wf-dots'), box = form.querySelector('.wf-box'), err = form.querySelector('.wf-err');
-  const mask = () => { dots.textContent = '●'.repeat([...inp.value].length); box.classList.toggle('empty', !inp.value); err.textContent = ''; };
-  inp.addEventListener('input', mask); mask();
-  form.querySelector('.wf-eye').onclick = () => { box.classList.toggle('shown'); inp.focus(); };
+  const inp = form.querySelector('.wf-word'), err = form.querySelector('.wf-err');
+  inp.addEventListener('input', () => (err.textContent = ''));
   setTimeout(() => inp.focus(), 50);
   form.onsubmit = (e) => {
     e.preventDefault();
