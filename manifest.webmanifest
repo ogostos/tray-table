@@ -1,7 +1,7 @@
 {
   "name": "Tray Table — puzzle arcade",
   "short_name": "Tray Table",
-  "description": "21 offline puzzle and word games: Hangman and Word Search in English and Russian, Queens, Pipes, Flood, Zip, Nonogram and more.",
+  "description": "22 offline puzzle and word games: Hangman and Word Search in English and Russian, Queens, Pipes, Flood, Zip, Nonogram and more.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

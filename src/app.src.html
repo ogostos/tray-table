@@ -15,7 +15,7 @@
 <style>
 :root{
   --bg:#0B0D12;--s1:#12151D;--s2:#191D28;--s3:#222735;--line:#262B39;--tx:#ECEEF3;--mute:#8C93A6;--dim:#596075;
-  --lo:#FFC247;--ub:#FF6B5E;--qn:#B794FF;--t24:#3BE3C3;--kk:#A6E35B;--lk:#FF6FB5;--pp:#4CA8FF;--pr:#FF9F43;--fl:#3DDC84;--g2:#F2B179;--hm:#FF8FA3;--ws:#5EB1FF;--tn:#3DDC84;--zp:#7C8CFF;--hb:#C7A27A;--sk:#FF8A65;--ng:#F5E663;--ms:#9AA5B8;--ol:#9EE7FF;--tg:#FFB86B;--hu:#E58CFF;--acc:#FFC247;
+  --lo:#FFC247;--ub:#FF6B5E;--qn:#B794FF;--t24:#3BE3C3;--kk:#A6E35B;--lk:#FF6FB5;--pp:#4CA8FF;--pr:#FF9F43;--fl:#3DDC84;--g2:#F2B179;--yc:#FF6B5E;--hm:#FF8FA3;--ws:#5EB1FF;--tn:#3DDC84;--zp:#7C8CFF;--hb:#C7A27A;--sk:#FF8A65;--ng:#F5E663;--ms:#9AA5B8;--ol:#9EE7FF;--tg:#FFB86B;--hu:#E58CFF;--acc:#FFC247;
   --font:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -348,6 +348,35 @@ input{font:inherit;color:inherit}
 .wordform .wf-hint{font-size:15px;font-weight:600;letter-spacing:0;height:46px;text-transform:none;flex:none}
 .wf-err{min-height:18px;color:#FFD0D0;font-size:13px}
 .wordform .go{width:100%}
+
+/* ---------- YACHT ---------- */
+.stage:has(.yc-dice){justify-content:flex-start;gap:10px}
+.yc-dice{display:flex;gap:8px;justify-content:center;width:100%;padding-top:4px}
+.yc-die{flex:0 1 58px;aspect-ratio:1;border-radius:14px;background:#ECEEF3;color:#0B0D12;padding:6px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18),0 6px 14px -6px rgba(0,0,0,.6);transition:transform .15s,background .15s}
+.yc-die svg{width:100%;height:100%;display:block;fill:#0B0D12}
+.yc-die.blank{background:#2A2F3D;color:#596075}.yc-die.blank svg{fill:#596075}
+.yc-die.held{background:var(--yc);transform:translateY(-6px);box-shadow:0 0 0 3px #fff,0 10px 18px -8px var(--yc)}.yc-die.held svg{fill:#fff}
+.yc-die.tumble{animation:tumble .38s ease-out}
+@keyframes tumble{0%{transform:rotate(0) scale(1)}40%{transform:rotate(-18deg) scale(.88)}70%{transform:rotate(12deg) scale(1.05)}100%{transform:rotate(0) scale(1)}}
+.yc-roll{width:min(100%,360px);height:50px;border-radius:15px;background:var(--yc);color:#2A0705;font-weight:800;font-size:16px}
+.yc-roll:disabled{opacity:.9}.yc-roll.idle{background:var(--s2);color:var(--mute);border:1px solid var(--line)}
+.yc-sheet{width:min(100%,420px);background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:4px 10px}
+.yc-row{display:grid;grid-template-columns:1fr 62px;align-items:center;min-height:28px;border-bottom:1px solid #1E2330;gap:6px}
+.yc-sheet.two .yc-row{grid-template-columns:1fr 58px 58px}
+.yc-row:last-child{border-bottom:0}
+.yc-row>span{font-size:14px;font-weight:700;color:#D9DCE5;line-height:1.1}
+.yc-row>span i{display:block;font-style:normal;font-size:10px;font-weight:600;color:var(--dim)}
+.yc-row>b{text-align:center;font-size:15px;font-weight:800}
+.yc-row>b.zero{color:var(--dim)}
+.yc-row>b.empty::after{content:"·";color:#3A4152}
+.yc-row .opt{height:25px;border-radius:8px;background:color-mix(in srgb,var(--yc) 22%,transparent);border:1px dashed var(--yc);color:#fff;font-weight:800;font-size:14px}
+.yc-row .opt.nil{background:transparent;border-color:#3A4152;color:var(--dim)}
+.yc-row.head{min-height:26px}.yc-row.head b{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.yc-row.head b.cur{color:var(--pc)}
+.yc-row.sub>span,.yc-row.sub>b{font-size:12px;color:var(--mute)}.yc-row.sub small{color:var(--dim)}.yc-row.sub em{font-style:normal;color:#3DDC84}
+.yc-row.tot>span{font-size:15px}.yc-row.tot>b{font-size:18px;color:var(--yc)}
+.turn.flash{animation:turnflash .7s}
+@keyframes turnflash{0%{transform:scale(1)}30%{transform:scale(1.04);box-shadow:0 0 0 4px color-mix(in srgb,var(--pc) 45%,transparent)}100%{transform:scale(1)}}
 /* ---------- SHEETS ---------- */
 .wf-ideas{margin-top:14px;text-align:left}
 .wf-il{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:#D9DCE5;font-size:13px;font-weight:700}
@@ -485,6 +514,9 @@ const WORD_GAMES = [
     icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#151924"/><line x1="10" y1="15" x2="36" y2="15" stroke="#5EB1FF" stroke-width="7" stroke-linecap="round" opacity=".55"/><line x1="10" y1="22" x2="30" y2="38" stroke="#FF8A65" stroke-width="7" stroke-linecap="round" opacity=".55"/>${['CAT','OWL','DOG'].map((w,r)=>[...w].map((ch,c)=>`<text x="${11+c*12.5}" y="${18+r*10}" font-size="8" font-weight="900" text-anchor="middle" fill="#ECEEF3" font-family="system-ui">${ch}</text>`).join('')).join('')}</svg>`, mount: mountWS },
 ];
 const GAMES = [...WORD_GAMES, ...COLOUR_GAMES,
+  { id: 'yc', sec: 'l', together: 1, name: 'Yacht', color: 'var(--yc)', metric: 'score', unit: 'Game', desc: 'Roll five dice, keep the best, fill the scorecard.',
+    rules: ['Each turn roll the five dice up to <b>3 times</b>. Tap dice to <b>hold</b> them between rolls.', 'Then score the roll in one empty box — the card shows what each box would give. Full house 25, small straight 30, large straight 40, <b>Yacht</b> (five alike) 50.', 'Top half (Ones–Sixes) worth 63+ earns <b>+35</b>; every extra Yacht <b>+100</b>. 13 turns; highest total wins. Two players share one scorecard and pass the phone each turn.'],
+    icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#151924"/><rect x="6" y="9" width="17" height="17" rx="4" fill="#ECEEF3" transform="rotate(-10 14.5 17.5)"/><g fill="#0B0D12" transform="rotate(-10 14.5 17.5)"><circle cx="10.5" cy="13" r="1.9"/><circle cx="14.5" cy="17.5" r="1.9"/><circle cx="18.5" cy="22" r="1.9"/></g><rect x="22" y="19" width="18" height="18" rx="4" fill="#FF6B5E" transform="rotate(8 31 28)"/><g fill="#fff" transform="rotate(8 31 28)"><circle cx="26.5" cy="23.5" r="1.9"/><circle cx="35.5" cy="23.5" r="1.9"/><circle cx="31" cy="28" r="1.9"/><circle cx="26.5" cy="32.5" r="1.9"/><circle cx="35.5" cy="32.5" r="1.9"/></g></svg>`, mount: mountYC },
   { id: 'g2', sec: 'l', unit: 'Game', name: '2048', color: 'var(--g2)', metric: 'score', desc: 'Swipe, merge equal tiles, chase 2048 and beyond.',
     rules: ['<b>Swipe</b> to slide every tile.', 'Two equal tiles that touch <b>merge</b> — 2+2 = 4, 4+4 = 8, all the way up.', 'Reach <b>2048</b>, then keep going. It ends when no move is left. Highest score wins.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#151924"/>${[['#2A2F3D','#F2B179','#2A2F3D'],['#FF8A3D','#2A2F3D','#FFE14D'],['#2A2F3D','#FF5A5F','#F2B179']].map((row,r)=>row.map((f,c)=>`<rect x="${5+c*12.5}" y="${5+r*12.5}" width="11" height="11" rx="2.5" fill="${f}"/>`).join('')).join('')}</svg>`, mount: mountG2 },
@@ -521,6 +553,7 @@ const GEN = {
   hm: (t, n) => Core.genHangman(WORDS, langOf(t), t % 10, n), ws: (t, n) => Core.genWordSearch(WORDS, langOf(t), t % 10, n),
   ub: (t, n) => Core.getUnblock(UB_BANK, t, n),
   g2: (t, n) => ({ seed: 'g2-' + n }),
+  yc: (t, n) => ({ seed: 'yc-' + n }),
 };
 const hasTiers = (g) => g.metric !== 'score';
 
@@ -530,7 +563,7 @@ function cfg(gid) {
   if (c.tier == null) c.tier = 0;
   if (!c.timer) c.timer = 'now';
   if (c.first == null) c.first = 0;
-  if (!c.mode) c.mode = G[gid] && G[gid].setMode ? 'set' : 'same';
+  if (!c.mode) c.mode = G[gid] && G[gid].setMode ? 'set' : G[gid] && G[gid].together ? 'diff' : 'same';
   if (!c.lang) c.lang = 'en';
   return c;
 }
@@ -569,7 +602,8 @@ function cmp(g, a, b, mode = 'same') {
     return { c: 0, why: 'Same moves, same time' };
   }
   if (g.metric === 'score') {
-    if (a.m !== b.m) return { c: b.m - a.m, why: 'higher score' };
+    if (a.m !== b.m) return { c: b.m - a.m, why: `higher score (${a.m} vs ${b.m})` };
+    if (g.together) return { c: 0, why: 'Same score' }; // one shared clock — time can't separate them
     if (sec(a) !== sec(b)) return { c: sec(a) - sec(b), why: 'same score — faster' };
     return { c: 0, why: 'Same score, same time' };
   }
@@ -595,7 +629,7 @@ function newRound(gid) {
   const used = new Set(); d.rounds.forEach((r) => { if (r.t === t) r.nums.forEach((n) => used.add(n)); });
   const free = () => { for (let n = 1; ; n++) if (!used.has(n) && !getRes(gid, t, n, 0) && !getRes(gid, t, n, 1)) { used.add(n); return n; } };
   if (c.mode === 'set') { d.rounds.push({ t, mode: 'set', nums: [0, 0], words: [null, null], res: [null, null], first: c.first }); store.save(); return d.rounds.length - 1; }
-  const a = free(), b = c.mode === 'diff' ? free() : a;
+  const a = free(), b = c.mode === 'diff' && !g.together ? free() : a;
   d.rounds.push({ t, mode: c.mode, nums: [a, b], res: [null, null], first: c.first });
   store.save();
   return d.rounds.length - 1;
@@ -723,7 +757,8 @@ function openLobby(gid, refresh = false) {
   kids.push(opt('Timer', seg([['now', 'Starts right away'], ['first', 'Starts on first move']], c.timer, (v) => { c.timer = v; store.save(); re(); })));
   let ri = null;
   if (S.duo) {
-    const modes = g.setMode ? [['set', 'Write words', 'for each other'], ['same', 'Same word', 'app picks'], ['diff', 'Own words', 'app picks']] : [['same', 'Same puzzle', 'take turns'], ['diff', 'Different puzzles', 'same difficulty — watch each other']];
+    const modes = g.together ? [['diff', 'Normal dice', 'everyone their own luck'], ['same', 'Same dice', 'equal luck, skill decides']]
+      : g.setMode ? [['set', 'Write words', 'for each other'], ['same', 'Same word', 'app picks'], ['diff', 'Own words', 'app picks']] : [['same', 'Same puzzle', 'take turns'], ['diff', 'Different puzzles', 'same difficulty — watch each other']];
     if (!modes.some(([m]) => m === c.mode)) c.mode = modes[0][0];
     kids.push(opt('Duel mode', seg(modes, c.mode, (v) => { c.mode = v; store.save(); re(); })));
     kids.push(opt('Who goes first', seg([[0, `${S.players[0]}`], [1, `${S.players[1]}`]], c.first, (v) => { c.first = v; store.save(); re(); })));
@@ -775,7 +810,7 @@ function handoff(gid, ri, p) {
   const other = 1 - p, otherDone = r.res[other];
   const h = $('div', 'handoff');
   h.style.setProperty('--pc', PC[p]);
-  const what = r.mode === 'set' ? `Guess the word ${nm(other)} wrote` : r.mode === 'same' ? (otherDone ? `Same puzzle ${nm(other)} just played` : 'Same puzzle for both of you') : 'Your own puzzle — same difficulty';
+  const what = g.together ? `${nm(p)} starts — take turns on one scorecard, pass the phone each turn` : r.mode === 'set' ? `Guess the word ${nm(other)} wrote` : r.mode === 'same' ? (otherDone ? `Same puzzle ${nm(other)} just played` : 'Same puzzle for both of you') : 'Your own puzzle — same difficulty';
   h.innerHTML = `<div class="kick">${g.name} · Round ${ri + 1}${r.mode === 'set' ? '' : ' · ' + tName(g, r.t)}</div>
     <div class="who">${nm(p)}</div><div class="sub">your turn</div><div class="det">${what}</div>`;
   const go = $('button', 'go', cfg(gid).timer === 'now' ? 'Start — clock runs' : 'Start');
@@ -860,12 +895,15 @@ function openGame(ctx) {
   bar.append(back, ttl, help);
   app.appendChild(bar);
 
+  let tb = null;
+  const setTurn = (q) => {
+    tb.style.setProperty('--pc', PC[q]);
+    tb.innerHTML = `<div>${dot(q)}<b>${nm(q)}${g.together ? '’s' : ''}</b> ${g.together ? 'turn' : 'is playing'} <span class="dim">· round ${ri + 1}</span></div><div class="sc">${scoreLine(gameScore(gid))}</div>`;
+    app.style.setProperty('--pc', PC[q]);
+  };
   if (duel) {
-    const tb = $('div', 'turn');
-    tb.style.setProperty('--pc', PC[p]);
-    tb.innerHTML = `<div>${dot(p)}<b>${nm(p)}</b> is playing <span class="dim">· round ${ri + 1}</span></div><div class="sc">${scoreLine(gameScore(gid))}</div>`;
-    app.appendChild(tb);
-    app.style.setProperty('--pc', PC[p]);
+    tb = $('div', 'turn');
+    app.appendChild(tb); setTurn(p);
     app.classList.add('duelling');
   } else {
     app.classList.remove('duelling');
@@ -932,10 +970,24 @@ function openGame(ctx) {
     if (document.hidden) { st.acc += (performance.now() - st.t0) / 1000; st.paused = true; }
     else { st.t0 = performance.now(); st.paused = false; }
   };
-  g.mount(stage, controls, P, api, { num, t });
+  if (duel && g.together) {
+    // both players share this one game: the mount passes the turn and reports both scores at the end
+    api.setTurn = (q) => { setTurn(q); tb.classList.remove('flash'); void tb.offsetWidth; tb.classList.add('flash'); };
+    api.endTogether = (scores, conceder) => {
+      if (st.done) return;
+      st.acc = elapsed() - st.penalty; st.started = false; st.done = true; paint();
+      const tt = Math.round(elapsed() * 10) / 10;
+      round.res = scores.map((m, q) => (q === conceder ? { x: 1, m: 0, t: tt } : { m, t: tt }));
+      store.save();
+      const last = conceder != null ? conceder : p;
+      setTimeout(() => showResult({ ...ctx, p: last }, round.res[last], null, {}, st), 600);
+    };
+  }
+  g.mount(stage, controls, P, api, { num, t, duo: duel && g.together ? { first: round.first, mode: round.mode, nums: round.nums } : null });
   const cb = (!duel && g.metric === 'score') ? null : api.btn(duel ? 'Concede' : 'Give up', () => {
     if (st.done) return;
     if (Date.now() - concedeArm > 2500) { concedeArm = Date.now(); cb.textContent = 'Tap again to confirm'; cb.classList.add('warn'); setTimeout(() => { if (!st.done) { cb.textContent = duel ? 'Concede' : 'Give up'; cb.classList.remove('warn'); } }, 2500); return; }
+    if (duel && g.together && api.concedeTogether) { api.concedeTogether(); return; }
     finish({ x: 1, m: 0 }, duel ? 'Conceded' : 'Gave up');
   }, 'concede');
   paint();
@@ -1039,7 +1091,7 @@ function showResult(ctx, r, title, info, st) {
       }
     }
   }
-  const home = $('button', 'big', `‹  ${g.name} menu · change level`); home.onclick = () => { v.remove(); toMenu(gid); };
+  const home = $('button', 'big', `‹  ${g.name} menu${hasTiers(g) ? ' · change level' : ''}`); home.onclick = () => { v.remove(); toMenu(gid); };
   btns.append(home);
   kids.push(btns);
   v = veil(kids);
@@ -2154,6 +2206,102 @@ function mountTN(stage, controls, P, api) {
   api.solution(() => { const s = new Set(P.solution); st = st.map((_, i) => (isTree.has(i) ? 0 : s.has(i) ? 2 : 1)); paint(); wrap.classList.add('done'); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; st = hist.pop(); paint(); });
   api.btn('Clear', () => { if (api.done) return; hist.push(st.slice()); st.fill(0); paint(); });
+}
+
+// ====================== YACHT ======================
+const YC = [
+  ['1', 'Ones', 'u'], ['2', 'Twos', 'u'], ['3', 'Threes', 'u'], ['4', 'Fours', 'u'], ['5', 'Fives', 'u'], ['6', 'Sixes', 'u'],
+  ['3k', 'Three of a kind', 'l'], ['4k', 'Four of a kind', 'l'], ['fh', 'Full house', 'l'], ['ss', 'Small straight', 'l'], ['ls', 'Large straight', 'l'], ['y', 'Yacht', 'l'], ['ch', 'Chance', 'l']];
+const YC_HINT = { '3k': 'sum of dice', '4k': 'sum of dice', fh: '25', ss: '30 · four in a row', ls: '40 · five in a row', y: '50 · five alike', ch: 'sum of dice' };
+function ycScore(cat, d, joker) {
+  const cnt = [0, 0, 0, 0, 0, 0, 0]; d.forEach((v) => cnt[v]++);
+  const sum = d.reduce((a, b) => a + b, 0), has = (v) => cnt[v] > 0, max = Math.max(...cnt);
+  switch (cat) {
+    case '1': case '2': case '3': case '4': case '5': case '6': return cnt[+cat] * +cat;
+    case '3k': return max >= 3 ? sum : 0;
+    case '4k': return max >= 4 ? sum : 0;
+    case 'fh': return joker || (cnt.includes(3) && cnt.includes(2)) ? 25 : 0;
+    case 'ss': return joker || [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6]].some((r) => r.every(has)) ? 30 : 0;
+    case 'ls': return joker || [[1, 2, 3, 4, 5], [2, 3, 4, 5, 6]].some((r) => r.every(has)) ? 40 : 0;
+    case 'y': return max === 5 ? 50 : 0;
+    case 'ch': return sum;
+  }
+}
+const PIPS = { 1: [[50, 50]], 2: [[28, 28], [72, 72]], 3: [[26, 26], [50, 50], [74, 74]], 4: [[28, 28], [72, 28], [28, 72], [72, 72]], 5: [[27, 27], [73, 27], [50, 50], [27, 73], [73, 73]], 6: [[28, 25], [72, 25], [28, 50], [72, 50], [28, 75], [72, 75]] };
+const dieSvg = (v) => `<svg viewBox="0 0 100 100">${v ? PIPS[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9.5"/>`).join('') : '<text x="50" y="64" text-anchor="middle" font-size="42" font-weight="800">?</text>'}</svg>`;
+function mountYC(stage, controls, P, api, ctx) {
+  const duo = ctx.duo, players = duo ? [0, 1] : [0];
+  const rng = players.map((q) => Core.rng(Core.hashStr(P.seed + (duo && duo.mode === 'diff' ? '-p' + q : ''))));
+  const cards = players.map(() => ({}));
+  const yachtBonus = players.map(() => 0);
+  let turn = duo ? duo.first : 0, dice = [0, 0, 0, 0, 0], held = [false, false, false, false, false], rolls = 0, busy = false, turnsDone = 0;
+  const TOTAL = 13 * players.length;
+  const upper = (q) => YC.slice(0, 6).reduce((a, [k]) => a + (cards[q][k] || 0), 0);
+  const total = (q) => Object.values(cards[q]).reduce((a, b) => a + b, 0) + (upper(q) >= 63 ? 35 : 0) + yachtBonus[q];
+  const diceEl = $('div', 'yc-dice');
+  const dEls = dice.map((_, i) => { const b = $('button', 'yc-die'); b.onclick = () => { if (!rolls || busy || api.done) return; held[i] = !held[i]; paint(); }; diceEl.appendChild(b); return b; });
+  const rollBtn = $('button', 'yc-roll');
+  rollBtn.onclick = roll;
+  const sheet = $('div', 'yc-sheet' + (duo ? ' two' : ''));
+  stage.append(diceEl, rollBtn, sheet);
+  const isJoker = () => { // an extra Yacht after the Yacht box already holds 50
+    if (!rolls || !dice.every((v) => v === dice[0])) return false;
+    return cards[turn].y === 50;
+  };
+  function roll() {
+    if (busy || api.done || rolls >= 3) return;
+    api.start();
+    busy = true; rolls++;
+    dEls.forEach((el, i) => { if (!held[i]) { el.classList.remove('tumble'); void el.offsetWidth; el.classList.add('tumble'); } });
+    let k = 0;
+    const spin = setInterval(() => { dice = dice.map((v, i) => (held[i] && v ? v : 1 + Math.floor(Math.random() * 6))); paint(true); if (++k >= 5) { clearInterval(spin); land(); } }, 70);
+    function land() { dice = dice.map((v, i) => (held[i] && v ? v : 1 + Math.floor(rng[turn]() * 6))); busy = false; paint(); }
+  }
+  function choose(cat) {
+    if (!rolls || busy || api.done || cards[turn][cat] != null) return;
+    const allSame = dice.every((v) => v === dice[0]);
+    if (allSame && cards[turn].y === 50) yachtBonus[turn] += 100;
+    cards[turn][cat] = ycScore(cat, dice, isJoker());
+    turnsDone++;
+    api.move();
+    if (turnsDone >= TOTAL) { paint(); finish(); return; }
+    dice = [0, 0, 0, 0, 0]; held = [false, false, false, false, false]; rolls = 0;
+    if (duo) { turn = 1 - turn; api.setTurn(turn); }
+    paint();
+  }
+  function finish() {
+    sheet.classList.add('done');
+    if (duo) api.endTogether([total(0), total(1)]);
+    else api.win({ m: total(0), title: 'Game over' });
+  }
+  api.concedeTogether = () => api.endTogether([total(0), total(1)], turn);
+  function paint(spinning) {
+    dEls.forEach((el, i) => { el.innerHTML = dieSvg(dice[i]); el.classList.toggle('held', held[i] && rolls > 0); el.classList.toggle('blank', !dice[i]); });
+    rollBtn.textContent = rolls === 0 ? 'Roll the dice' : rolls < 3 ? `Roll again · ${3 - rolls} left` : 'Pick a box to score';
+    rollBtn.disabled = rolls >= 3 || busy || api.done;
+    rollBtn.classList.toggle('idle', rolls >= 3);
+    const live = rolls > 0 && !spinning && !busy;
+    const joker = live && isJoker();
+    let h = `<div class="yc-row head"><span></span>${players.map((q) => `<b class="${duo && q === turn ? 'cur' : ''}" style="${duo ? `--pc:${PC[q]}` : ''}">${duo ? nm(q) : 'Score'}</b>`).join('')}</div>`;
+    YC.forEach(([k, name, sec], idx) => {
+      if (idx === 6) {
+        h += `<div class="yc-row sub"><span>Bonus <i>63+ in the top half → +35</i></span>${players.map((q) => `<b>${upper(q)}<small>/63</small>${upper(q) >= 63 ? ' <em>+35</em>' : ''}</b>`).join('')}</div>`;
+      }
+      h += `<div class="yc-row" data-k="${k}"><span>${name}${YC_HINT[k] ? `<i>${YC_HINT[k]}</i>` : ''}</span>`;
+      for (const q of players) {
+        const v = cards[q][k];
+        if (v != null) h += `<b class="set${v === 0 ? ' zero' : ''}">${v}</b>`;
+        else if (q === turn && live) { const pv = ycScore(k, dice, joker); h += `<button class="opt${pv ? '' : ' nil'}" data-k="${k}">${pv}</button>`; }
+        else h += `<b class="empty"></b>`;
+      }
+      h += '</div>';
+    });
+    h += `<div class="yc-row tot"><span>Total${yachtBonus.some(Boolean) ? ' <i>incl. Yacht bonus</i>' : ''}</span>${players.map((q) => `<b>${total(q)}</b>`).join('')}</div>`;
+    sheet.innerHTML = h;
+    sheet.querySelectorAll('button.opt').forEach((b) => (b.onclick = () => choose(b.dataset.k)));
+    api.setExtra('Turn', `${Math.min(13, Math.floor(turnsDone / players.length) + 1)}<i>/ 13</i>`);
+  }
+  paint();
 }
 
 // ====================== 2048 ======================
