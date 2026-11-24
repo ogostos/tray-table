@@ -351,30 +351,52 @@ input{font:inherit;color:inherit}
 
 /* ---------- YACHT ---------- */
 .stage:has(.yc-dice){justify-content:flex-start;gap:10px}
-.yc-dice{display:flex;gap:8px;justify-content:center;width:100%;padding-top:4px}
-.yc-die{flex:0 1 58px;aspect-ratio:1;border-radius:14px;background:#ECEEF3;color:#0B0D12;padding:6px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18),0 6px 14px -6px rgba(0,0,0,.6);transition:transform .15s,background .15s}
-.yc-die svg{width:100%;height:100%;display:block;fill:#0B0D12}
-.yc-die.blank{background:#2A2F3D;color:#596075}.yc-die.blank svg{fill:#596075}
-.yc-die.held{background:var(--yc);transform:translateY(-6px);box-shadow:0 0 0 3px #fff,0 10px 18px -8px var(--yc)}.yc-die.held svg{fill:#fff}
-.yc-die.tumble{animation:tumble .38s ease-out}
-@keyframes tumble{0%{transform:rotate(0) scale(1)}40%{transform:rotate(-18deg) scale(.88)}70%{transform:rotate(12deg) scale(1.05)}100%{transform:rotate(0) scale(1)}}
-.yc-roll{width:min(100%,360px);height:50px;border-radius:15px;background:var(--yc);color:#2A0705;font-weight:800;font-size:16px}
+.yc-dice{display:flex;justify-content:space-between;width:min(100%,400px);padding-top:4px}
+.yc-die{flex:none;width:var(--d,56px);height:var(--d,56px);position:relative;padding:0;border:0;background:none;border-radius:22%}
+.yc-box{position:absolute;inset:0;pointer-events:none}
+.yc-box::before{content:"";position:absolute;left:10%;right:10%;bottom:-5px;height:9px;border-radius:50%;background:rgba(0,0,0,.55);filter:blur(3px)}
+.yc-face{position:absolute;inset:0;border-radius:22%;padding:9%;background:linear-gradient(160deg,#FFFFFF,#DFE2EA);box-shadow:inset 0 -3px 0 rgba(0,0,0,.13);transition:background .15s,opacity .3s}
+.yc-face svg{width:100%;height:100%;display:block;fill:#10131A}
+.yc-die.blank .yc-face{background:transparent;box-shadow:inset 0 0 0 2px #2C3243}
+.yc-die.held .yc-face{background:linear-gradient(160deg,#FF8E84,#EE5446)}.yc-die.held .yc-face svg{fill:#fff}
+.yc-die.fade .yc-face{opacity:.3}
+.yc-shake{animation:ycShake .42s ease-out both}
+@keyframes ycShake{0%{transform:none}25%{transform:translate(-2px,-8px) rotate(-12deg)}60%{transform:translate(2px,-3px) rotate(6deg)}100%{transform:none}}
+.yc-roll{width:min(100%,400px);height:50px;border-radius:15px;background:var(--yc);color:#2A0705;font-weight:800;font-size:16px;flex:none}
 .yc-roll:disabled{opacity:.9}.yc-roll.idle{background:var(--s2);color:var(--mute);border:1px solid var(--line)}
-.yc-sheet{width:min(100%,420px);background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:4px 10px}
-.yc-row{display:grid;grid-template-columns:1fr 62px;align-items:center;min-height:28px;border-bottom:1px solid #1E2330;gap:6px}
-.yc-sheet.two .yc-row{grid-template-columns:1fr 58px 58px}
-.yc-row:last-child{border-bottom:0}
-.yc-row>span{font-size:14px;font-weight:700;color:#D9DCE5;line-height:1.1}
-.yc-row>span i{display:block;font-style:normal;font-size:10px;font-weight:600;color:var(--dim)}
-.yc-row>b{text-align:center;font-size:15px;font-weight:800}
-.yc-row>b.zero{color:var(--dim)}
-.yc-row>b.empty::after{content:"·";color:#3A4152}
-.yc-row .opt{height:25px;border-radius:8px;background:color-mix(in srgb,var(--yc) 22%,transparent);border:1px dashed var(--yc);color:#fff;font-weight:800;font-size:14px}
-.yc-row .opt.nil{background:transparent;border-color:#3A4152;color:var(--dim)}
-.yc-row.head{min-height:26px}.yc-row.head b{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.yc-row.head b.cur{color:var(--pc)}
-.yc-row.sub>span,.yc-row.sub>b{font-size:12px;color:var(--mute)}.yc-row.sub small{color:var(--dim)}.yc-row.sub em{font-style:normal;color:#3DDC84}
-.yc-row.tot>span{font-size:15px}.yc-row.tot>b{font-size:18px;color:var(--yc)}
+.yc-sheet{width:min(100%,420px);background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:8px 8px 2px}
+.yc-tiles{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 8px}
+.yc-t{display:flex;justify-content:space-between;align-items:center;gap:6px;height:44px;padding:0 6px 0 9px;border-radius:11px;background:var(--s2);text-align:left;min-width:0}
+.yc-t .nm{display:flex;flex-direction:column;min-width:0;font-weight:700;font-size:13px;line-height:1.15;color:#D9DCE5;white-space:nowrap;overflow:hidden}
+.yc-t .nm span{display:flex;align-items:center;gap:6px}
+.yc-t .nm i{font-style:normal;font-size:10.5px;font-weight:600;color:var(--dim);overflow:hidden;text-overflow:ellipsis}
+.yc-t .nm svg{width:15px;height:15px;flex:none;border-radius:4px;background:#ECEEF3;fill:#10131A;padding:1px}
+.yc-v{flex:none;width:44px;height:28px;border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:15px;border:1px solid transparent;font-variant-numeric:tabular-nums}
+.yc-v:empty::after{content:"·";color:#3A4152}
+.yc-t.pot .yc-v{color:#FFC247;background:rgba(255,194,71,.12);border-color:rgba(255,194,71,.45)}
+.yc-t.pot.z .yc-v{color:var(--dim);background:none;border:1px dashed #2E3445}
+.yc-t.pot.best .yc-v{background:#FFC247;color:#2A1E00;border-color:#FFC247}
+.yc-t.set{background:#16231F}.yc-t.set .yc-v{color:#3DDC84;background:rgba(61,220,132,.1)}
+.yc-t.set.z{background:var(--s2)}.yc-t.set.z .yc-v{color:var(--dim);background:none}
+.yc-t.just{animation:ycFlash .9s ease-out}.yc-t.just.z{animation:ycFlashZ .9s ease-out}.yc-t.just .yc-v{animation:ycPop .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes ycFlash{0%{background:rgba(61,220,132,.45)}100%{background:#16231F}}
+@keyframes ycFlashZ{0%{background:rgba(140,147,166,.35)}100%{background:var(--s2)}}
+@keyframes ycPop{0%{transform:scale(.6)}60%{transform:scale(1.28)}100%{transform:none}}
+.yc-bonus{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;height:32px;padding:0 10px;border-radius:11px;box-shadow:inset 0 0 0 1px var(--line);font-size:12px;color:var(--mute);font-weight:700;gap:8px}
+.yc-bonus span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.yc-bonus b{font-variant-numeric:tabular-nums;flex:none}.yc-bonus b.ok{color:#3DDC84}
+.yc-tot{display:flex;justify-content:space-between;align-items:center;height:44px;padding:0 6px;font-weight:800;font-size:16px}
+.yc-tot b{font-size:20px;font-variant-numeric:tabular-nums}
+.yc-who{display:flex;gap:8px}
+.yc-pl{flex:1;min-width:0;height:42px;border-radius:11px;background:var(--s2);display:flex;justify-content:space-between;align-items:center;gap:6px;padding:0 10px;font-weight:700;font-size:13px;color:var(--mute);box-shadow:inset 0 0 0 1px var(--line)}
+.yc-pl span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.yc-pl b{font-size:18px;color:#ECEEF3;font-variant-numeric:tabular-nums}
+.yc-pl.cur{color:var(--pc);box-shadow:inset 0 0 0 2px var(--pc)}
+.yc-pl.peek{background:color-mix(in srgb,var(--pc) 16%,var(--s2))}
+.yc-note{font-size:11px;color:var(--dim);text-align:center;height:22px;line-height:22px}
+.yc-tot b.up,.yc-pl b.up{color:#3DDC84;animation:ycPop .45s cubic-bezier(.3,1.6,.5,1)}
+.yc-fly{position:fixed;z-index:60;font-weight:900;font-size:18px;color:#3DDC84;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.yc-toast{position:fixed;left:50%;top:40%;z-index:60;transform:translate(-50%,-50%) scale(.8);opacity:0;pointer-events:none;background:#FFC247;color:#2A1E00;font-weight:900;font-size:24px;padding:12px 22px;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.5);transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.5,1)}
+.yc-toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .turn.flash{animation:turnflash .7s}
 @keyframes turnflash{0%{transform:scale(1)}30%{transform:scale(1.04);box-shadow:0 0 0 4px color-mix(in srgb,var(--pc) 45%,transparent)}100%{transform:scale(1)}}
 /* ---------- SHEETS ---------- */
@@ -514,8 +536,9 @@ const WORD_GAMES = [
     icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#151924"/><line x1="10" y1="15" x2="36" y2="15" stroke="#5EB1FF" stroke-width="7" stroke-linecap="round" opacity=".55"/><line x1="10" y1="22" x2="30" y2="38" stroke="#FF8A65" stroke-width="7" stroke-linecap="round" opacity=".55"/>${['CAT','OWL','DOG'].map((w,r)=>[...w].map((ch,c)=>`<text x="${11+c*12.5}" y="${18+r*10}" font-size="8" font-weight="900" text-anchor="middle" fill="#ECEEF3" font-family="system-ui">${ch}</text>`).join('')).join('')}</svg>`, mount: mountWS },
 ];
 const GAMES = [...WORD_GAMES, ...COLOUR_GAMES,
-  { id: 'yc', sec: 'l', together: 1, name: 'Yacht', color: 'var(--yc)', metric: 'score', unit: 'Game', desc: 'Roll five dice, keep the best, fill the scorecard.',
-    rules: ['Each turn roll the five dice up to <b>3 times</b>. Tap dice to <b>hold</b> them between rolls.', 'Then score the roll in one empty box — the card shows what each box would give. Full house 25, small straight 30, large straight 40, <b>Yacht</b> (five alike) 50.', 'Top half (Ones–Sixes) worth 63+ earns <b>+35</b>; every extra Yacht <b>+100</b>. 13 turns; highest total wins. Two players share one scorecard and pass the phone each turn.'],
+  { id: 'yc', sec: 'l', together: 1, name: 'Yacht', color: 'var(--yc)', metric: 'score', unit: 'Game', desc: 'Roll the dice, keep the best, fill the scorecard. Yatzy or Maxi.',
+    vars: [[1, 'Yatzy', '5 dice · 15 boxes'], [2, 'Maxi', '6 dice · 20 boxes']],
+    rules: ['Each turn roll the dice up to <b>3 times</b>. Tap dice to <b>hold</b> them between rolls.', 'Then tap one empty box to score the roll: <b style="color:#FFC247">amber</b> shows what each box would give (solid = best), <b style="color:#3DDC84">green</b> is scored.', '<b>Yatzy</b>: 5 dice, 15 boxes, top half 63+ earns +50. <b>Maxi</b>: 6 dice, 20 boxes — adds three pairs, five of a kind, Castle (3+3), Tower (4+2) and a 1–6 straight; top half 84+ earns +100. Highest total wins; two players take turns and pass the phone.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#151924"/><rect x="6" y="9" width="17" height="17" rx="4" fill="#ECEEF3" transform="rotate(-10 14.5 17.5)"/><g fill="#0B0D12" transform="rotate(-10 14.5 17.5)"><circle cx="10.5" cy="13" r="1.9"/><circle cx="14.5" cy="17.5" r="1.9"/><circle cx="18.5" cy="22" r="1.9"/></g><rect x="22" y="19" width="18" height="18" rx="4" fill="#FF6B5E" transform="rotate(8 31 28)"/><g fill="#fff" transform="rotate(8 31 28)"><circle cx="26.5" cy="23.5" r="1.9"/><circle cx="35.5" cy="23.5" r="1.9"/><circle cx="31" cy="28" r="1.9"/><circle cx="26.5" cy="32.5" r="1.9"/><circle cx="35.5" cy="32.5" r="1.9"/></g></svg>`, mount: mountYC },
   { id: 'g2', sec: 'l', unit: 'Game', name: '2048', color: 'var(--g2)', metric: 'score', desc: 'Swipe, merge equal tiles, chase 2048 and beyond.',
     rules: ['<b>Swipe</b> to slide every tile.', 'Two equal tiles that touch <b>merge</b> — 2+2 = 4, 4+4 = 8, all the way up.', 'Reach <b>2048</b>, then keep going. It ends when no move is left. Highest score wins.'],
@@ -553,7 +576,7 @@ const GEN = {
   hm: (t, n) => Core.genHangman(WORDS, langOf(t), t % 10, n), ws: (t, n) => Core.genWordSearch(WORDS, langOf(t), t % 10, n),
   ub: (t, n) => Core.getUnblock(UB_BANK, t, n),
   g2: (t, n) => ({ seed: 'g2-' + n }),
-  yc: (t, n) => ({ seed: 'yc-' + n }),
+  yc: (t, n) => ({ seed: 'yc-' + n, rules: t === 2 ? 'maxi' : 'yatzy' }),
 };
 const hasTiers = (g) => g.metric !== 'score';
 
@@ -571,8 +594,10 @@ function cfg(gid) {
 // word games keep each language's progress apart: level + 0 (English), + 10 (Russian), + 20 (Armenian)
 const LOFF = { en: 0, ru: 10, hy: 20 };
 function langOf(t) { return ['en', 'ru', 'hy'][Math.floor(t / 10)] || 'en'; }
-const tkey = (g, c) => (hasTiers(g) ? c.tier : 0) + (g.lang ? LOFF[c.lang] || 0 : 0);
-const tName = (g, t) => (hasTiers(g) ? TN[t % 10] : 'Classic') + (g.lang ? ' · ' + langOf(t).toUpperCase() : '');
+// score games with rule variants (Yacht: 1 = Yatzy, 2 = Maxi; 0 = the old Classic card)
+const varOf = (g, c) => (g.vars.some(([v]) => v === c.tier) ? c.tier : g.vars[0][0]);
+const tkey = (g, c) => (hasTiers(g) ? c.tier : g.vars ? varOf(g, c) : 0) + (g.lang ? LOFF[c.lang] || 0 : 0);
+const tName = (g, t) => (hasTiers(g) ? TN[t % 10] : g.vars ? (g.vars.find(([v]) => v === t) || [0, 'Classic'])[1] : 'Classic') + (g.lang ? ' · ' + langOf(t).toUpperCase() : '');
 const LANGS = [['en', 'English'], ['ru', 'Русский'], ['hy', 'Հայերեն']];
 const LNAME = { en: 'English', ru: 'Russian', hy: 'Armenian' };
 const rkey = (t, n) => t + ':' + n;
@@ -587,7 +612,7 @@ function putRes(gid, t, n, p, r) {
 }
 function nextNum(gid, t, p) { for (let n = 1; ; n++) if (!getRes(gid, t, n, p)) return n; }
 function solvedCount(gid, t, p) { const g = S.res[gid] || {}; return Object.keys(g).filter((k) => k.startsWith(t + ':') && g[k][p]).length; }
-function bestScore(gid, p) { let b = 0; for (const k in S.res[gid] || {}) { const r = S.res[gid][k][p]; if (r) b = Math.max(b, r.m); } return b; }
+function bestScore(gid, p, t) { let b = 0; for (const k in S.res[gid] || {}) { if (t != null && !k.startsWith(t + ':')) continue; const r = S.res[gid][k][p]; if (r) b = Math.max(b, r.m); } return b; }
 
 // a < b  => c < 0. Conceded results always lose; ties broken by a second measure where there is one.
 function cmp(g, a, b, mode = 'same') {
@@ -701,8 +726,8 @@ function renderHome() {
         const s = gameScore(g.id), ri = openRound(g.id);
         meta = `<b class="num"><span style="color:${PC[0]}">${s[0]}</span><span class="dim">–</span><span style="color:${PC[1]}">${s[2]}</span></b><span>${ri != null ? `${nm(turnOf(duelOf(g.id).rounds[ri]))}'s turn` : s[0] + s[1] + s[2] ? `${s[0] + s[1] + s[2]} rounds` : 'no rounds yet'}</span>`;
       } else if (!hasTiers(g)) {
-        const b = bestScore(g.id, 0);
-        meta = `<b class="num">${b ? b.toLocaleString('en-US') : 'Play'}</b><span>${b ? 'best score' : 'new game'}</span>`;
+        const tv = g.vars ? tkey(g, cf) : null, b = bestScore(g.id, 0, tv);
+        meta = `<b class="num">${b ? b.toLocaleString('en-US') : 'Play'}</b><span>${g.vars ? (b ? 'best · ' : '') + tName(g, tv) : b ? 'best score' : 'new game'}</span>`;
       } else meta = `<b class="num">#${nextNum(g.id, tkey(g, cf), 0)}</b><span>${tName(g, tkey(g, cf))}</span>`;
       const isFav = S.fav.includes(g.id);
       c.innerHTML = `<div class="ico">${g.icon}</div><div><div class="cname">${g.name}</div><div class="cdesc">${g.desc}</div></div><div class="cmeta">${meta}</div>`;
@@ -753,6 +778,7 @@ function openLobby(gid, refresh = false) {
   const re = () => openLobby(gid, true);
   if (g.lang) kids.push(opt('Language', seg(LANGS, c.lang, (v) => { c.lang = v; store.save(); re(); })));
   const off = g.lang ? LOFF[c.lang] || 0 : 0;
+  if (g.vars) kids.push(opt('Rules', seg(g.vars, varOf(g, c), (v) => { c.tier = v; store.save(); re(); })));
   if (hasTiers(g) && !(S.duo && c.mode === 'set')) kids.push(opt(g.tierHint ? 'Difficulty · word length' : 'Difficulty', seg(TN.map((n, t) => [t, n, g.tierHint ? g.tierHint[t] : S.duo ? null : `${solvedCount(gid, t + off, 0)} done`]), c.tier, (v) => { c.tier = v; store.save(); re(); })));
   kids.push(opt('Timer', seg([['now', 'Starts right away'], ['first', 'Starts on first move']], c.timer, (v) => { c.timer = v; store.save(); re(); })));
   let ri = null;
@@ -774,7 +800,7 @@ function openLobby(gid, refresh = false) {
   const go = $('button', 'big pri');
   if (!S.duo) {
     const t = tkey(g, c), n = nextNum(gid, t, 0);
-    go.textContent = hasTiers(g) ? `Play ${tName(g, t)} #${n}` : 'New game';
+    go.textContent = hasTiers(g) ? `Play ${tName(g, t)} #${n}` : g.vars ? `New ${tName(g, t)} game` : 'New game';
     go.onclick = () => { v.remove(); openGame({ gid, t, num: n, p: 0 }); };
   } else if (ri != null) {
     const d = duelOf(gid), r = d.rounds[ri], p = turnOf(r);
@@ -922,7 +948,8 @@ function openGame(ctx) {
     const o = round.res[1 - p];
     sThird.innerHTML = `<label>${nm(1 - p)}</label><b class="num">${o ? (o.x ? '—' : fmtMain(g, o).replace(' ' + (g.mword || 'moves'), `<i>${g.mword ? 'miss' : 'mv'}</i>`)) : '…'}</b>`;
   } else {
-    const mine = getRes(gid, t, num, 0);
+    const bs = g.metric === 'score' ? bestScore(gid, 0, g.vars ? t : null) : 0;
+    const mine = g.metric === 'score' ? (bs ? { m: bs } : null) : getRes(gid, t, num, 0);
     sThird.innerHTML = `<label>Best</label><b class="num">${mine ? fmtMain(g, mine).replace(' ' + (g.mword || 'moves'), `<i>${g.mword || 'moves'}</i>`) : '—'}</b>`;
   }
   stats.append(sMain, sTime, sThird);
@@ -1041,13 +1068,13 @@ function showResult(ctx, r, title, info, st) {
     if (!r.x && g.metric === 'moves' && st.par != null) { const pl = st.parLabel || 'par'; verdict.push(r.m < st.par ? `Under the ${pl} by ${st.par - r.m}!` : r.m === st.par ? `Right on ${pl}.` : `${pl[0].toUpperCase() + pl.slice(1)} is ${st.par} — ${r.m - st.par} over.`); }
     if (!r.x && info.isBest && info.prev) verdict.push('New personal best!');
     let second = '';
-    if (g.metric === 'score') second = resCard(g, { m: bestScore(gid, 0), t: 0 }, 'Best ever').replace(/points · 0:00/, 'points');
+    if (g.metric === 'score') second = resCard(g, { m: bestScore(gid, 0, g.vars ? t : null), t: 0 }, g.vars ? `Best ${tName(g, t)}` : 'Best ever').replace(/points · 0:00/, 'points');
     else if (info.prev) second = resCard(g, info.prev, info.isBest ? 'Previous best' : 'Your best');
     kids.push($('div', 'res-row' + (second ? '' : ' solo1'), resCard(g, r, g.unit ? 'This game' : 'This run', { best: !r.x }) + second));
     if (verdict.length) kids.push($('div', 'verdict', verdict.join(' · ')));
     let nx = num + 1; while (getRes(gid, t, nx, 0)) nx++; // next unsolved puzzle after this one
     const bNext = $('button', 'big pri', hasTiers(g) ? `Next puzzle · #${nx}` : 'New game');
-    bNext.onclick = () => { v.remove(); openGame({ gid, t, num: hasTiers(g) ? nx : nextNum(gid, 0, 0), p: 0 }); };
+    bNext.onclick = () => { v.remove(); openGame({ gid, t, num: hasTiers(g) ? nx : nextNum(gid, g.vars ? t : 0, 0), p: 0 }); };
     btns.append(bNext);
     if (hasTiers(g)) { const a = $('button', 'big', r.x ? 'Try this one again' : 'Play this one again'); a.onclick = () => { v.remove(); openGame(ctx); }; btns.append(a); }
   } else {
@@ -2208,66 +2235,121 @@ function mountTN(stage, controls, P, api) {
   api.btn('Clear', () => { if (api.done) return; hist.push(st.slice()); st.fill(0); paint(); });
 }
 
-// ====================== YACHT ======================
-const YC = [
-  ['1', 'Ones', 'u'], ['2', 'Twos', 'u'], ['3', 'Threes', 'u'], ['4', 'Fours', 'u'], ['5', 'Fives', 'u'], ['6', 'Sixes', 'u'],
-  ['3k', 'Three of a kind', 'l'], ['4k', 'Four of a kind', 'l'], ['fh', 'Full house', 'l'], ['ss', 'Small straight', 'l'], ['ls', 'Large straight', 'l'], ['y', 'Yacht', 'l'], ['ch', 'Chance', 'l']];
-const YC_HINT = { '3k': 'sum of dice', '4k': 'sum of dice', fh: '25', ss: '30 · four in a row', ls: '40 · five in a row', y: '50 · five alike', ch: 'sum of dice' };
-function ycScore(cat, d, joker) {
-  const cnt = [0, 0, 0, 0, 0, 0, 0]; d.forEach((v) => cnt[v]++);
-  const sum = d.reduce((a, b) => a + b, 0), has = (v) => cnt[v] > 0, max = Math.max(...cnt);
-  switch (cat) {
-    case '1': case '2': case '3': case '4': case '5': case '6': return cnt[+cat] * +cat;
-    case '3k': return max >= 3 ? sum : 0;
-    case '4k': return max >= 4 ? sum : 0;
-    case 'fh': return joker || (cnt.includes(3) && cnt.includes(2)) ? 25 : 0;
-    case 'ss': return joker || [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6]].some((r) => r.every(has)) ? 30 : 0;
-    case 'ls': return joker || [[1, 2, 3, 4, 5], [2, 3, 4, 5, 6]].some((r) => r.every(has)) ? 40 : 0;
-    case 'y': return max === 5 ? 50 : 0;
-    case 'ch': return sum;
-  }
-}
+// ====================== YACHT (Yatzy · Maxi Yatzy) ======================
+const YC_UP = [['1', 'Ones'], ['2', 'Twos'], ['3', 'Threes'], ['4', 'Fours'], ['5', 'Fives'], ['6', 'Sixes']].map(([k, n]) => [k, n, '', (c) => c[+k] * +k]);
+const YC_F = [6, 5, 4, 3, 2, 1];
+const ycKind = (n) => (c) => { for (const f of YC_F) if (c[f] >= n) return f * n; return 0; };
+const ycPairs = (m) => (c) => { const p = YC_F.filter((f) => c[f] >= 2); return p.length >= m ? p.slice(0, m).reduce((a, f) => a + 2 * f, 0) : 0; };
+const ycRun = (a, b, pts) => (c) => { for (let f = a; f <= b; f++) if (!c[f]) return 0; return pts; };
+const ycCombo = (x, y) => (c) => { let best = 0; for (const a of YC_F) if (c[a] >= x) for (const b of YC_F) if (b !== a && c[b] >= y) best = Math.max(best, a * x + b * y); return best; };
+const ycSum = (c, s) => s, ycAlike = (n, pts) => (c) => (Math.max(...c) === n ? pts : 0);
+const YC_RULES = {
+  yatzy: { n: 5, target: 63, bonus: 50, yk: 'y', cats: [...YC_UP,
+    ['p1', 'One pair', 'sum of the pair', ycPairs(1)], ['p2', 'Two pairs', 'sum of both pairs', ycPairs(2)],
+    ['3k', 'Three of a kind', 'sum of the three', ycKind(3)], ['4k', 'Four of a kind', 'sum of the four', ycKind(4)],
+    ['ss', 'Small straight', '1-2-3-4-5 · 15', ycRun(1, 5, 15)], ['ls', 'Large straight', '2-3-4-5-6 · 20', ycRun(2, 6, 20)],
+    ['fh', 'Full house', '3 + 2 · sum', ycCombo(3, 2)], ['ch', 'Chance', 'sum of dice', ycSum], ['y', 'Yatzy', 'five alike · 50', ycAlike(5, 50)]] },
+  maxi: { n: 6, target: 84, bonus: 100, yk: 'my', cats: [...YC_UP,
+    ['p1', 'One pair', 'sum of the pair', ycPairs(1)], ['p2', 'Two pairs', 'sum of the pairs', ycPairs(2)], ['p3', 'Three pairs', 'sum of the pairs', ycPairs(3)],
+    ['3k', 'Three of a kind', 'sum of the three', ycKind(3)], ['4k', 'Four of a kind', 'sum of the four', ycKind(4)], ['5k', 'Five of a kind', 'sum of the five', ycKind(5)],
+    ['ss', 'Small straight', '1–5 · 15', ycRun(1, 5, 15)], ['ls', 'Large straight', '2–6 · 20', ycRun(2, 6, 20)], ['fs', 'Full straight', '1–6 · 21', ycRun(1, 6, 21)],
+    ['fh', 'Full house', '3 + 2 · sum', ycCombo(3, 2)], ['cs', 'Castle', '3 + 3 · sum', ycCombo(3, 3)], ['tw', 'Tower', '4 + 2 · sum', ycCombo(4, 2)],
+    ['ch', 'Chance', 'sum of dice', ycSum], ['my', 'Maxi Yatzy', 'six alike · 100', ycAlike(6, 100)]] },
+};
+function ycScore(R, k, d) { const c = [0, 0, 0, 0, 0, 0, 0]; d.forEach((v) => c[v]++); return R.cats.find((r) => r[0] === k)[3](c, d.reduce((a, b) => a + b, 0)); }
 const PIPS = { 1: [[50, 50]], 2: [[28, 28], [72, 72]], 3: [[26, 26], [50, 50], [74, 74]], 4: [[28, 28], [72, 28], [28, 72], [72, 72]], 5: [[27, 27], [73, 27], [50, 50], [27, 73], [73, 73]], 6: [[28, 25], [72, 25], [28, 50], [72, 50], [28, 75], [72, 75]] };
-const dieSvg = (v) => `<svg viewBox="0 0 100 100">${v ? PIPS[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9.5"/>`).join('') : '<text x="50" y="64" text-anchor="middle" font-size="42" font-weight="800">?</text>'}</svg>`;
+const ycFace = (v) => (v ? `<svg viewBox="0 0 100 100">${PIPS[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="10"/>`).join('')}</svg>` : '');
+const ycAnim = (el, cls, delay = 0) => { el.style.animationDelay = delay + 'ms'; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); el.addEventListener('animationend', () => el.classList.remove(cls), { once: true }); };
 function mountYC(stage, controls, P, api, ctx) {
+  const R = YC_RULES[P.rules] || YC_RULES.yatzy, N = R.cats.length, ND = R.n;
   const duo = ctx.duo, players = duo ? [0, 1] : [0];
   const rng = players.map((q) => Core.rng(Core.hashStr(P.seed + (duo && duo.mode === 'diff' ? '-p' + q : ''))));
-  const cards = players.map(() => ({}));
-  const yachtBonus = players.map(() => 0);
-  let turn = duo ? duo.first : 0, dice = [0, 0, 0, 0, 0], held = [false, false, false, false, false], rolls = 0, busy = false, turnsDone = 0;
-  const TOTAL = 13 * players.length;
-  const upper = (q) => YC.slice(0, 6).reduce((a, [k]) => a + (cards[q][k] || 0), 0);
-  const total = (q) => Object.values(cards[q]).reduce((a, b) => a + b, 0) + (upper(q) >= 63 ? 35 : 0) + yachtBonus[q];
+  const cards = players.map(() => ({})), shown = players.map(() => 0);
+  let turn = duo ? duo.first : 0, view = turn, dice = Array(ND).fill(0), held = dice.map(() => false), rolls = 0, busy = false, turnsDone = 0;
+  const TOTAL = N * players.length;
+  const upper = (q) => YC_UP.reduce((a, [k]) => a + (cards[q][k] || 0), 0);
+  const total = (q) => Object.values(cards[q]).reduce((a, b) => a + b, 0) + (upper(q) >= R.target ? R.bonus : 0);
   const diceEl = $('div', 'yc-dice');
-  const dEls = dice.map((_, i) => { const b = $('button', 'yc-die'); b.onclick = () => { if (!rolls || busy || api.done) return; held[i] = !held[i]; paint(); }; diceEl.appendChild(b); return b; });
+  const dEls = dice.map((_, i) => {
+    const b = $('button', 'yc-die blank', '<div class="yc-box"><div class="yc-face"></div></div>');
+    b.setAttribute('aria-label', `Die ${i + 1}`);
+    b.onclick = () => { if (!rolls || busy || api.done) return; held[i] = !held[i]; b.classList.toggle('held', held[i]); };
+    diceEl.appendChild(b); return b;
+  });
+  // dice are drawn at an exact pixel size, so they are always square
+  const size = () => { const w = diceEl.clientWidth || 340, gap = ND === 6 ? 8 : 10; diceEl.style.setProperty('--d', Math.floor(Math.min(ND === 6 ? 54 : 60, (w - gap * (ND - 1)) / ND)) + 'px'); };
+  const ro = new ResizeObserver(() => { if (!diceEl.isConnected) { ro.disconnect(); return; } size(); });
+  ro.observe(diceEl);
   const rollBtn = $('button', 'yc-roll');
   rollBtn.onclick = roll;
-  const sheet = $('div', 'yc-sheet' + (duo ? ' two' : ''));
-  stage.append(diceEl, rollBtn, sheet);
-  const isJoker = () => { // an extra Yacht after the Yacht box already holds 50
-    if (!rolls || !dice.every((v) => v === dice[0])) return false;
-    return cards[turn].y === 50;
-  };
+  const sheet = $('div', 'yc-sheet');
+  const toastEl = $('div', 'yc-toast');
+  stage.append(diceEl, rollBtn, sheet, toastEl);
+  const setFace = (i, v) => { dEls[i].firstChild.firstChild.innerHTML = ycFace(v); };
+  const toast = (t) => { toastEl.textContent = t; toastEl.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => toastEl.classList.remove('on'), 1100); };
   function roll() {
     if (busy || api.done || rolls >= 3) return;
     api.start();
-    busy = true; rolls++;
-    dEls.forEach((el, i) => { if (!held[i]) { el.classList.remove('tumble'); void el.offsetWidth; el.classList.add('tumble'); } });
-    let k = 0;
-    const spin = setInterval(() => { dice = dice.map((v, i) => (held[i] && v ? v : 1 + Math.floor(Math.random() * 6))); paint(true); if (++k >= 5) { clearInterval(spin); land(); } }, 70);
-    function land() { dice = dice.map((v, i) => (held[i] && v ? v : 1 + Math.floor(rng[turn]() * 6))); busy = false; paint(); }
+    busy = true; rolls++; view = turn;
+    const res = dice.map((v, i) => (held[i] && v ? v : 1 + Math.floor(rng[turn]() * 6)));
+    paintCard(); paintBtn();
+    let last = 0;
+    dice.forEach((v, i) => {
+      if (held[i] && v) return;
+      const el = dEls[i], delay = i * 50; last = delay;
+      el.classList.remove('blank');
+      ycAnim(el.firstChild, 'yc-shake', delay); // one shake, then it settles — no second wobble
+      [0, 80, 170, 260].forEach((t) => setTimeout(() => setFace(i, 1 + Math.floor(Math.random() * 6)), delay + t));
+      setTimeout(() => setFace(i, res[i]), delay + 340);
+    });
+    setTimeout(() => {
+      dice = res; busy = false;
+      if (!sheet.isConnected) return;
+      paintCard(); paintBtn();
+      if (res.every((v) => v === res[0])) toast(R.cats.find((r) => r[0] === R.yk)[1] + '!');
+    }, last + 440);
   }
-  function choose(cat) {
-    if (!rolls || busy || api.done || cards[turn][cat] != null) return;
-    const allSame = dice.every((v) => v === dice[0]);
-    if (allSame && cards[turn].y === 50) yachtBonus[turn] += 100;
-    cards[turn][cat] = ycScore(cat, dice, isJoker());
-    turnsDone++;
+  function choose(k) {
+    if (!rolls || busy || api.done || view !== turn || cards[turn][k] != null) return;
+    const q = turn, before = total(q), bonusBefore = upper(q) >= R.target;
+    const v = ycScore(R, k, dice);
+    cards[q][k] = v; turnsDone++; rolls = 0; held = held.map(() => false);
     api.move();
-    if (turnsDone >= TOTAL) { paint(); finish(); return; }
-    dice = [0, 0, 0, 0, 0]; held = [false, false, false, false, false]; rolls = 0;
-    if (duo) { turn = 1 - turn; api.setTurn(turn); }
-    paint();
+    paintCard(k); paintBtn();
+    if (v) fly(sheet.querySelector(`[data-k="${k}"] .yc-v`), sheet.querySelector(`[data-tot="${q}"]`), '+' + v);
+    countTo(q, before, total(q));
+    if (!bonusBefore && upper(q) >= R.target) setTimeout(() => toast('Bonus +' + R.bonus), 450);
+    busy = true;
+    dEls.forEach((el) => { el.classList.remove('held'); el.classList.add('fade'); });
+    setTimeout(() => {
+      if (!sheet.isConnected) return;
+      dEls.forEach((el, i) => { el.classList.remove('fade'); el.classList.add('blank'); setFace(i, 0); });
+      dice = dice.map(() => 0); busy = false;
+      if (turnsDone >= TOTAL) { paintBtn(); finish(); return; }
+      if (duo) { turn = 1 - turn; view = turn; api.setTurn(turn); paintCard(); }
+      paintBtn();
+    }, duo ? 850 : 400);
+  }
+  function fly(from, to, text) {
+    if (!from || !to) return;
+    const a = from.getBoundingClientRect(), b = to.getBoundingClientRect();
+    const el = $('div', 'yc-fly', text);
+    el.style.left = a.left + a.width / 2 - 14 + 'px'; el.style.top = a.top + 2 + 'px';
+    document.body.appendChild(el);
+    const dx = b.left + b.width / 2 - a.left - a.width / 2, dy = b.top - a.top;
+    el.animate([{ transform: 'translate(0,0) scale(1.2)', opacity: 1 }, { transform: 'translate(0,-14px) scale(1.3)', opacity: 1, offset: 0.25 }, { transform: `translate(${dx}px,${dy}px) scale(.8)`, opacity: 0.3 }], { duration: 700, easing: 'cubic-bezier(.5,0,.3,1)' }).onfinish = () => el.remove();
+  }
+  function countTo(q, a, b) {
+    if (a === b) { shown[q] = b; return; }
+    const t0 = performance.now() + 350;
+    const step = (t) => {
+      const p = Math.max(0, Math.min(1, (t - t0) / 450));
+      shown[q] = a + (b - a) * (1 - (1 - p) ** 3);
+      const el = sheet.querySelector(`[data-tot="${q}"]`); if (el) el.textContent = Math.round(shown[q]);
+      if (p < 1 && sheet.isConnected) requestAnimationFrame(step); else shown[q] = b;
+    };
+    requestAnimationFrame(step);
+    setTimeout(() => { const el = sheet.querySelector(`[data-tot="${q}"]`); if (el) ycAnim(el, 'up'); }, 350);
   }
   function finish() {
     sheet.classList.add('done');
@@ -2275,33 +2357,41 @@ function mountYC(stage, controls, P, api, ctx) {
     else api.win({ m: total(0), title: 'Game over' });
   }
   api.concedeTogether = () => api.endTogether([total(0), total(1)], turn);
-  function paint(spinning) {
-    dEls.forEach((el, i) => { el.innerHTML = dieSvg(dice[i]); el.classList.toggle('held', held[i] && rolls > 0); el.classList.toggle('blank', !dice[i]); });
+  function paintBtn() {
     rollBtn.textContent = rolls === 0 ? 'Roll the dice' : rolls < 3 ? `Roll again · ${3 - rolls} left` : 'Pick a box to score';
     rollBtn.disabled = rolls >= 3 || busy || api.done;
     rollBtn.classList.toggle('idle', rolls >= 3);
-    const live = rolls > 0 && !spinning && !busy;
-    const joker = live && isJoker();
-    let h = `<div class="yc-row head"><span></span>${players.map((q) => `<b class="${duo && q === turn ? 'cur' : ''}" style="${duo ? `--pc:${PC[q]}` : ''}">${duo ? nm(q) : 'Score'}</b>`).join('')}</div>`;
-    YC.forEach(([k, name, sec], idx) => {
-      if (idx === 6) {
-        h += `<div class="yc-row sub"><span>Bonus <i>63+ in the top half → +35</i></span>${players.map((q) => `<b>${upper(q)}<small>/63</small>${upper(q) >= 63 ? ' <em>+35</em>' : ''}</b>`).join('')}</div>`;
-      }
-      h += `<div class="yc-row" data-k="${k}"><span>${name}${YC_HINT[k] ? `<i>${YC_HINT[k]}</i>` : ''}</span>`;
-      for (const q of players) {
-        const v = cards[q][k];
-        if (v != null) h += `<b class="set${v === 0 ? ' zero' : ''}">${v}</b>`;
-        else if (q === turn && live) { const pv = ycScore(k, dice, joker); h += `<button class="opt${pv ? '' : ' nil'}" data-k="${k}">${pv}</button>`; }
-        else h += `<b class="empty"></b>`;
-      }
-      h += '</div>';
-    });
-    h += `<div class="yc-row tot"><span>Total${yachtBonus.some(Boolean) ? ' <i>incl. Yacht bonus</i>' : ''}</span>${players.map((q) => `<b>${total(q)}</b>`).join('')}</div>`;
-    sheet.innerHTML = h;
-    sheet.querySelectorAll('button.opt').forEach((b) => (b.onclick = () => choose(b.dataset.k)));
-    api.setExtra('Turn', `${Math.min(13, Math.floor(turnsDone / players.length) + 1)}<i>/ 13</i>`);
   }
-  paint();
+  function paintCard(just) {
+    const q = view, mine = q === turn, live = mine && rolls > 0 && !busy;
+    let pot = null, best = 0;
+    if (live) { pot = {}; R.cats.forEach(([k]) => { if (cards[q][k] == null) { pot[k] = ycScore(R, k, dice); best = Math.max(best, pot[k]); } }); }
+    const up = upper(q), ok = up >= R.target;
+    const tile = ([k, name, hint], idx) => {
+      const v = cards[q][k];
+      let cls = '', txt = '';
+      if (v != null) { cls = 'set' + (v ? '' : ' z'); txt = v; }
+      else if (pot) { cls = 'pot' + (pot[k] ? '' : ' z') + (pot[k] && pot[k] === best ? ' best' : ''); txt = pot[k]; }
+      return `<button class="yc-t ${cls}" data-k="${k}"><span class="nm"><span>${idx < 6 ? ycFace(+k) : ''}${name}</span>${hint ? `<i>${hint}</i>` : ''}</span><b class="yc-v">${txt}</b></button>`;
+    };
+    let h = '';
+    if (duo) {
+      h += `<div class="yc-who">${players.map((p) => `<button class="yc-pl${p === turn ? ' cur' : ''}${p === view && p !== turn ? ' peek' : ''}" data-p="${p}" style="--pc:${PC[p]}"><span>${nm(p)}${p === turn ? ' · turn' : ''}</span><b data-tot="${p}">${Math.round(shown[p])}</b></button>`).join('')}</div>`;
+      h += `<div class="yc-note">${mine ? 'Tap the other name to see their card' : `${nm(q)}'s card — tap ${nm(turn)} to go back`}</div>`;
+    }
+    h += `<div class="yc-tiles">${R.cats.slice(0, 6).map(tile).join('')}<div class="yc-bonus"><span>Bonus · ${R.target}+ in the top half → +${R.bonus}</span><b class="${ok ? 'ok' : ''}">${ok ? '+' + R.bonus : up + ' / ' + R.target}</b></div>${R.cats.slice(6).map((r, i) => tile(r, i + 6)).join('')}</div>`;
+    if (!duo) h += `<div class="yc-tot"><span>Total</span><b data-tot="0">${Math.round(shown[0])}</b></div>`;
+    sheet.innerHTML = h;
+    if (just) sheet.querySelector(`[data-k="${just}"]`).classList.add('just');
+    api.setExtra('Turn', `${Math.min(N, Math.floor(turnsDone / players.length) + 1)}<i>/ ${N}</i>`);
+  }
+  sheet.onclick = (e) => {
+    const pb = e.target.closest('.yc-pl');
+    if (pb) { if (busy) return; const p = +pb.dataset.p; view = view === p && p !== turn ? turn : p; paintCard(); return; }
+    const t = e.target.closest('.yc-t');
+    if (t) choose(t.dataset.k);
+  };
+  paintCard(); paintBtn(); size();
 }
 
 // ====================== 2048 ======================
