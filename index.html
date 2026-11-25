@@ -1686,7 +1686,7 @@ const UB_BANK = [["8:222h142v122h333h322v053v312v302v032h002h112v442h512h","8:22
 </script>
 <script>
 // ====================== STATE ======================
-const APP_VERSION = 'a61775cee2';
+const APP_VERSION = '863d745993';
 const KEY = 'traytable.v2';
 const store = (() => {
   let mem = null;
@@ -3484,7 +3484,7 @@ const YC_RULES = {
   maxi: { n: 6, target: 84, bonus: 100, yk: 'my', cats: [...YC_UP,
     ['p1', 'One pair', 'sum of the pair', ycPairs(1)], ['p2', 'Two pairs', 'sum of the pairs', ycPairs(2)], ['p3', 'Three pairs', 'sum of the pairs', ycPairs(3)],
     ['3k', 'Three of a kind', 'sum of the three', ycKind(3)], ['4k', 'Four of a kind', 'sum of the four', ycKind(4)], ['5k', 'Five of a kind', 'sum of the five', ycKind(5)],
-    ['ss', 'Small straight', '4 in a row · 15', ycStr(4, 15)], ['ls', 'Large straight', '5 in a row · 30', ycStr(5, 30)], ['fs', 'Full straight', '1–6 · 21', ycRun(1, 6, 21)],
+    ['ss', 'Small straight', '4 in a row · 15', ycStr(4, 15)], ['ls', 'Large straight', '5 in a row · 30', ycStr(5, 30)], ['fs', 'Full straight', '1–6 · 60', ycRun(1, 6, 60)],
     ['fh', 'Full house', '3 + 2 · sum', ycCombo(3, 2)], ['cs', 'Castle', '3 + 3 · sum', ycCombo(3, 3)], ['tw', 'Tower', '4 + 2 · sum', ycCombo(4, 2)],
     ['ch', 'Chance', 'sum of dice', ycSum], ['my', 'Maxi Yatzy', 'six alike · 100', ycAlike(6, 100)]] },
 };
