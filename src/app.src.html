@@ -349,6 +349,10 @@ input{font:inherit;color:inherit}
 .wf-err{min-height:18px;color:#FFD0D0;font-size:13px}
 .wordform .go{width:100%}
 
+/* ---------- hints ---------- */
+.hintfx{animation:hintPulse .7s ease-in-out 4!important;box-shadow:0 0 0 3px #FFC247,0 0 22px rgba(255,194,71,.85)!important;z-index:4}
+@keyframes hintPulse{50%{filter:brightness(1.45)}}
+.cbtn.hintb{border-color:rgba(255,194,71,.45);color:#FFC247}
 /* ---------- BLOOM (match-3) ---------- */
 .stage:has(.bl-wrap){justify-content:flex-start;padding-top:2px}
 .bl-wrap{width:min(100%,440px);display:flex;flex-direction:column;gap:8px;user-select:none;-webkit-user-select:none}
@@ -682,6 +686,11 @@ function putRes(gid, t, n, p, r) {
   if (isBest) g[k][p] = r;
   return { prev, isBest };
 }
+// in-progress games: one save per game (solo: tier + number; duel: round + player)
+const saveOf = (gid) => (S.saves && S.saves[gid]) || null;
+const dropSave = (gid, k) => { if (S.saves && S.saves[gid] && (k == null || S.saves[gid].k === k)) { delete S.saves[gid]; store.save(); } };
+const hintFx = (...els) => { document.querySelectorAll('.hintfx').forEach((e) => e.classList.remove('hintfx')); hintFx1(els); };
+const hintFx1 = (els) => els.forEach((el) => { if (!el) return; el.classList.remove('hintfx'); void el.offsetWidth; el.classList.add('hintfx'); setTimeout(() => el.classList.remove('hintfx'), 2900); });
 const seen = (gid, t, n) => !!(S.seen && S.seen[gid] && S.seen[gid][t + ':' + n]);
 function markSeen(gid, t, n) { S.seen = S.seen || {}; (S.seen[gid] = S.seen[gid] || {})[t + ':' + n] = 1; }
 function nextNum(gid, t, p) { for (let n = 1; ; n++) if (!getRes(gid, t, n, p) && (p || !seen(gid, t, n))) return n; }
@@ -879,8 +888,10 @@ function openLobby(gid, refresh = false) {
   const btns = $('div', 'btns');
   const go = $('button', 'big pri');
   if (!S.duo) {
-    const t = tkey(g, c), n = nextNum(gid, t, 0);
-    go.textContent = hasTiers(g) ? `Play ${tName(g, t)} #${n}` : g.vars ? `New ${tName(g, t)} game` : 'New game';
+    const t = tkey(g, c); let n = nextNum(gid, t, 0);
+    const sv = saveOf(gid), svT = sv && !sv.k.startsWith('d:') ? +sv.k.split(':')[0] : null;
+    if (sv && svT === t) { n = +sv.k.split(':')[1]; go.textContent = hasTiers(g) ? `Continue ${tName(g, t)} #${n}` : `Continue ${g.vars ? tName(g, t) + ' ' : ''}game`; }
+    else go.textContent = hasTiers(g) ? `Play ${tName(g, t)} #${n}` : g.vars ? `New ${tName(g, t)} game` : 'New game';
     go.onclick = () => { v.remove(); openGame({ gid, t, num: n, p: 0 }); };
   } else if (ri != null) {
     const d = duelOf(gid), r = d.rounds[ri], p = turnOf(r);
@@ -999,6 +1010,7 @@ function openGame(ctx) {
   const help = $('button', 'ibtn', '?'); help.onclick = () => showRules(g);
   const ttl = $('button', 'gtitle', `${g.name}<small>${round && round.mode === 'set' ? `${S.players[1 - p]}'s word` : tName(g, t)} ▾</small>`); ttl.onclick = () => leave();
   const leave = () => {
+    saveNow();
     if (!st.acted || st.done) { toMenu(gid); return; }
     const yes = $('button', 'big pri', 'Leave'), no = $('button', 'big', 'Keep playing');
     const v = veil([$('div', 'kicker', g.name), $('h2', '', 'Leave this game?'), $('p', '', duel ? 'The round stays open — you can come back to it from the menu.' : (st.canResume ? 'It’s saved — you’ll pick up right where you left off.' : 'You’ll start this one fresh next time.')), $('div', 'btns', ''), ]);
@@ -1048,15 +1060,26 @@ function openGame(ctx) {
   app.append(stats, stage, controls);
 
   const st = { moves: 0, par: null, started: false, t0: 0, acc: 0, penalty: 0, done: false };
+  const saveKey = duel ? (g.together ? `d:${ri}` : `d:${ri}:${p}`) : `${t}:${num}`;
+  const saved = saveOf(gid) && saveOf(gid).k === saveKey ? saveOf(gid) : null;
+  let persist = null, saveT = 0, hintFn = null, hintLabel = null;
   const elapsed = () => st.acc + (st.started && !st.paused ? (performance.now() - st.t0) / 1000 : 0) + st.penalty;
   const paint = () => {
     if (g.metric === 'moves') sMain.innerHTML = `<label>${g.mlabel || 'Moves'}</label><b class="num">${st.moves}${st.par != null ? `<i>/ ${st.parLabel || 'par'} ${st.par}</i>` : st.cap ? `<i>/ ${st.cap}</i>` : ''}</b>`;
     else sMain.innerHTML = `<label>${st.extraLabel || 'Status'}</label><b class="num">${st.extra || '—'}</b>`;
     sTime.innerHTML = `<label>Time</label><b class="num">${st.started || st.done ? fmtT(elapsed()) : '0:00'}</b>`;
   };
+  const saveNow = () => {
+    clearTimeout(saveT);
+    if (!persist || st.done || !st.acted) return;
+    try { S.saves = S.saves || {}; S.saves[gid] = { k: saveKey, d: JSON.parse(JSON.stringify(persist.get())), m: st.moves, h: st.hints || 0, e: Math.round((elapsed() - st.penalty) * 10) / 10, pen: st.penalty }; store.save(); } catch (e) {}
+  };
+  const queueSave = () => { clearTimeout(saveT); saveT = setTimeout(saveNow, 120); };
+  stage.addEventListener('pointerup', queueSave); stage.addEventListener('click', queueSave); controls.addEventListener('click', queueSave);
   const finish = (r, title) => {
+    clearTimeout(saveT); dropSave(gid, saveKey);
     st.acc = elapsed() - st.penalty; st.started = false; st.done = true; paint();
-    r.t = Math.round(elapsed() * 10) / 10; r.a = st.moves; if (st.par != null) r.p = st.par;
+    r.t = Math.round(elapsed() * 10) / 10; r.a = st.moves; if (st.par != null) r.p = st.par; if (st.hints) r.hn = st.hints;
     let info = {};
     if (!r.x) { if (!(round && round.mode === 'set')) info = putRes(gid, t, num, p, r); st.solvedByPlayer = true; }
     else if (!duel && hasTiers(g)) markSeen(gid, t, num);
@@ -1072,7 +1095,10 @@ function openGame(ctx) {
   const api = {
     get done() { return st.done; },
     start() { st.acted = true; if (!st.started && !st.done) { st.started = true; st.t0 = performance.now(); paint(); } },
-    move(n = 1) { if (st.done) return; api.start(); st.moves = Math.max(0, st.moves + n); paint(); },
+    move(n = 1) { if (st.done) return; api.start(); st.moves = Math.max(0, st.moves + n); paint(); queueSave(); },
+    persist(get, set) { persist = { get, set }; st.canResume = true; },
+    hint(fn, label) { hintFn = fn; hintLabel = label; },
+    save: () => queueSave(),
     resetMoves() { st.moves = 0; paint(); },
     setPar(v, label) { st.par = v; st.parLabel = label; paint(); },
     setCap(v) { st.cap = v; paint(); },
@@ -1084,6 +1110,7 @@ function openGame(ctx) {
     solution(fn) { solver = fn; },
   };
   document.onvisibilitychange = () => {
+    if (document.hidden) saveNow();
     if (st.done || !st.started) return;
     if (document.hidden) { st.acc += (performance.now() - st.t0) / 1000; st.paused = true; }
     else { st.t0 = performance.now(); st.paused = false; }
@@ -1094,6 +1121,7 @@ function openGame(ctx) {
     api.turnNote = (note) => { tbNote = note; setTurn(tbQ); };
     api.endTogether = (scores, conceder) => {
       if (st.done) return;
+      clearTimeout(saveT); dropSave(gid, saveKey);
       st.acc = elapsed() - st.penalty; st.started = false; st.done = true; paint();
       const tt = Math.round(elapsed() * 10) / 10;
       round.res = scores.map((m, q) => (q === conceder ? { x: 1, m: 0, t: tt } : { m, t: tt }));
@@ -1103,12 +1131,25 @@ function openGame(ctx) {
     };
   }
   g.mount(stage, controls, P, api, { num, t, duo: duel && g.together ? { first: round.first, mode: round.mode, nums: round.nums } : null });
+  if (hintFn && !duel) api.btn(hintLabel || (g.metric === 'time' ? 'Hint  +15s' : 'Hint'), () => {
+    if (st.done) return;
+    api.start();
+    if (hintFn() === false) return;
+    st.hints = (st.hints || 0) + 1;
+    if (g.metric === 'time') api.penalty(15);
+    queueSave();
+  }, 'hintb');
   const cb = (!duel && g.metric === 'score') ? null : api.btn(duel ? 'Concede' : 'Give up', () => {
     if (st.done) return;
     if (Date.now() - concedeArm > 2500) { concedeArm = Date.now(); cb.textContent = 'Tap again to confirm'; cb.classList.add('warn'); setTimeout(() => { if (!st.done) { cb.textContent = duel ? 'Concede' : 'Give up'; cb.classList.remove('warn'); } }, 2500); return; }
     if (duel && g.together && api.concedeTogether) { api.concedeTogether(); return; }
     finish({ x: 1, m: 0 }, duel ? 'Conceded' : 'Gave up');
   }, 'concede');
+  st.leaveSave = saveNow;
+  if (saved && persist) {
+    try { persist.set(saved.d); st.moves = saved.m || 0; st.hints = saved.h || 0; st.acc = saved.e || 0; st.penalty = saved.pen || 0; st.acted = true; }
+    catch (e) { dropSave(gid, saveKey); }
+  }
   paint();
   tickTimer = setInterval(paint, 250);
   if (!duel && c.timer === 'now' && !g.noTimer) { st.started = true; st.t0 = performance.now(); paint(); }
@@ -1160,6 +1201,7 @@ function showResult(ctx, r, title, info, st) {
     const verdict = [];
     if (!r.x && g.metric === 'moves' && st.par != null) { const pl = st.parLabel || 'par'; verdict.push(r.m < st.par ? `Under the ${pl} by ${st.par - r.m}!` : r.m === st.par ? `Right on ${pl}.` : `${pl[0].toUpperCase() + pl.slice(1)} is ${st.par} — ${r.m - st.par} over.`); }
     if (!r.x && info.isBest && info.prev) verdict.push('New personal best!');
+    if (!r.x && r.hn) verdict.push(`${r.hn} hint${r.hn > 1 ? 's' : ''} used`);
     let second = '';
     if (g.metric === 'score') second = resCard(g, { m: bestScore(gid, 0, g.vars ? t : null), t: 0 }, g.vars ? `Best ${tName(g, t)}` : 'Best ever').replace(/points · 0:00/, 'points');
     else if (info.prev) second = resCard(g, info.prev, info.isBest ? 'Previous best' : 'Your best');
@@ -1253,6 +1295,8 @@ function mountLO(stage, controls, P, api) {
     cells.push(c); grid.appendChild(c);
   }
   paint(); stage.appendChild(grid);
+  api.hint(() => { const x = Core.loPlan(b, n); if (!x || !x.length) return false; hintFx(cells[x[0]]); });
+  api.persist(() => ({ b }), (d) => { b = d.b; paint(); });
   api.solution(() => {
     b = P.board.slice(); paint();
     const x = Core.loPlan(b, n); x.forEach((i) => cells[i].classList.add('sol'));
@@ -1324,6 +1368,13 @@ function mountUB(stage, controls, P, api) {
     car.onpointerup = end; car.onpointercancel = end;
   });
   stage.appendChild(wrap);
+  api.hint(() => {
+    const path = Core.ubPath(V.map((v, i) => (v.h ? { ...v, c: pos[i] } : { ...v, r: pos[i] })));
+    if (!path || path.length < 2) return false;
+    const k = path[1].findIndex((x, i) => x !== pos[i]); if (k < 0) return false;
+    hintFx(cars[k]);
+  });
+  api.persist(() => ({ pos }), (d) => { pos = d.pos; placeAll(); });
   api.solution(() => {
     const path = Core.ubPath(V); if (!path) return;
     pos = path[0].slice(); placeAll();
@@ -1426,6 +1477,11 @@ function mountQN(stage, controls, P, api, ctx) {
   tools.append(tMark, tErase, tAuto);
   stage.append(wrap, tools);
   paint();
+  api.hint(() => {
+    for (let r = 0; r < n; r++) { const i = r * n + P.solution[r]; if (mark[i] !== 2) { hist.push(mark.slice()); for (let c = 0; c < n; c++) if (mark[r * n + c] === 2) mark[r * n + c] = 0; mark[i] = 2; paint(); hintFx(cells[i]); return; } }
+    return false;
+  });
+  api.persist(() => ({ mark, hist }), (d) => { mark = d.mark; hist.splice(0, hist.length, ...d.hist); paint(); });
   api.solution(() => { mark = new Array(n * n).fill(0); P.solution.forEach((c, r) => (mark[r * n + c] = 2)); paint(); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; mark = hist.pop(); paint(); });
   api.btn('Clear all', () => { if (api.done) return; hist.push(mark.slice()); mark.fill(0); paint(); });
@@ -1489,6 +1545,15 @@ function mount24(stage, controls, P, api) {
       }
     }
   }
+  api.hint(() => {
+    if (locked) return false;
+    const OPS = ['+', '-', '×', '÷'];
+    const can = (vs) => { if (vs.length === 1) return vs[0][0] === 24 && vs[0][1] === 1; for (let i = 0; i < vs.length; i++) for (let j = 0; j < vs.length; j++) { if (i === j) continue; for (const o of OPS) { const v = Core.fop(vs[i], vs[j], o); if (v && can([...vs.filter((_, x) => x !== i && x !== j), v])) return true; } } return false; };
+    const list = cards.map((c, k) => c && { v: c.v, k }).filter(Boolean);
+    for (const a of list) for (const b2 of list) { if (a === b2) continue; for (const o of OPS) { const v = Core.fop(a.v, b2.v, o); if (v && can([...list.filter((x) => x !== a && x !== b2).map((x) => x.v), v])) { toast.innerHTML = `Try <b>${fmtV(a.v)} ${o === '-' ? '−' : o} ${fmtV(b2.v)}</b>`; hintFx(slots[a.k], slots[b2.k]); return; } } }
+    toast.textContent = 'These can’t make 24 — undo or reset'; return false;
+  });
+  api.persist(() => ({ h, cards, hist }), (d) => { h = d.h; cards = d.cards; hist = d.hist; sel = null; op = null; locked = false; paint(); });
   api.solution(() => {
     [dots, grid, ops, toast].forEach((e) => (e.style.display = 'none'));
     stage.appendChild($('div', 't24-sol', P.hands.map((hd) => `<div><span class="num">${hd.nums.join(' · ')}</span><b class="num">${hd.solution.replace(/-/g, '−')} = 24</b></div>`).join('')));
@@ -1564,6 +1629,8 @@ function mountKK(stage, controls, P, api) {
   pad.appendChild(del);
   stage.append(grid, pad);
   sel = 0; paint();
+  api.hint(() => { for (let i = 0; i < n * n; i++) if (vals[i] !== P.solution[i]) { vals[i] = P.solution[i]; paint(); hintFx(cells[i]); return; } return false; });
+  api.persist(() => ({ vals }), (d) => { d.vals.forEach((v, i) => (vals[i] = v)); paint(); });
   api.solution(() => { P.solution.forEach((v, i) => (vals[i] = v)); sel = null; paint(); });
   api.btn('Clear board', () => { if (api.done) return; vals.fill(0); paint(); });
 }
@@ -1618,6 +1685,13 @@ function mountLK(stage, controls, P, api) {
   svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
   stage.appendChild(svg);
   render();
+  api.hint(() => {
+    const c = P.dots.findIndex((_, j) => !complete(j)); if (c < 0) return false;
+    const seg = P.solution[c], used = new Set(seg);
+    paths = paths.map((p, j) => { if (j === c) return seg.slice(); const cut = p.findIndex((x) => used.has(x)); return cut < 0 ? p : p.slice(0, cut); });
+    active = null; const r = render(); if (r.linked === K && r.filled === n * n) api.win();
+  });
+  api.persist(() => ({ paths }), (d) => { paths = d.paths; active = null; render(); });
   api.solution(() => { paths = P.solution.map((sg) => sg.slice()); active = null; render(); });
   api.btn('↺  Reset', () => { if (api.done) return; paths = P.dots.map(() => []); render(); });
 }
@@ -1649,6 +1723,8 @@ function mountPP(stage, controls, P, api) {
   }
   stage.appendChild(grid);
   paint();
+  api.hint(() => { const now = cur(); const i = now.findIndex((m, j) => m !== P.solution[j]); if (i < 0) return false; hintFx(tiles[i]); });
+  api.persist(() => ({ turns }), (d) => { d.turns.forEach((v, i) => { turns[i] = v; tiles[i].firstChild.style.transform = `rotate(${v * 90}deg)`; }); paint(); });
   api.solution(() => {
     base.forEach((m, i) => { let y = m, k = 0; while (y !== P.solution[i] && k < 4) { y = Core.rotCW(y); k++; } turns[i] += ((k - turns[i]) % 4 + 4) % 4; tiles[i].firstChild.style.transform = `rotate(${turns[i] * 90}deg)`; });
     paint();
@@ -1682,6 +1758,16 @@ function mountPR(stage, controls, P, api) {
   }
   stage.appendChild(rack);
   paint();
+  let hPlan = null, hKey = '';
+  const tkey = () => JSON.stringify(tubes);
+  api.hint(() => {
+    if (!hPlan || hKey !== tkey() || !hPlan.length) { hPlan = Core.pourPlan(tubes); } // follow one plan while the player follows it
+    if (!hPlan || !hPlan.length) return false;
+    const [a, b2] = hPlan.shift(), q = Core.pourOK(tubes, a, b2);
+    const nx = tubes.map((t) => t.slice()); for (let i = 0; i < q; i++) nx[b2].push(nx[a].pop()); hKey = JSON.stringify(nx);
+    sel = a; paint(); hintFx(els[a], els[b2]);
+  });
+  api.persist(() => ({ tubes, hist }), (d) => { tubes = d.tubes; hist = d.hist; sel = null; paint(); });
   api.solution(() => {
     tubes = P.tubes.map((t) => t.slice()); sel = null; paint();
     (Core.pourPlan(P.tubes) || []).forEach(([a, b], k) => {
@@ -1714,6 +1800,8 @@ function mountFL(stage, controls, P, api) {
   }
   stage.append(grid, pal);
   paint();
+  api.hint(() => { const plan = Core.floodPlan(g, n, P.colors); if (!plan || !plan.length) return false; hintFx(btns[plan[0]]); });
+  api.persist(() => ({ g }), (d) => { g = d.g; paint(); });
   api.solution(() => {
     g = P.grid.slice(); paint();
     Core.floodPlan(P.grid, n, P.colors).forEach((c, k) => setTimeout(() => { g = Core.floodApply(g, n, c); paint(); }, 500 + k * 380));
@@ -1753,6 +1841,8 @@ function mountHU(stage, controls, P, api) {
   grid.onpointercancel = () => (down = null);
   stage.appendChild(grid);
   paint();
+  api.hint(() => { for (let p0 = 0; p0 < board.length; p0++) if (board[p0] !== p0) { const q = board.indexOf(p0); sel = null; paint(); hintFx(els[p0], els[q]); return; } return false; });
+  api.persist(() => ({ board, hist }), (d) => { board = d.board; hist.splice(0, hist.length, ...d.hist); sel = null; paint(); });
   api.solution(() => {
     board = P.board.slice(); sel = null; paint();
     const b2 = board.slice(), swaps = [];
@@ -1820,6 +1910,26 @@ function mountOL(stage, controls, P, api) {
   svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
   stage.append(svg, toast);
   render();
+  api.hint(() => {
+    const E = P.edges, total = E.length;
+    const dfs = (v, used, budget) => { if (used.size === total) return []; for (let j = 0; j < total; j++) { if (used.has(j)) continue; const [a, b2] = E[j]; if (a !== v && b2 !== v) continue; if (--budget.n < 0) return null; used.add(j); const r = dfs(a === v ? b2 : a, used, budget); used.delete(j); if (r) return [a === v ? b2 : a, ...r]; } return null; };
+    // keep as much of the player's line as can still be finished, then add one more line
+    for (let k = usedE.length; k >= 0; k--) {
+      const from = k === 0 ? (path.length ? path[0] : null) : path[k];
+      if (from == null) continue;
+      const rest = dfs(from, new Set(usedE.slice(0, k)), { n: 60000 });
+      if (rest && rest.length) {
+        const undone = usedE.length - k;
+        path = path.slice(0, k + 1); usedE = usedE.slice(0, k);
+        usedE.push(idx.get(from + '-' + rest[0])); path.push(rest[0]); api.move();
+        toast.innerHTML = undone ? `Took back ${undone} line${undone > 1 ? 's' : ''} that led to a dead end` : '&nbsp;'; render();
+        if (usedE.length === total) { svg.classList.add('done'); api.win(); }
+        return;
+      }
+    }
+    const tr = P.trail; path = [tr[0], tr[1]]; usedE = [idx.get(tr[0] + '-' + tr[1])]; toast.innerHTML = 'Start here — this way works'; render();
+  });
+  api.persist(() => ({ path, usedE }), (d) => { path = d.path; usedE = d.usedE; render(); });
   api.solution(() => {
     const tr = P.trail; path = [tr[0]]; usedE = []; toast.innerHTML = 'Start at the white dot and follow the line'; render();
     tr.slice(1).forEach((v, k) => setTimeout(() => { usedE.push(idx.get(path[path.length - 1] + '-' + v)); path.push(v); render(); if (k === tr.length - 2) svg.classList.add('done'); }, 500 + k * 220));
@@ -1869,6 +1979,8 @@ function mountTG(stage, controls, P, api) {
   }
   stage.appendChild(wrap);
   paint();
+  api.hint(() => { for (let i = 0; i < g.length; i++) if (g[i] !== P.solution[i]) { hist.push(g.slice()); g[i] = P.solution[i]; paint(); hintFx(els[i]); return; } return false; });
+  api.persist(() => ({ g, hist }), (d) => { g = d.g; hist.splice(0, hist.length, ...d.hist); paint(); });
   api.solution(() => { g = P.solution.slice(); paint(); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; g = hist.pop(); paint(); });
   api.btn('Clear', () => { if (api.done) return; hist.push(g.slice()); g = P.givens.slice(); paint(); });
@@ -1924,6 +2036,14 @@ function mountZP(stage, controls, P, api) {
   svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
   stage.appendChild(svg);
   render();
+  api.hint(() => {
+    const S0 = P.solution; let k = 0; while (k < path.length && path[k] === S0[k]) k++;
+    if (k >= S0.length) return false;
+    let j = k; while (j < S0.length - 1 && !numAt.has(S0[j])) j++; // run on to the next numbered cell
+    path = S0.slice(0, Math.max(j, k) + 1); render(); api.move();
+    if (path.length === n * n && reached() === K) { svg.classList.add('done'); api.win(); }
+  });
+  api.persist(() => ({ path }), (d) => { path = d.path; render(); });
   api.solution(() => {
     path = [P.solution[0]]; render();
     P.solution.slice(1).forEach((c, k) => setTimeout(() => { path.push(c); render(); if (k === P.solution.length - 2) svg.classList.add('done'); }, 400 + k * 45));
@@ -1997,6 +2117,13 @@ function mountHB(stage, controls, P, api) {
   svg.addEventListener('pointercancel', () => (down = null));
   stage.append(svg, toast);
   render();
+  api.hint(() => {
+    const fin = () => { sel = null; render(); if (solved()) { svg.classList.add('done'); api.win(); } };
+    for (const [k, v] of [...br]) if (v > 0 && !P.solution.some(([x]) => x === k)) { hist.push(new Map(br)); br.delete(k); fin(); return; } // wrong bridges go first, so nothing crosses
+    for (const [k, v] of P.solution) if ((br.get(k) || 0) !== v) { hist.push(new Map(br)); br.set(k, v); fin(); return; }
+    return false;
+  });
+  api.persist(() => ({ br: [...br], hist: hist.map((m) => [...m]) }), (d) => { br.clear(); d.br.forEach(([k, v]) => br.set(k, v)); hist.splice(0, hist.length, ...d.hist.map((e) => new Map(e))); sel = null; render(); });
   api.solution(() => { br.clear(); for (const [k, v] of P.solution) br.set(k, v); sel = null; render(); svg.classList.add('done'); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; const m = hist.pop(); br.clear(); m.forEach((v, k) => br.set(k, v)); render(); });
   api.btn('Clear', () => { if (api.done) return; hist.push(new Map(br)); br.clear(); render(); });
@@ -2068,6 +2195,13 @@ function mountNG(stage, controls, P, api) {
   tools.style.width = `min(100%, ${avail}px)`;
   stage.append(view, tools);
   layout(); paint();
+  api.hint(() => {
+    const bad = []; for (let i = 0; i < W * H; i++) if ((g[i] === 1 ? 1 : 0) !== (P.solution[i] ? 1 : 0)) bad.push(i);
+    if (!bad.length) return false;
+    const i = bad.find((x) => P.solution[x] && g[x] !== 2) ?? bad[0];
+    hist.push(g.slice()); g[i] = P.solution[i] ? 1 : 2; paint(); hintFx(cells[i]);
+  });
+  api.persist(() => ({ g, hist }), (d) => { g = d.g; hist.splice(0, hist.length, ...d.hist); paint(); });
   api.solution(() => { g = P.solution.map((v) => (v ? 1 : 0)); paint(); wrap.classList.add('done'); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; g = hist.pop(); paint(); });
   api.btn('Clear', () => { if (api.done) return; hist.push(g.slice()); g.fill(0); paint(); });
@@ -2128,6 +2262,14 @@ function mountSK(stage, controls, P, api) {
   board.onpointerup = up; board.onpointercancel = up;
   stage.appendChild(board);
   render();
+  api.hint(() => {
+    const idx = P.solution.findIndex(([x, y, w, h]) => !rects.some((r) => r.x === x && r.y === y && r.w === w && r.h === h)); if (idx < 0) return false;
+    const [x, y, w, h] = P.solution[idx];
+    hist.push(rects.map((r) => ({ ...r })));
+    rects = rects.filter((r) => r.x + r.w <= x || x + w <= r.x || r.y + r.h <= y || y + h <= r.y);
+    rects.push({ x, y, w, h, col: SKC[idx % SKC.length] }); render();
+  });
+  api.persist(() => ({ rects, hist, colorN }), (d) => { rects = d.rects; hist.splice(0, hist.length, ...d.hist); colorN = d.colorN; render(); });
   api.solution(() => { rects = P.solution.map(([x, y, w, h], i) => ({ x, y, w, h, col: SKC[i % SKC.length] })); render(); board.classList.add('done'); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; rects = hist.pop(); render(); });
   api.btn('Clear', () => { if (api.done) return; hist.push(rects.map((x) => ({ ...x }))); rects = []; render(); });
@@ -2189,6 +2331,14 @@ function mountMS(stage, controls, P, api) {
   tD.onclick = () => setTool('dig'); tF.onclick = () => setTool('flag');
   tools.append(tD, tF); tools.style.width = cs * W + 'px';
   stage.append(grid, tools, $('div', 'toast', 'Long-press a cell to flag it · tap a finished number to clear around it'));
+  api.hint(() => {
+    if (boom >= 0) return false;
+    const cand = []; for (let i = 0; i < N; i++) if (!open[i] && !P.mines[i] && Core.msNeighbours(W, H, i).some((j) => open[j])) cand.push(i);
+    if (!cand.length) return false;
+    const i = cand[Math.floor(Math.random() * cand.length)]; flag[i] = 0; reveal(i); paint(); hintFx(els[i]);
+    if (won()) { grid.classList.add('done'); api.win(); }
+  });
+  api.persist(() => ({ open: [...open], flag: [...flag] }), (d) => { open.set(d.open); flag.set(d.flag); paint(); });
   api.solution(() => { for (let i = 0; i < N; i++) { if (P.mines[i]) flag[i] = 1; else open[i] = 1; } paint(); });
   paint();
 }
@@ -2243,6 +2393,8 @@ function mountHM(stage, controls, P, api) {
   stage.append(cat, fig, wordEl, kb);
   paint();
   api.solution(() => { over = true; paint(true); });
+  api.hint(() => { if (over) return false; const left = [...inWord].filter((c) => !tried.has(c)); if (left.length < 2 || misses >= MAX - 1) return false; misses++; api.move(); guess(left[Math.floor(Math.random() * left.length)]); }, 'Hint · costs a miss');
+  api.persist(() => ({ tried: [...tried], misses }), (d) => { d.tried.forEach((c) => tried.add(c)); misses = d.misses; paint(); });
 }
 
 // ====================== WORD SEARCH ======================
@@ -2292,6 +2444,8 @@ function mountWS(stage, controls, P, api) {
   board.onpointerup = up; board.onpointercancel = up;
   stage.append($('div', 'hm-cat', `Theme: ${esc(P.cat)}`), board, list);
   render();
+  api.hint(() => { const w = P.words.find((x) => !found.has(x.w)); if (!w) return false; found.set(w.w, found.size); render(); if (found.size === P.words.length) { board.classList.add('done'); api.win(); } });
+  api.persist(() => ({ found: [...found] }), (d) => { found.clear(); d.found.forEach(([w, c]) => found.set(w, c)); render(); });
   api.solution(() => { P.words.forEach((w) => { if (!found.has(w.w)) found.set(w.w, found.size); }); render(); board.classList.add('done'); });
 }
 
@@ -2333,6 +2487,13 @@ function mountTN(stage, controls, P, api) {
   wrap.onpointerup = up; wrap.onpointercancel = up;
   stage.appendChild(wrap);
   paint();
+  api.hint(() => {
+    const sol = new Set(P.solution);
+    for (let i = 0; i < n * n; i++) if (st[i] === 2 && !sol.has(i)) { hist.push(st.slice()); st[i] = 0; paint(); hintFx(cells[i]); return; }
+    for (const i of P.solution) if (st[i] !== 2) { hist.push(st.slice()); st[i] = 2; paint(); hintFx(cells[i]); return; }
+    return false;
+  });
+  api.persist(() => ({ st, hist }), (d) => { st = d.st; hist.splice(0, hist.length, ...d.hist); paint(); });
   api.solution(() => { const s = new Set(P.solution); st = st.map((_, i) => (isTree.has(i) ? 0 : s.has(i) ? 2 : 1)); paint(); wrap.classList.add('done'); });
   api.btn('↶  Undo', () => { if (api.done || !hist.length) return; st = hist.pop(); paint(); });
   api.btn('Clear', () => { if (api.done) return; hist.push(st.slice()); st.fill(0); paint(); });
@@ -2641,6 +2802,12 @@ function mountBL(stage, controls, P, api, ctx) {
   const onResize = () => { if (!wrap.isConnected) { window.removeEventListener('resize', onResize); return; } if (!busy) layout(); };
   window.addEventListener('resize', onResize);
   layout(); armHint();
+  api.persist(() => ({ st }), (d) => {
+    Object.assign(st, d.st); layout(); paintMoves();
+    st.goals.forEach((g, j) => { disp[j] = g.left; setGoal(j); });
+    shownScore = st.score; scoreEl.querySelector('b').textContent = st.score.toLocaleString('en-US');
+    if (M3.status(st) !== 'play') { busy = true; setTimeout(after, 300); }
+  });
   window.__bl = { st, swap: doSwap, tap: doTap, busy: () => busy }; // test hook
 }
 
@@ -2801,6 +2968,13 @@ function mountYC(stage, controls, P, api, ctx) {
     const t = e.target.closest('.yc-t');
     if (t) choose(t.dataset.k);
   };
+  api.persist(() => ({ cards, turn, turnsDone, dice, held, rolls }), (d) => {
+    cards.forEach((c, q) => { for (const k in c) delete c[k]; Object.assign(c, d.cards[q]); shown[q] = total(q); });
+    turn = d.turn; view = turn; turnsDone = d.turnsDone; dice = d.dice; held = d.held; rolls = d.rolls;
+    dEls.forEach((el, i) => { el.classList.toggle('blank', !dice[i]); el.classList.toggle('held', !!held[i]); setFace(i, dice[i]); });
+    if (duo) api.setTurn(turn, turnNote());
+    paintCard(); paintBtn();
+  });
   paintCard(); paintBtn(); size();
 }
 
@@ -2896,6 +3070,7 @@ function mountG2(stage, controls, P, api) {
   window.onkeydown = (e) => { if (e.target && e.target.closest && e.target.closest('input, textarea')) return; if (!board.isConnected) return; const k = { ArrowUp: 0, ArrowRight: 1, ArrowDown: 2, ArrowLeft: 3 }[e.key]; if (k != null) { e.preventDefault(); move(k); } };
   stage.appendChild(board);
   reset();
+  api.persist(() => ({ tiles: alive().map(({ id, v, r, c }) => ({ id, v, r, c })), nid, score, reached }), (d) => { R = Core.rng(Core.hashStr(P.seed + '-r' + d.nid)); els.forEach((el) => el.remove()); els.clear(); tiles = d.tiles; nid = d.nid; score = d.score; reached = d.reached; over = false; render(); });
   api.btn('↺  Restart', () => { if (api.done) return; reset(); api.resetMoves(); });
   api.btn('End game', () => { if (api.done) return; over = true; api.win({ m: score, title: 'Game over' }); });
 }
