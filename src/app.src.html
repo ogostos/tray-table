@@ -2241,18 +2241,20 @@ const YC_F = [6, 5, 4, 3, 2, 1];
 const ycKind = (n) => (c) => { for (const f of YC_F) if (c[f] >= n) return f * n; return 0; };
 const ycPairs = (m) => (c) => { const p = YC_F.filter((f) => c[f] >= 2); return p.length >= m ? p.slice(0, m).reduce((a, f) => a + 2 * f, 0) : 0; };
 const ycRun = (a, b, pts) => (c) => { for (let f = a; f <= b; f++) if (!c[f]) return 0; return pts; };
+// any `len` consecutive numbers (e.g. small = 1-2-3-4, 2-3-4-5 or 3-4-5-6)
+const ycStr = (len, pts) => (c) => { for (let a = 1; a + len - 1 <= 6; a++) { let ok = true; for (let f = a; f < a + len; f++) if (!c[f]) ok = false; if (ok) return pts; } return 0; };
 const ycCombo = (x, y) => (c) => { let best = 0; for (const a of YC_F) if (c[a] >= x) for (const b of YC_F) if (b !== a && c[b] >= y) best = Math.max(best, a * x + b * y); return best; };
 const ycSum = (c, s) => s, ycAlike = (n, pts) => (c) => (Math.max(...c) === n ? pts : 0);
 const YC_RULES = {
   yatzy: { n: 5, target: 63, bonus: 50, yk: 'y', cats: [...YC_UP,
     ['p1', 'One pair', 'sum of the pair', ycPairs(1)], ['p2', 'Two pairs', 'sum of both pairs', ycPairs(2)],
     ['3k', 'Three of a kind', 'sum of the three', ycKind(3)], ['4k', 'Four of a kind', 'sum of the four', ycKind(4)],
-    ['ss', 'Small straight', '1-2-3-4-5 · 15', ycRun(1, 5, 15)], ['ls', 'Large straight', '2-3-4-5-6 · 20', ycRun(2, 6, 20)],
+    ['ss', 'Small straight', '4 in a row · 15', ycStr(4, 15)], ['ls', 'Large straight', '5 in a row · 30', ycStr(5, 30)],
     ['fh', 'Full house', '3 + 2 · sum', ycCombo(3, 2)], ['ch', 'Chance', 'sum of dice', ycSum], ['y', 'Yatzy', 'five alike · 50', ycAlike(5, 50)]] },
   maxi: { n: 6, target: 84, bonus: 100, yk: 'my', cats: [...YC_UP,
     ['p1', 'One pair', 'sum of the pair', ycPairs(1)], ['p2', 'Two pairs', 'sum of the pairs', ycPairs(2)], ['p3', 'Three pairs', 'sum of the pairs', ycPairs(3)],
     ['3k', 'Three of a kind', 'sum of the three', ycKind(3)], ['4k', 'Four of a kind', 'sum of the four', ycKind(4)], ['5k', 'Five of a kind', 'sum of the five', ycKind(5)],
-    ['ss', 'Small straight', '1–5 · 15', ycRun(1, 5, 15)], ['ls', 'Large straight', '2–6 · 20', ycRun(2, 6, 20)], ['fs', 'Full straight', '1–6 · 21', ycRun(1, 6, 21)],
+    ['ss', 'Small straight', '4 in a row · 15', ycStr(4, 15)], ['ls', 'Large straight', '5 in a row · 30', ycStr(5, 30)], ['fs', 'Full straight', '1–6 · 21', ycRun(1, 6, 21)],
     ['fh', 'Full house', '3 + 2 · sum', ycCombo(3, 2)], ['cs', 'Castle', '3 + 3 · sum', ycCombo(3, 3)], ['tw', 'Tower', '4 + 2 · sum', ycCombo(4, 2)],
     ['ch', 'Chance', 'sum of dice', ycSum], ['my', 'Maxi Yatzy', 'six alike · 100', ycAlike(6, 100)]] },
 };
