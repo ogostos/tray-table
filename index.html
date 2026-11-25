@@ -377,10 +377,8 @@ input{font:inherit;color:inherit}
 .yc-t.pot.z .yc-v{color:var(--dim);background:none;border:1px dashed #2E3445}
 .yc-t.pot.best .yc-v{background:#FFC247;color:#2A1E00;border-color:#FFC247}
 .yc-t.set{background:#16231F}.yc-t.set .yc-v{color:#3DDC84;background:rgba(61,220,132,.1)}
-.yc-t.set.z{background:var(--s2)}.yc-t.set.z .yc-v{color:var(--dim);background:none}
-.yc-t.just{animation:ycFlash .9s ease-out}.yc-t.just.z{animation:ycFlashZ .9s ease-out}.yc-t.just .yc-v{animation:ycPop .45s cubic-bezier(.3,1.6,.5,1)}
+.yc-t.just{animation:ycFlash .9s ease-out}.yc-t.just .yc-v{animation:ycPop .45s cubic-bezier(.3,1.6,.5,1)}
 @keyframes ycFlash{0%{background:rgba(61,220,132,.45)}100%{background:#16231F}}
-@keyframes ycFlashZ{0%{background:rgba(140,147,166,.35)}100%{background:var(--s2)}}
 @keyframes ycPop{0%{transform:scale(.6)}60%{transform:scale(1.28)}100%{transform:none}}
 .yc-bonus{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;height:32px;padding:0 10px;border-radius:11px;box-shadow:inset 0 0 0 1px var(--line);font-size:12px;color:var(--mute);font-weight:700;gap:8px}
 .yc-bonus span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.yc-bonus b{font-variant-numeric:tabular-nums;flex:none}.yc-bonus b.ok{color:#3DDC84}
@@ -1689,7 +1687,7 @@ const UB_BANK = [["8:222h142v122h333h322v053v312v302v032h002h112v442h512h","8:22
 </script>
 <script>
 // ====================== STATE ======================
-const APP_VERSION = '93a6374562';
+const APP_VERSION = '96a2459dd8';
 const KEY = 'traytable.v2';
 const store = (() => {
   let mem = null;
@@ -1767,7 +1765,7 @@ const WORD_GAMES = [
 const GAMES = [...WORD_GAMES, ...COLOUR_GAMES,
   { id: 'yc', sec: 'l', together: 1, name: 'Yacht', color: 'var(--yc)', metric: 'score', unit: 'Game', desc: 'Roll the dice, keep the best, fill the scorecard. Yatzy or Maxi.',
     vars: [[1, 'Yatzy', '5 dice · 15 boxes'], [2, 'Maxi', '6 dice · 20 boxes']],
-    rules: ['Each turn roll the dice up to <b>3 times</b>. Tap dice to <b>hold</b> them between rolls.', 'Then tap one empty box to score the roll: <b style="color:#FFC247">amber</b> shows what each box would give (solid = best), <b style="color:#3DDC84">green</b> is scored.', '<b>Yatzy</b>: 5 dice, 15 boxes, top half 63+ earns +50. <b>Maxi</b>: 6 dice, 20 boxes — adds three pairs, five of a kind, Castle (3+3), Tower (4+2) and a 1–6 straight; top half 84+ earns +100. Highest total wins; two players take turns and pass the phone.'],
+    rules: ['Each turn roll the dice up to <b>3 times</b>. Tap dice to <b>hold</b> them between rolls.', 'Then tap one empty box to score the roll: <b style="color:#FFC247">amber</b> shows what each box would give (solid = best), <b style="color:#3DDC84">green</b> is scored.', '<b>Yatzy</b>: 5 dice, 15 boxes, top half 63+ earns +50. <b>Maxi</b>: 6 dice, 20 boxes — adds three pairs, five of a kind, Castle (3+3), Tower (4+2) and a 1–6 straight; top half 84+ earns +100. Highest total wins. With two players each has their own scorecard: roll, score one box, pass the phone.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#151924"/><rect x="6" y="9" width="17" height="17" rx="4" fill="#ECEEF3" transform="rotate(-10 14.5 17.5)"/><g fill="#0B0D12" transform="rotate(-10 14.5 17.5)"><circle cx="10.5" cy="13" r="1.9"/><circle cx="14.5" cy="17.5" r="1.9"/><circle cx="18.5" cy="22" r="1.9"/></g><rect x="22" y="19" width="18" height="18" rx="4" fill="#FF6B5E" transform="rotate(8 31 28)"/><g fill="#fff" transform="rotate(8 31 28)"><circle cx="26.5" cy="23.5" r="1.9"/><circle cx="35.5" cy="23.5" r="1.9"/><circle cx="31" cy="28" r="1.9"/><circle cx="26.5" cy="32.5" r="1.9"/><circle cx="35.5" cy="32.5" r="1.9"/></g></svg>`, mount: mountYC },
   { id: 'g2', sec: 'l', unit: 'Game', name: '2048', color: 'var(--g2)', metric: 'score', desc: 'Swipe, merge equal tiles, chase 2048 and beyond.',
     rules: ['<b>Swipe</b> to slide every tile.', 'Two equal tiles that touch <b>merge</b> — 2+2 = 4, 4+4 = 8, all the way up.', 'Reach <b>2048</b>, then keep going. It ends when no move is left. Highest score wins.'],
@@ -1866,7 +1864,7 @@ function cmp(g, a, b, mode = 'same') {
   return { c: 0, why: 'Same time, same number of moves' };
 }
 const fmtMain = (g, x) => x.x ? (x.why === 'hit a mine' ? 'Boom' : x.why === 'was hanged' ? 'Hanged' : 'Conceded') : g.metric === 'moves' ? `${x.m} ${x.m === 1 && g.mword1 ? g.mword1 : g.mword || 'moves'}` : g.metric === 'score' ? x.m.toLocaleString('en-US') : fmtT(x.t);
-const fmtSub = (g, x, mode) => x.x ? `after ${fmtT(x.t)}` : g.metric === 'moves' ? `${fmtT(x.t)}${mode === 'diff' && x.p != null ? ` · par ${x.p}` : ''}` : g.metric === 'score' ? `points · ${fmtT(x.t)}` : `${x.a || 0} moves`;
+const fmtSub = (g, x, mode) => x.x ? `after ${fmtT(x.t)}` : g.metric === 'moves' ? `${fmtT(x.t)}${mode === 'diff' && x.p != null ? ` · par ${x.p}` : ''}` : g.metric === 'score' ? (g.together && mode ? 'points' : `points · ${fmtT(x.t)}`) : `${x.a || 0} moves`;
 
 // ---------- duels ----------
 function duelOf(gid) { return (S.duel[gid] = S.duel[gid] || { rounds: [] }); }
@@ -2009,13 +2007,13 @@ function openLobby(gid, refresh = false) {
   const off = g.lang ? LOFF[c.lang] || 0 : 0;
   if (g.vars) kids.push(opt('Rules', seg(g.vars, varOf(g, c), (v) => { c.tier = v; store.save(); re(); })));
   if (hasTiers(g) && !(S.duo && c.mode === 'set')) kids.push(opt(g.tierHint ? 'Difficulty · word length' : 'Difficulty', seg(TN.map((n, t) => [t, n, g.tierHint ? g.tierHint[t] : S.duo ? null : `${solvedCount(gid, t + off, 0)} done`]), c.tier, (v) => { c.tier = v; store.save(); re(); })));
-  kids.push(opt('Timer', seg([['now', 'Starts right away'], ['first', 'Starts on first move']], c.timer, (v) => { c.timer = v; store.save(); re(); })));
+  if (!(S.duo && g.together)) kids.push(opt('Timer', seg([['now', 'Starts right away'], ['first', 'Starts on first move']], c.timer, (v) => { c.timer = v; store.save(); re(); })));
   let ri = null;
   if (S.duo) {
-    const modes = g.together ? [['diff', 'Normal dice', 'everyone their own luck'], ['same', 'Same dice', 'equal luck, skill decides']]
+    const modes = g.together ? [['diff', 'Normal dice']]
       : g.setMode ? [['set', 'Write words', 'for each other'], ['same', 'Same word', 'app picks'], ['diff', 'Own words', 'app picks']] : [['same', 'Same puzzle', 'take turns'], ['diff', 'Different puzzles', 'same difficulty — watch each other']];
     if (!modes.some(([m]) => m === c.mode)) c.mode = modes[0][0];
-    kids.push(opt('Duel mode', seg(modes, c.mode, (v) => { c.mode = v; store.save(); re(); })));
+    if (modes.length > 1) kids.push(opt('Duel mode', seg(modes, c.mode, (v) => { c.mode = v; store.save(); re(); })));
     kids.push(opt('Who goes first', seg([[0, `${S.players[0]}`], [1, `${S.players[1]}`]], c.first, (v) => { c.first = v; store.save(); re(); })));
     const s = gameScore(gid);
     kids.push($('div', 'verdict', `${g.name} score: ${scoreLine(s)}`));
@@ -2065,10 +2063,10 @@ function handoff(gid, ri, p) {
   const other = 1 - p, otherDone = r.res[other];
   const h = $('div', 'handoff');
   h.style.setProperty('--pc', PC[p]);
-  const what = g.together ? `${nm(p)} starts — take turns on one scorecard, pass the phone each turn` : r.mode === 'set' ? `Guess the word ${nm(other)} wrote` : r.mode === 'same' ? (otherDone ? `Same puzzle ${nm(other)} just played` : 'Same puzzle for both of you') : 'Your own puzzle — same difficulty';
+  const what = g.together ? `${nm(p)} starts — each of you has your own scorecard; play your turn, then pass the phone` : r.mode === 'set' ? `Guess the word ${nm(other)} wrote` : r.mode === 'same' ? (otherDone ? `Same puzzle ${nm(other)} just played` : 'Same puzzle for both of you') : 'Your own puzzle — same difficulty';
   h.innerHTML = `<div class="kick">${g.name} · Round ${ri + 1}${r.mode === 'set' ? '' : ' · ' + tName(g, r.t)}</div>
     <div class="who">${nm(p)}</div><div class="sub">your turn</div><div class="det">${what}</div>`;
-  const go = $('button', 'go', cfg(gid).timer === 'now' ? 'Start — clock runs' : 'Start');
+  const go = $('button', 'go', cfg(gid).timer === 'now' && !g.together ? 'Start — clock runs' : 'Start');
   h.appendChild(go);
   const back = $('button', 'hback', `‹  ${g.name} menu`); back.onclick = () => { h.remove(); toMenu(gid); };
   h.appendChild(back);
@@ -2182,6 +2180,7 @@ function openGame(ctx) {
     sThird.innerHTML = `<label>Best</label><b class="num">${mine ? fmtMain(g, mine).replace(' ' + (g.mword || 'moves'), `<i>${g.mword || 'moves'}</i>`) : '—'}</b>`;
   }
   stats.append(sMain, sTime, sThird);
+  if (duel && g.together) stats.style.display = 'none';
   const stage = $('div', 'stage');
   const controls = $('div', 'controls');
   app.append(stats, stage, controls);
@@ -3608,7 +3607,8 @@ function mountYC(stage, controls, P, api, ctx) {
     let h = '';
     if (duo) {
       h += `<div class="yc-who">${players.map((p) => `<button class="yc-pl${p === turn ? ' cur' : ''}${p === view && p !== turn ? ' peek' : ''}" data-p="${p}" style="--pc:${PC[p]}"><span>${nm(p)}${p === turn ? ' · turn' : ''}</span><b data-tot="${p}">${Math.round(shown[p])}</b></button>`).join('')}</div>`;
-      h += `<div class="yc-note">${mine ? 'Tap the other name to see their card' : `${nm(q)}'s card — tap ${nm(turn)} to go back`}</div>`;
+      const tn = `Turn ${Math.min(N, Math.floor(turnsDone / 2) + 1)} / ${N}`;
+      h += `<div class="yc-note">${mine ? `${tn} · tap the other name to see their card` : `${nm(q)}'s card — tap ${nm(turn)} to go back`}</div>`;
     }
     h += `<div class="yc-tiles">${R.cats.slice(0, 6).map(tile).join('')}<div class="yc-bonus"><span>Bonus · ${R.target}+ in the top half → +${R.bonus}</span><b class="${ok ? 'ok' : ''}">${ok ? '+' + R.bonus : up + ' / ' + R.target}</b></div>${R.cats.slice(6).map((r, i) => tile(r, i + 6)).join('')}</div>`;
     if (!duo) h += `<div class="yc-tot"><span>Total</span><b data-tot="0">${Math.round(shown[0])}</b></div>`;
