@@ -608,8 +608,8 @@ const WORD_GAMES = [
 ];
 const GAMES = [...WORD_GAMES, ...COLOUR_GAMES,
   { id: 'yc', sec: 'l', together: 1, name: 'Yacht', color: 'var(--yc)', metric: 'score', unit: 'Game', desc: 'Roll the dice, keep the best, fill the scorecard. Classic or Maxi.',
-    noTimer: 1, vars: [[1, 'Classic', '5 dice · 15 boxes'], [2, 'Maxi', '6 dice · 19 boxes']],
-    rules: ['Each turn roll the dice up to <b>3 times</b>. Tap dice to <b>hold</b> them between rolls.', 'Then tap one empty box to score the roll: <b style="color:#FFC247">amber</b> shows what each box would give (solid = best), <b style="color:#3DDC84">green</b> is scored.', '<b>Classic</b>: 5 dice, 15 boxes, top half 63+ earns +50. <b>Maxi</b>: 6 dice, 19 boxes — no single pair; adds three pairs, five of a kind, Castle (3+3), Tower (4+2) and a 1–6 straight; top half 84+ earns +100. Highest total wins. With two players each has their own scorecard: roll, score one box, pass the phone.'],
+    noTimer: 1, vars: [[1, 'Classic', '5 dice · 13 boxes'], [2, 'Maxi', '6 dice · 18 boxes']],
+    rules: ['Each turn roll the dice up to <b>3 times</b>. Tap dice to <b>hold</b> them between rolls.', 'Then tap one empty box to score the roll: <b style="color:#FFC247">amber</b> shows what each box would give (solid = best), <b style="color:#3DDC84">green</b> is scored.', '<b>Classic</b>: 5 dice, 13 boxes, top half 63+ earns +50. <b>Maxi</b>: 6 dice, 18 boxes — adds three pairs, five of a kind, Castle (3+3), Tower (4+2) and a 1–6 straight; top half 84+ earns +100. Highest total wins. With two players each has their own scorecard: roll, score one box, pass the phone.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="2" y="2" width="42" height="42" rx="8" fill="#151924"/><rect x="6" y="9" width="17" height="17" rx="4" fill="#ECEEF3" transform="rotate(-10 14.5 17.5)"/><g fill="#0B0D12" transform="rotate(-10 14.5 17.5)"><circle cx="10.5" cy="13" r="1.9"/><circle cx="14.5" cy="17.5" r="1.9"/><circle cx="18.5" cy="22" r="1.9"/></g><rect x="22" y="19" width="18" height="18" rx="4" fill="#FF6B5E" transform="rotate(8 31 28)"/><g fill="#fff" transform="rotate(8 31 28)"><circle cx="26.5" cy="23.5" r="1.9"/><circle cx="35.5" cy="23.5" r="1.9"/><circle cx="31" cy="28" r="1.9"/><circle cx="26.5" cy="32.5" r="1.9"/><circle cx="35.5" cy="32.5" r="1.9"/></g></svg>`, mount: mountYC },
   { id: 'g2', sec: 'l', unit: 'Game', name: '2048', color: 'var(--g2)', metric: 'score', desc: 'Swipe, merge equal tiles, chase 2048 and beyond.',
     rules: ['<b>Swipe</b> to slide every tile.', 'Two equal tiles that touch <b>merge</b> — 2+2 = 4, 4+4 = 8, all the way up.', 'Reach <b>2048</b>, then keep going. It ends when no move is left. Highest score wins.'],
@@ -682,7 +682,9 @@ function putRes(gid, t, n, p, r) {
   if (isBest) g[k][p] = r;
   return { prev, isBest };
 }
-function nextNum(gid, t, p) { for (let n = 1; ; n++) if (!getRes(gid, t, n, p)) return n; }
+const seen = (gid, t, n) => !!(S.seen && S.seen[gid] && S.seen[gid][t + ':' + n]);
+function markSeen(gid, t, n) { S.seen = S.seen || {}; (S.seen[gid] = S.seen[gid] || {})[t + ':' + n] = 1; }
+function nextNum(gid, t, p) { for (let n = 1; ; n++) if (!getRes(gid, t, n, p) && (p || !seen(gid, t, n))) return n; }
 function solvedCount(gid, t, p) { const g = S.res[gid] || {}; return Object.keys(g).filter((k) => k.startsWith(t + ':') && g[k][p]).length; }
 function bestScore(gid, p, t) { let b = 0; for (const k in S.res[gid] || {}) { if (t != null && !k.startsWith(t + ':')) continue; const r = S.res[gid][k][p]; if (r) b = Math.max(b, r.m); } return b; }
 
@@ -743,11 +745,11 @@ const app = document.getElementById('app');
 let tickTimer = null, editing = false;
 // ---- navigation: phone back gesture / browser back / Esc all return to the arcade ----
 let popping = false;
-function navPush() { try { if (!history.state || !history.state.tt) history.pushState({ tt: 1 }, ''); } catch (e) {} }
-function goHome() { try { if (history.state && history.state.tt) { popping = true; history.back(); } } catch (e) {} renderHome(); }
+function navPush() {} // no history entries: the edge-swipe/back gesture never leaves a game, only the ‹ button does
+function goHome() { renderHome(); }
 let curGame = null; // id of the game on screen, so "back" from a puzzle lands on that game's page
 function toMenu(gid) { renderHome(); openLobby(gid); }
-window.addEventListener('popstate', () => { if (popping) { popping = false; return; } const g = curGame; if (g) toMenu(g); else renderHome(); });
+
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   const vs = document.querySelectorAll('.veil');
@@ -853,6 +855,7 @@ function openLobby(gid, refresh = false) {
   kids.push(rules);
   const opt = (label, el) => { const o = $('div', 'opt'); o.append($('label', '', label), el); return o; };
   const re = () => openLobby(gid, true);
+  kids.push(opt('Players', seg([[0, '1 player'], [1, '2 players']], S.duo ? 1 : 0, (v) => { S.duo = !!v; store.save(); renderHome(); re(); })));
   if (g.lang) kids.push(opt('Language', seg(LANGS, c.lang, (v) => { c.lang = v; store.save(); re(); })));
   const off = g.lang ? LOFF[c.lang] || 0 : 0;
   if (g.vars) kids.push(opt('Rules', seg(g.vars, varOf(g, c), (v) => { c.tier = v; store.save(); re(); })));
@@ -992,9 +995,16 @@ function openGame(ctx) {
   const bar = $('div', 'gbar');
   navPush();
   curGame = gid;
-  const back = $('button', 'ibtn back', '‹'); back.setAttribute('aria-label', `${g.name} menu`); back.onclick = () => toMenu(gid);
+  const back = $('button', 'ibtn back', '‹'); back.setAttribute('aria-label', `${g.name} menu`); back.onclick = () => leave();
   const help = $('button', 'ibtn', '?'); help.onclick = () => showRules(g);
-  const ttl = $('button', 'gtitle', `${g.name}<small>${round && round.mode === 'set' ? `${S.players[1 - p]}'s word` : tName(g, t)} ▾</small>`); ttl.onclick = () => toMenu(gid);
+  const ttl = $('button', 'gtitle', `${g.name}<small>${round && round.mode === 'set' ? `${S.players[1 - p]}'s word` : tName(g, t)} ▾</small>`); ttl.onclick = () => leave();
+  const leave = () => {
+    if (!st.acted || st.done) { toMenu(gid); return; }
+    const yes = $('button', 'big pri', 'Leave'), no = $('button', 'big', 'Keep playing');
+    const v = veil([$('div', 'kicker', g.name), $('h2', '', 'Leave this game?'), $('p', '', duel ? 'The round stays open — you can come back to it from the menu.' : (st.canResume ? 'It’s saved — you’ll pick up right where you left off.' : 'You’ll start this one fresh next time.')), $('div', 'btns', ''), ]);
+    v.querySelector('.btns').append(yes, no);
+    yes.onclick = () => { v.remove(); toMenu(gid); }; no.onclick = () => v.remove();
+  };
   bar.append(back, ttl, help);
   app.appendChild(bar);
 
@@ -1049,6 +1059,7 @@ function openGame(ctx) {
     r.t = Math.round(elapsed() * 10) / 10; r.a = st.moves; if (st.par != null) r.p = st.par;
     let info = {};
     if (!r.x) { if (!(round && round.mode === 'set')) info = putRes(gid, t, num, p, r); st.solvedByPlayer = true; }
+    else if (!duel && hasTiers(g)) markSeen(gid, t, num);
     if (duel) round.res[p] = r;
     store.save();
     if (r.x && !duel) { setTimeout(() => showGaveUp(ctx, r, title, st), 60); return; } // solo: straight to the answer
@@ -1060,7 +1071,7 @@ function openGame(ctx) {
   let concedeArm = 0;
   const api = {
     get done() { return st.done; },
-    start() { if (!st.started && !st.done) { st.started = true; st.t0 = performance.now(); paint(); } },
+    start() { st.acted = true; if (!st.started && !st.done) { st.started = true; st.t0 = performance.now(); paint(); } },
     move(n = 1) { if (st.done) return; api.start(); st.moves = Math.max(0, st.moves + n); paint(); },
     resetMoves() { st.moves = 0; paint(); },
     setPar(v, label) { st.par = v; st.parLabel = label; paint(); },
@@ -1100,7 +1111,7 @@ function openGame(ctx) {
   }, 'concede');
   paint();
   tickTimer = setInterval(paint, 250);
-  if (!duel && c.timer === 'now') api.start();
+  if (!duel && c.timer === 'now' && !g.noTimer) { st.started = true; st.t0 = performance.now(); paint(); }
   return api;
 }
 
@@ -1116,7 +1127,7 @@ function showBar(text, buttons) {
 function showGaveUp(ctx, r, title, st) {
   const { gid, t, num } = ctx, g = G[gid];
   st.reveal();
-  let nx = num + 1; while (getRes(gid, t, nx, 0)) nx++;
+  let nx = num + 1; while (getRes(gid, t, nx, 0) || seen(gid, t, nx)) nx++;
   if (r.why === 'out of moves') { showBar(`<b>Out of moves.</b> So close — have another go?`, [['Try again', 'pri', () => openGame(ctx)], [`Skip to #${nx}`, '', () => openGame({ gid, t, num: nx, p: 0 })], ['‹ Menu', '', () => toMenu(gid)]]); return; }
   const text = r.why === 'hit a mine' ? '<b>Boom!</b> Here’s the whole board.' : r.why === 'was hanged' ? '<b>Hanged!</b> Here’s the word.' : st.canReveal() ? '<b>Gave up.</b> Here’s the solution.' : '<b>Gave up.</b>';
   showBar(text, [[`Next ${(g.unit || 'puzzle').toLowerCase()} · #${nx}`, 'pri', () => openGame({ gid, t, num: nx, p: 0 })], ['Try again', '', () => openGame(ctx)], ['‹ Menu', '', () => toMenu(gid)]]);
@@ -1154,11 +1165,16 @@ function showResult(ctx, r, title, info, st) {
     else if (info.prev) second = resCard(g, info.prev, info.isBest ? 'Previous best' : 'Your best');
     kids.push($('div', 'res-row' + (second ? '' : ' solo1'), resCard(g, r, g.unit ? 'This game' : 'This run', { best: !r.x }) + second));
     if (verdict.length) kids.push($('div', 'verdict', verdict.join(' · ')));
-    let nx = num + 1; while (getRes(gid, t, nx, 0)) nx++; // next unsolved puzzle after this one
+    let nx = num + 1; while (getRes(gid, t, nx, 0) || seen(gid, t, nx)) nx++; // next unsolved puzzle after this one
     const bNext = $('button', 'big pri', hasTiers(g) ? `Next ${(g.unit || 'puzzle').toLowerCase()} · #${nx}` : 'New game');
     bNext.onclick = () => { v.remove(); openGame({ gid, t, num: hasTiers(g) ? nx : nextNum(gid, g.vars ? t : 0, 0), p: 0 }); };
     btns.append(bNext);
     if (hasTiers(g)) { const a = $('button', 'big', r.x ? 'Try this one again' : 'Play this one again'); a.onclick = () => { v.remove(); openGame(ctx); }; btns.append(a); }
+    if (!r.x) {
+      const look = $('button', 'big', r.x ? 'See the board' : 'See how I solved it');
+      look.onclick = () => { v.remove(); showBar(`<b>${fmtMain(g, r)}</b> · ${g.unit || 'Puzzle'} #${num}`, [[hasTiers(g) ? `Next · #${nx}` : 'New game', 'pri', () => bNext.onclick()], ['Result', '', () => showResult(ctx, r, title, {}, st)], ['‹ Menu', '', () => toMenu(gid)]]); };
+      btns.append(look);
+    }
   } else {
     // ---- duel ----
     const round = duelOf(gid).rounds[ri], other = 1 - p, o = round.res[other];
@@ -1193,6 +1209,11 @@ function showResult(ctx, r, title, info, st) {
       nx.style.background = PC[first]; nx.style.borderColor = PC[first];
       nx.onclick = () => { v.remove(); const i = newRound(gid); handoff(gid, i, first); };
       btns.append(nx);
+      if (!g.together) {
+        const look = $('button', 'big', `See ${nm(p)}’s board`);
+        look.onclick = () => { v.remove(); showBar(`<b>Round ${ri + 1}</b> · ${nm(p)}’s board`, [[`Next round · ${nm(first)} starts →`, 'pri', () => nx.onclick(), PC[first]], ['Result', '', () => showResult(ctx, r, title, {}, st)], ['‹ Menu', '', () => toMenu(gid)]]); };
+        btns.append(look);
+      }
       if (st.canReveal() && !st.solvedByPlayer) {
         const see = $('button', 'big', 'Show the solution');
         see.onclick = () => { v.remove(); st.reveal(); showBar(`<b>Round ${ri + 1}</b> · here’s the solution${round.mode === 'diff' ? ` to ${nm(p)}’s puzzle` : ''}.`, [[`Next round · ${nm(first)} starts →`, 'pri', () => { const i = newRound(gid); handoff(gid, i, first); }, PC[first]], ['‹ Menu', '', () => toMenu(gid)]]); };
@@ -2635,12 +2656,11 @@ const ycCombo = (x, y) => (c) => { let best = 0; for (const a of YC_F) if (c[a] 
 const ycSum = (c, s) => s, ycAlike = (n, pts) => (c) => (Math.max(...c) === n ? pts : 0);
 const YC_RULES = {
   yatzy: { n: 5, target: 63, bonus: 50, yk: 'y', cats: [...YC_UP,
-    ['p1', 'One pair', 'sum of the pair', ycPairs(1)], ['p2', 'Two pairs', 'sum of both pairs', ycPairs(2)],
     ['3k', 'Three of a kind', 'sum of the three', ycKind(3)], ['4k', 'Four of a kind', 'sum of the four', ycKind(4)],
     ['ss', 'Small straight', '4 in a row · 15', ycStr(4, 15)], ['ls', 'Large straight', '5 in a row · 30', ycStr(5, 30)],
     ['fh', 'Full house', '3 + 2 · sum', ycCombo(3, 2)], ['ch', 'Chance', 'sum of dice', ycSum], ['y', 'Yatzy', 'five alike · 50', ycAlike(5, 50)]] },
   maxi: { n: 6, target: 84, bonus: 100, yk: 'my', cats: [...YC_UP,
-    ['p2', 'Two pairs', 'sum of the pairs', ycPairs(2)], ['p3', 'Three pairs', 'sum of the pairs', ycPairs(3)],
+    ['p3', 'Three pairs', 'sum of the pairs', ycPairs(3)],
     ['3k', 'Three of a kind', 'sum of the three', ycKind(3)], ['4k', 'Four of a kind', 'sum of the four', ycKind(4)], ['5k', 'Five of a kind', 'sum of the five', ycKind(5)],
     ['ss', 'Small straight', '4 in a row · 15', ycStr(4, 15)], ['ls', 'Large straight', '5 in a row · 30', ycStr(5, 30)], ['fs', 'Full straight', '1–6 · 60', ycRun(1, 6, 60)],
     ['fh', 'Full house', '3 + 2 · sum', ycCombo(3, 2)], ['cs', 'Castle', '3 + 3 · sum', ycCombo(3, 3)], ['tw', 'Tower', '4 + 2 · sum', ycCombo(4, 2)],
