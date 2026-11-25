@@ -396,7 +396,15 @@ input{font:inherit;color:inherit}
 @keyframes blPop{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(0);opacity:0}}
 .bl-pc.new svg{animation:blNew .32s cubic-bezier(.3,1.6,.5,1)}
 @keyframes blNew{0%{transform:scale(.2) rotate(-30deg);filter:brightness(2)}100%{transform:none}}
-.bl-pc.sp svg{filter:drop-shadow(0 0 4px rgba(255,255,255,.9))}
+.bl-pc.sp svg{animation:blIdle 1.6s ease-in-out infinite}
+.bl-pc[data-sp=rain] svg{animation:blSpin 5s linear infinite}
+@keyframes blIdle{50%{transform:scale(1.07)}}
+@keyframes blSpin{to{transform:rotate(360deg)}}
+.bl-trail{position:absolute;pointer-events:none;border-radius:99px;z-index:4}
+.bl-trail.h{background:linear-gradient(180deg,transparent,rgba(255,214,120,.9) 30%,#fff 50%,rgba(255,214,120,.9) 70%,transparent)}
+.bl-trail.v{background:linear-gradient(90deg,transparent,rgba(255,214,120,.9) 30%,#fff 50%,rgba(255,214,120,.9) 70%,transparent)}
+.bl-spark{position:absolute;pointer-events:none;background:conic-gradient(from 0deg,transparent 0 10%,#fff 12%,transparent 14% 35%,#fff 37%,transparent 39% 60%,#fff 62%,transparent 64% 85%,#fff 87%,transparent 89%);border-radius:50%}
+.bl-glow{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#fff 0,rgba(255,240,170,.95) 25%,rgba(255,170,60,.55) 55%,transparent 72%);z-index:5}
 .bl-pc.land svg{animation:blLand .16s ease-out}
 @keyframes blLand{0%{transform:scale(1.08,.88) translateY(4%)}100%{transform:none}}
 .bl-box,.bl-chain{position:absolute;pointer-events:none}
@@ -406,7 +414,7 @@ input{font:inherit;color:inherit}
 .bl-box.gone,.bl-chain.gone{animation:blGone .3s ease-in forwards}
 @keyframes blGone{to{transform:scale(1.3) rotate(10deg);opacity:0}}
 .bl-chain{z-index:2}
-.bl-part{position:absolute;width:9px;height:9px;border-radius:50%;pointer-events:none}
+.bl-part{position:absolute;width:8px;height:8px;border-radius:50%;pointer-events:none;will-change:transform}
 .bl-ring{position:absolute;border-radius:50%;border:5px solid #FFF3B0;box-shadow:0 0 18px #FFD54A,inset 0 0 14px #FF9F43;pointer-events:none}
 .bl-beam{position:absolute;height:5px;border-radius:3px;transform-origin:0 50%;background:linear-gradient(90deg,#fff,#FF6FB5,#7C8CFF,#3BE3C3,#FFE14D);box-shadow:0 0 10px #fff;pointer-events:none}
 .bl-flash{position:absolute;inset:0;background:#fff;pointer-events:none;border-radius:12px}
@@ -419,7 +427,7 @@ input{font:inherit;color:inherit}
 .bl-banner.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .bl-pts{position:absolute;z-index:6;font-weight:900;font-size:15px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35);pointer-events:none;animation:blPts .8s ease-out forwards}
 @keyframes blPts{0%{transform:translate(-50%,0) scale(.6);opacity:0}20%{opacity:1;transform:translate(-50%,-6px) scale(1.1)}100%{transform:translate(-50%,-34px);opacity:0}}
-.bl-scene.shake{animation:blQuake .3s}
+.bl-scene.shake{animation:blQuake .3s}.bl-scene.shake2{animation:blQuake .22s 2}
 @keyframes blQuake{20%{transform:translate(-4px,2px)}40%{transform:translate(4px,-2px)}60%{transform:translate(-3px,-1px)}80%{transform:translate(2px,1px)}}
 .bl-help{font-size:12px;color:var(--mute);text-align:center;line-height:1.35}
 .bl-help b{color:var(--tx)}
@@ -2264,7 +2272,7 @@ const UB_BANK = [["8:222h142v122h333h322v053v312v302v032h002h112v442h512h","8:22
 </script>
 <script>
 // ====================== STATE ======================
-const APP_VERSION = '096b66c010';
+const APP_VERSION = '2511f182f2';
 const KEY = 'traytable.v2';
 const store = (() => {
   let mem = null;
@@ -2303,7 +2311,7 @@ const COLOUR_GAMES = [
     rules: ['Tap a tube, then another, to <b>pour</b> its top colour across.', 'You can only pour onto the <b>same colour</b> or into an empty tube, and only while there\'s room.', 'Sort every colour into its own tube. Fewer pours wins. Undo is free.'],
     icon: `<svg viewBox="0 0 46 46">${[['#FF5A5F','#4C6FFF','#FF5A5F'],['#4C6FFF','#FFB020','#4C6FFF'],['#FFB020','#FF5A5F','#FFB020']].map((t,k)=>`<rect x="${5+k*13}" y="6" width="10" height="34" rx="5" fill="none" stroke="#3A4152" stroke-width="1.6"/>`+t.map((c,j)=>`<rect x="${6.5+k*13}" y="${29-j*9.5}" width="7" height="9" rx="${j?1:3}" fill="${c}"/>`).join('')).join('')}</svg>`, mount: mountPR },
   { id: 'bl', sec: 'c', name: 'Bloom', color: 'var(--bl)', metric: 'pts', unit: 'Level', noTimer: 1, ownHud: 1, desc: 'Swap and match three in the garden. Rockets, bombs, planes and rainbow combos.',
-    rules: ['<b>Swap</b> two neighbouring pieces to line up 3 or more of a kind. Finish the goals at the top before your <b>moves</b> run out.', 'Bigger matches make power-ups: <b>4 in a row</b> → Rocket (clears a line) · <b>2×2 square</b> → Paper plane (hits around it, then flies to a goal) · <b>L or T</b> → Bomb · <b>5 in a row</b> → Rainbow (clears every piece of the kind you swap it with). Swap a power-up, or tap it twice, to fire it.', 'Swap two power-ups together for <b>combos</b> — Rocket + Bomb clears 3 rows and 3 columns, Rainbow + anything turns a whole colour into that power-up. Boxes crack when you match beside them, chains break when you match the piece inside, grass spreads from every match that touches it. Moves left at the end turn into bonus rockets.'],
+    rules: ['<b>Swap</b> two neighbouring pieces to line up 3 or more of a kind. Finish the goals at the top before your <b>moves</b> run out.', 'Bigger matches make power-ups: <b>4 in a row</b> → Rocket (clears a line) · <b>2×2 square</b> → Paper plane (hits around it, then flies to a goal) · <b>L or T</b> → Bomb · <b>5 in a row</b> → Rainbow (clears every piece of the kind you swap it with). Swap a power-up, or tap it, to fire it.', 'Swap two power-ups together for <b>combos</b> — Rocket + Bomb clears 3 rows and 3 columns, Rainbow + anything turns a whole colour into that power-up. Boxes crack when you match beside them, chains break when you match the piece inside, grass spreads from every match that touches it. Moves left at the end turn into bonus rockets.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="1" y="1" width="44" height="44" rx="11" fill="#FFF3D6"/><use href="#bl-k0" x="3" y="3" width="20" height="20"/><use href="#bl-k3" x="23" y="3" width="20" height="20"/><use href="#bl-k1" x="3" y="23" width="20" height="20"/><use href="#bl-rh" x="23" y="23" width="20" height="20"/></svg>`, mount: mountBL },
   { id: 'fl', sec: 'c', name: 'Flood', color: 'var(--fl)', metric: 'moves', desc: 'Paint from the corner until the whole board is one colour.',
     rules: ['Your blob starts in the <b>top-left corner</b>.', 'Pick a colour — your blob turns that colour and swallows every touching cell of it.', 'Fill the board in as <b>few moves</b> as you can. Beat the target.'],
@@ -2806,7 +2814,7 @@ function openGame(ctx) {
     if (!persist || st.done || !st.acted) return;
     try { S.saves = S.saves || {}; S.saves[gid] = { k: saveKey, d: JSON.parse(JSON.stringify(persist.get())), m: st.moves, h: st.hints || 0, e: Math.round((elapsed() - st.penalty) * 10) / 10, pen: st.penalty }; store.save(); } catch (e) {}
   };
-  const queueSave = () => { clearTimeout(saveT); saveT = setTimeout(saveNow, 120); };
+  const queueSave = () => { if (persist && persist.manual) return; clearTimeout(saveT); saveT = setTimeout(saveNow, 400); };
   stage.addEventListener('pointerup', queueSave); stage.addEventListener('click', queueSave); controls.addEventListener('click', queueSave);
   const finish = (r, title) => {
     clearTimeout(saveT); dropSave(gid, saveKey);
@@ -2828,9 +2836,9 @@ function openGame(ctx) {
     get done() { return st.done; },
     start() { st.acted = true; if (!st.started && !st.done) { st.started = true; st.t0 = performance.now(); paint(); } },
     move(n = 1) { if (st.done) return; api.start(); st.moves = Math.max(0, st.moves + n); paint(); queueSave(); },
-    persist(get, set) { persist = { get, set }; st.canResume = true; },
+    persist(get, set, manual) { persist = { get, set, manual }; st.canResume = true; },
     hint(fn, label) { hintFn = fn; hintLabel = label; },
-    save: () => queueSave(),
+    save: () => { clearTimeout(saveT); saveT = setTimeout(saveNow, 60); },
     resetMoves() { st.moves = 0; paint(); },
     setPar(v, label) { st.par = v; st.parLabel = label; paint(); },
     setCap(v) { st.cap = v; paint(); },
@@ -4283,7 +4291,7 @@ function mountBL(stage, controls, P, api, ctx) {
   board.append(frame, tiles, obs, pcs, chL, fxL);
   const banner = $('div', 'bl-banner');
   scene.append(board, banner);
-  const help = $('div', 'bl-help', 'Swipe to swap · <b>4</b> in a row → rocket · <b>square</b> → plane · <b>L/T</b> → bomb · <b>5</b> → rainbow · tap a power-up twice to fire it');
+  const help = $('div', 'bl-help', 'Swipe to swap · <b>4</b> in a row → rocket · <b>square</b> → plane · <b>L/T</b> → bomb · <b>5</b> → rainbow · tap a power-up to fire it');
   wrap.append(hud, scene, help);
   stage.appendChild(wrap);
   // goals
@@ -4346,125 +4354,225 @@ function mountBL(stage, controls, P, api, ctx) {
   }
   // ---------- effects ----------
   const center = (i) => { const [x, y] = xy(i); return [x + cs / 2, y + cs / 2]; };
-  function particles(i, color, n = 6) {
+  const SHARDS = ['50%', '2px', '50%', '2px'];
+  function particles(i, color, n = 4) {
     const [x, y] = center(i);
     for (let k = 0; k < n; k++) {
-      const p = $('i', 'bl-part'); p.style.left = x - 4 + 'px'; p.style.top = y - 4 + 'px'; p.style.background = color; fxL.appendChild(p);
-      const a = Math.random() * Math.PI * 2, d = cs * (0.5 + Math.random() * 0.6);
-      p.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d}px) scale(.3)`, opacity: 0 }], { duration: 420, easing: 'cubic-bezier(.2,.7,.4,1)' }).onfinish = () => p.remove();
+      const p = $('i', 'bl-part'); p.style.cssText = `left:${x - 4}px;top:${y - 4}px;background:${color};border-radius:${SHARDS[k % 4]}`; fxL.appendChild(p);
+      const a = Math.random() * Math.PI * 2, d = cs * (0.45 + Math.random() * 0.55), rot = Math.round(Math.random() * 360);
+      p.animate([{ transform: 'translate(0,0) scale(1) rotate(0)', opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d + cs * 0.25}px) scale(.2) rotate(${rot}deg)`, opacity: 0 }], { duration: 460, easing: 'cubic-bezier(.15,.75,.4,1)' }).onfinish = () => p.remove();
+    }
+    if (n >= 3) { // white sparkle
+      const s = $('i', 'bl-spark'); s.style.cssText = `left:${x - cs * 0.3}px;top:${y - cs * 0.3}px;width:${cs * 0.6}px;height:${cs * 0.6}px`; fxL.appendChild(s);
+      s.animate([{ transform: 'scale(.3) rotate(0)', opacity: 0.95 }, { transform: 'scale(1.1) rotate(45deg)', opacity: 0 }], { duration: 300, easing: 'ease-out' }).onfinish = () => s.remove();
     }
   }
   function sprite(sym, i, size = 1) { const el = $('div', 'bl-sprite', blArt(0, sym)); const [x, y] = center(i); el.style.cssText = `left:${x - (cs * size) / 2}px;top:${y - (cs * size) / 2}px;width:${cs * size}px;height:${cs * size}px`; fxL.appendChild(el); return el; }
+  const RK = () => T(26); // rocket speed, ms per cell
   function rocketFly(i, dir) {
-    const [r, c] = rcOf(i);
-    const ends = dir === 'h' ? [[-1, c + 1], [1, W - c]] : [[-1, r + 1], [1, H - r]];
-    for (const [sgn, n] of ends) {
-      const el = sprite(dir === 'h' ? 'rh' : 'rv', i, 0.9);
-      const d = sgn * n * cs;
-      el.animate([{ transform: 'translate(0,0)' }, { transform: dir === 'h' ? `translate(${d}px,0)` : `translate(0,${d}px)` }], { duration: T(320), easing: 'cubic-bezier(.4,0,.8,.6)' }).onfinish = () => el.remove();
+    const [r, c] = rcOf(i), [cx, cy] = center(i);
+    for (const sgn of [-1, 1]) {
+      const n = dir === 'h' ? (sgn < 0 ? c + 1 : W - c) : (sgn < 0 ? r + 1 : H - r);
+      const dist = n * cs, dur = RK() * n + T(30);
+      const trail = $('div', 'bl-trail ' + dir);
+      trail.style.cssText = dir === 'h'
+        ? `left:${sgn < 0 ? cx - dist : cx}px;top:${cy - cs * 0.13}px;width:${dist}px;height:${cs * 0.26}px;transform-origin:${sgn < 0 ? 'right' : 'left'} center`
+        : `left:${cx - cs * 0.13}px;top:${sgn < 0 ? cy - dist : cy}px;width:${cs * 0.26}px;height:${dist}px;transform-origin:center ${sgn < 0 ? 'bottom' : 'top'}`;
+      fxL.appendChild(trail);
+      trail.animate([{ transform: dir === 'h' ? 'scaleX(0)' : 'scaleY(0)', opacity: 1 }, { transform: 'none', opacity: 0.85, offset: 0.65 }, { transform: 'none', opacity: 0 }], { duration: dur + T(220), easing: 'linear' }).onfinish = () => trail.remove();
+      const el = sprite(dir === 'h' ? 'rh' : 'rv', i, 0.8);
+      el.animate([{ transform: 'translate(0,0) scale(1.15)' }, { transform: dir === 'h' ? `translate(${sgn * dist}px,0) scale(1)` : `translate(0,${sgn * dist}px) scale(1)` }], { duration: dur, easing: 'cubic-bezier(.5,0,1,1)' }).onfinish = () => el.remove();
     }
   }
-  function ring(i, radius) {
+  function ring(i, radius, dur = 420) {
     const el = $('div', 'bl-ring'); const [x, y] = center(i); const d = radius * 2 * cs;
     el.style.cssText = `left:${x - d / 2}px;top:${y - d / 2}px;width:${d}px;height:${d}px`; fxL.appendChild(el);
-    el.animate([{ transform: 'scale(.15)', opacity: 1 }, { transform: 'scale(1)', opacity: 0 }], { duration: T(380), easing: 'cubic-bezier(.2,.7,.4,1)' }).onfinish = () => el.remove();
-    scene.classList.remove('shake'); void scene.offsetWidth; scene.classList.add('shake');
+    el.animate([{ transform: 'scale(.1)', opacity: 1 }, { transform: 'scale(1)', opacity: 0 }], { duration: T(dur), easing: 'cubic-bezier(.15,.7,.35,1)' }).onfinish = () => el.remove();
   }
-  function beam(a, b) {
+  function glow(i, radius) {
+    const el = $('div', 'bl-glow'); const [x, y] = center(i); const d = radius * 2 * cs;
+    el.style.cssText = `left:${x - d / 2}px;top:${y - d / 2}px;width:${d}px;height:${d}px`; fxL.appendChild(el);
+    el.animate([{ transform: 'scale(.2)', opacity: 1 }, { transform: 'scale(1)', opacity: 0.9, offset: 0.35 }, { transform: 'scale(1.15)', opacity: 0 }], { duration: T(420), easing: 'ease-out' }).onfinish = () => el.remove();
+  }
+  const quake = (big) => { scene.classList.remove('shake', 'shake2'); void scene.offsetWidth; scene.classList.add(big ? 'shake2' : 'shake'); };
+  function beam(a, b, life = 300) {
     const [x1, y1] = center(a), [x2, y2] = center(b), len = Math.hypot(x2 - x1, y2 - y1);
     const el = $('div', 'bl-beam'); el.style.cssText = `left:${x1}px;top:${y1 - 2}px;width:${len}px;transform:rotate(${Math.atan2(y2 - y1, x2 - x1)}rad)`; fxL.appendChild(el);
-    el.animate([{ opacity: 0 }, { opacity: 1, offset: 0.3 }, { opacity: 0 }], { duration: T(420) }).onfinish = () => el.remove();
+    el.animate([{ opacity: 0, transform: `rotate(${Math.atan2(y2 - y1, x2 - x1)}rad) scaleX(0)` }, { opacity: 1, transform: `rotate(${Math.atan2(y2 - y1, x2 - x1)}rad) scaleX(1)`, offset: 0.35 }, { opacity: 0, transform: `rotate(${Math.atan2(y2 - y1, x2 - x1)}rad) scaleX(1)` }], { duration: T(life), easing: 'ease-out' }).onfinish = () => el.remove();
   }
   function flyToGoal(i, k, j) {
+    if (j < 0) return;
     const src = board.getBoundingClientRect(), [x, y] = center(i), dst = goalEls[j].querySelector('svg').getBoundingClientRect();
     const el = $('div', 'bl-fly', blArt(k)); const sx = src.left + x - 17, sy = src.top + y - 17;
     el.style.left = sx + 'px'; el.style.top = sy + 'px'; document.body.appendChild(el);
-    const dx = dst.left + dst.width / 2 - 17 - sx, dy = dst.top + dst.height / 2 - 17 - sy;
-    el.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx * 0.3}px,${dy * 0.3 - 40}px) scale(1.25)`, offset: 0.35 }, { transform: `translate(${dx}px,${dy}px) scale(.8)` }], { duration: T(560) + Math.random() * 120, easing: 'cubic-bezier(.4,0,.3,1)' }).onfinish = () => { el.remove(); dec(j); };
+    const dx = dst.left + dst.width / 2 - 17 - sx, dy = dst.top + dst.height / 2 - 17 - sy, side = (Math.random() - 0.5) * 60;
+    el.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx * 0.25 + side}px,${dy * 0.25 - 30}px) scale(1.3)`, offset: 0.3 }, { transform: `translate(${dx}px,${dy}px) scale(.75)` }], { duration: T(600) + Math.random() * 140, easing: 'cubic-bezier(.45,0,.25,1)' }).onfinish = () => { el.remove(); dec(j); };
   }
   function showBanner(html, good) { banner.innerHTML = html; banner.classList.toggle('good', !!good); banner.classList.add('on'); }
   const hideBanner = () => banner.classList.remove('on');
+  // when each cell is hit: a rocket reaches it, a bomb's wave reaches it, a beam strikes it...
+  let srcs = [], srcT0 = 0;
+  const addSrc = (f, extra = 0) => { if (!srcs.length) srcT0 = performance.now(); srcs.push({ f, at: performance.now() - srcT0 + extra }); };
+  const delayOf = (i) => {
+    if (!srcs.length) return 0;
+    let best = Infinity; for (const s of srcs) { const d = s.f(i); if (d !== Infinity) best = Math.min(best, s.at + d); }
+    return best === Infinity ? 0 : Math.max(0, best - (performance.now() - srcT0));
+  };
+  const rocketF = (i0, dir) => { const [r0, c0] = rcOf(i0); return (i) => { const [r, c] = rcOf(i); return dir === 'h' ? (r === r0 ? Math.abs(c - c0) * RK() : Infinity) : (c === c0 ? Math.abs(r - r0) * RK() : Infinity); }; };
+  const bombF = (i0, R) => { const [r0, c0] = rcOf(i0); return (i) => { const [r, c] = rcOf(i), d = Math.max(Math.abs(r - r0), Math.abs(c - c0)); return d <= R + 1 ? d * T(45) : Infinity; }; };
+  const near = (i0) => { const [r0, c0] = rcOf(i0); return (i) => { const [r, c] = rcOf(i); return Math.abs(r - r0) + Math.abs(c - c0) <= 1 ? 0 : Infinity; }; };
   // ---------- event playback ----------
-  const moveTo = (el, i, ms) => { el.style.transition = `transform ${ms}ms ease-in-out`; el.style.transform = tr(i); };
+  function slide(el, from, to, ms, lift) {
+    el.style.transition = 'none';
+    el.animate([{ transform: tr(from) }, { transform: tr(to) }], { duration: ms, easing: 'cubic-bezier(.35,0,.25,1)' });
+    el.style.transform = tr(to);
+    if (lift) el.firstElementChild.animate([{ transform: 'scale(1)' }, { transform: `scale(${lift})` }, { transform: 'scale(1)' }], { duration: ms, easing: 'ease-in-out' });
+  }
+  function popEl(el, delay, color, parts) {
+    const svg = el.firstElementChild;
+    svg.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(1.22)', opacity: 1, offset: 0.35 }, { transform: 'scale(.05)', opacity: 0 }], { duration: T(200), delay, easing: 'ease-in', fill: 'forwards' });
+    setTimeout(() => particles(+el.dataset.i, color, parts), delay + T(70));
+    setTimeout(() => el.remove(), delay + T(210));
+  }
   const H_ = {
-    async swap(e) { const A = els.get(e.ida), B = els.get(e.idb); if (A) moveTo(A, e.b, T(150)); if (B) moveTo(B, e.a, T(150)); await blWait(T(160)); },
-    async clear(e) {
-      const many = e.items.length > 18;
-      for (const it of e.items) {
-        const el = els.get(it.id); if (!el) continue; els.delete(it.id);
-        el.classList.add('pop'); setTimeout(() => el.remove(), 230);
-        particles(it.i, it.sp ? '#FFF6C8' : BL_COLORS[it.k], many ? 2 : 5);
+    async swap(e) {
+      const A = els.get(e.ida), B = els.get(e.idb);
+      const combo = A && B && A.dataset.sp && B.dataset.sp;
+      if (A) { A.style.zIndex = 2; slide(A, e.a, e.b, T(combo ? 170 : 140), 1.12); setTimeout(() => (A.style.zIndex = ''), T(200)); }
+      if (B) slide(B, e.b, combo ? e.b : e.a, T(combo ? 170 : 140), combo ? 1.3 : 0);
+      await blWait(T(combo ? 180 : 140));
+      if (combo) { glow(e.b, 1.4); await blWait(T(90)); }
+    },
+    async clear(e, makes = []) {
+      // pieces that formed a power-up slide into its cell
+      const at = new Map(e.items.map((it) => [it.i, it]));
+      const merging = new Map();
+      for (const mk of makes) {
+        const seed = at.get(mk.i); if (!seed) continue;
+        const stack = [mk.i], seen = new Set([mk.i]);
+        while (stack.length) { const c = stack.pop(); merging.set(c, mk.i); const [r, cc] = rcOf(c); for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) { const rr = r + dr, c2 = cc + dc; if (rr < 0 || c2 < 0 || rr >= H || c2 >= W) continue; const j = rr * W + c2, it = at.get(j); if (it && !seen.has(j) && !it.sp && it.k === seed.k) { seen.add(j); stack.push(j); } } }
       }
-      for (const x of e.col) flyToGoal(x.i, x.k, goalIdx('col', x.k));
+      const many = e.items.length > 16;
+      let maxD = 0;
+      const colAt = new Map(e.col.map((x) => [x.i, x]));
+      for (const it of e.items) {
+        const el = els.get(it.id); if (!el) continue; els.delete(it.id); el.dataset.i = it.i;
+        if (merging.has(it.i)) {
+          const to = merging.get(it.i);
+          if (to !== it.i) { slide(el, it.i, to, T(150)); el.firstElementChild.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(.7)', opacity: 0.6 }], { duration: T(150), fill: 'forwards' }); }
+          setTimeout(() => el.remove(), T(150));
+          if (colAt.has(it.i)) setTimeout(() => flyToGoal(to, it.k, goalIdx('col', it.k)), T(140));
+          maxD = Math.max(maxD, T(150));
+          continue;
+        }
+        const d = delayOf(it.i); maxD = Math.max(maxD, d + T(120));
+        popEl(el, d, it.sp ? '#FFF6C8' : BL_COLORS[it.k], many ? 2 : 4);
+        if (colAt.has(it.i)) setTimeout(() => flyToGoal(it.i, it.k, goalIdx('col', it.k)), d + T(60));
+      }
       for (const b of e.box) {
-        const el = boxEls.get(b.i); if (!el) continue;
-        particles(b.i, '#C9893F', 5);
-        if (b.left > 0) { el.innerHTML = blBox(b.left); el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); }
-        else { boxEls.delete(b.i); el.classList.add('gone'); setTimeout(() => el.remove(), 320); dec(goalIdx('box')); }
+        const el = boxEls.get(b.i); if (!el) continue; const d = delayOf(b.i); maxD = Math.max(maxD, d + T(120));
+        setTimeout(() => {
+          particles(b.i, '#C9893F', 5);
+          if (b.left > 0) { el.innerHTML = blBox(b.left); el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); }
+          else { boxEls.delete(b.i); el.classList.add('gone'); setTimeout(() => el.remove(), 320); dec(goalIdx('box')); }
+        }, d);
       }
       for (const c of e.chain) {
-        const el = chainEls.get(c.i); if (!el) continue;
-        particles(c.i, '#B9C0CC', 4);
-        if (c.left > 0) el.innerHTML = blChain(c.left);
-        else { chainEls.delete(c.i); el.classList.add('gone'); setTimeout(() => el.remove(), 320); dec(goalIdx('chain')); }
+        const el = chainEls.get(c.i); if (!el) continue; const d = delayOf(c.i); maxD = Math.max(maxD, d + T(120));
+        setTimeout(() => {
+          particles(c.i, '#B9C0CC', 4);
+          if (c.left > 0) el.innerHTML = blChain(c.left);
+          else { chainEls.delete(c.i); el.classList.add('gone'); setTimeout(() => el.remove(), 320); dec(goalIdx('chain')); }
+        }, d);
       }
-      for (const gi of e.grass) { const t = tileEls[gi]; if (t) { t.classList.add('grass', 'grow'); setTimeout(() => t.classList.remove('grow'), 400); } dec(goalIdx('grass'), false); }
-      if (e.grass.length && goalIdx('grass') >= 0) setGoal(goalIdx('grass'), true);
-      if (e.items.length || e.box.length || e.chain.length) await blWait(T(200));
+      for (const gi of e.grass) {
+        const d = delayOf(gi);
+        setTimeout(() => { const t = tileEls[gi]; if (t) { t.classList.add('grass', 'grow'); setTimeout(() => t.classList.remove('grow'), 400); } dec(goalIdx('grass'), false); if (goalIdx('grass') >= 0) setGoal(goalIdx('grass'), true); }, d);
+      }
+      srcs = [];
+      if (maxD) await blWait(maxD);
     },
     async fx(e) {
       const k = e.kind;
-      if (k === 'rh' || k === 'rv') { rocketFly(e.i, k === 'rh' ? 'h' : 'v'); await blWait(T(150)); }
-      else if (k === 'cross') { rocketFly(e.i, 'h'); rocketFly(e.i, 'v'); await blWait(T(170)); }
-      else if (k === 'cross3') { const [r, c] = rcOf(e.i); for (const d of [-1, 0, 1]) { if (r + d >= 0 && r + d < H) rocketFly((r + d) * W + c, 'h'); if (c + d >= 0 && c + d < W) rocketFly(r * W + c + d, 'v'); } await blWait(T(190)); }
-      else if (k === 'bomb') { ring(e.i, 2.6); await blWait(T(170)); }
-      else if (k === 'bigbomb') { ring(e.i, 3.8); await blWait(T(220)); }
-      else if (k === 'all') { const f = $('div', 'bl-flash'); fxL.appendChild(f); f.animate([{ opacity: 0 }, { opacity: 0.9 }, { opacity: 0 }], { duration: T(520) }).onfinish = () => f.remove(); await blWait(T(260)); }
-      else if (k === 'rain') { const s = sprite('rain', e.i, 1.3); s.animate([{ transform: 'scale(.6) rotate(0)' }, { transform: 'scale(1.2) rotate(180deg)' }, { transform: 'scale(0) rotate(360deg)' }], { duration: T(560) }).onfinish = () => s.remove(); (e.cells || []).forEach((j) => beam(e.i, j)); await blWait(T(360)); }
+      if (k === 'rh' || k === 'rv') { const d = k === 'rh' ? 'h' : 'v'; rocketFly(e.i, d); addSrc(rocketF(e.i, d)); }
+      else if (k === 'cross') { rocketFly(e.i, 'h'); rocketFly(e.i, 'v'); addSrc(rocketF(e.i, 'h')); addSrc(rocketF(e.i, 'v')); }
+      else if (k === 'cross3') {
+        const [r, c] = rcOf(e.i);
+        for (const d of [-1, 0, 1]) {
+          if (r + d >= 0 && r + d < H) { rocketFly((r + d) * W + c, 'h'); addSrc(rocketF((r + d) * W + c, 'h')); }
+          if (c + d >= 0 && c + d < W) { rocketFly(r * W + c + d, 'v'); addSrc(rocketF(r * W + c + d, 'v')); }
+        }
+      }
+      else if (k === 'bomb' || k === 'bigbomb') { const R = k === 'bomb' ? 2 : 3; glow(e.i, R + 0.4); ring(e.i, R + 0.9); quake(k === 'bigbomb'); addSrc(bombF(e.i, R)); await blWait(T(50)); }
+      else if (k === 'all') { const f = $('div', 'bl-flash'); fxL.appendChild(f); f.animate([{ opacity: 0 }, { opacity: 0.95 }, { opacity: 0 }], { duration: T(650) }).onfinish = () => f.remove(); quake(true); addSrc(() => Math.random() * T(260)); await blWait(T(120)); }
+      else if (k === 'rain') {
+        const cells = e.cells || [], step = T(cells.length > 14 ? 14 : 24);
+        const s = sprite('rain', e.i, 1.25), life = T(140) + cells.length * step + T(160);
+        s.animate([{ transform: 'scale(.7) rotate(0)' }, { transform: 'scale(1.25) rotate(200deg)', offset: 0.25 }, { transform: 'scale(1.15) rotate(600deg)', offset: 0.85 }, { transform: 'scale(0) rotate(720deg)' }], { duration: life, easing: 'linear' }).onfinish = () => s.remove();
+        glow(e.i, 1.2);
+        const order = new Map(cells.map((j, x) => [j, x]));
+        cells.forEach((j, x) => setTimeout(() => beam(e.i, j, 320), T(120) + x * step));
+        addSrc((i) => (order.has(i) ? T(160) + order.get(i) * step : Infinity));
+      }
       else if (k === 'plane') {
-        ring(e.i, 1.3);
+        addSrc(near(e.i)); ring(e.i, 1.2, 320);
         if (e.to != null) {
-          const s = sprite(e.carry ? (e.carry === 'bomb' ? 'bomb' : e.carry) : 'plane', e.i, 0.95), p = sprite('plane', e.i, 0.95);
-          const [x1, y1] = center(e.i), [x2, y2] = center(e.to), dx = x2 - x1, dy = y2 - y1;
-          const kf = [{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx * 0.5}px,${dy * 0.5 - cs * 1.4}px) scale(1.35)` }, { transform: `translate(${dx}px,${dy}px) scale(.9)` }];
-          p.animate(kf, { duration: T(480), easing: 'ease-in-out' }).onfinish = () => p.remove();
-          if (e.carry) s.animate(kf, { duration: T(480), easing: 'ease-in-out' }).onfinish = () => s.remove(); else s.remove();
-          await blWait(T(470));
-        } else await blWait(T(150));
+          const fly = T(440);
+          const p = sprite('plane', e.i, 0.95), cargo = e.carry ? sprite(e.carry, e.i, 0.7) : null;
+          const [x1, y1] = center(e.i), [x2, y2] = center(e.to), dx = x2 - x1, dy = y2 - y1, ang = (Math.atan2(dy, dx) * 180) / Math.PI + 22;
+          const kf = [{ transform: 'translate(0,0) scale(1) rotate(0)' }, { transform: `translate(${dx * 0.08}px,${-cs * 0.6}px) scale(1.3) rotate(${ang - 40}deg)`, offset: 0.2 }, { transform: `translate(${dx * 0.55}px,${dy * 0.55 - cs * 1.2}px) scale(1.4) rotate(${ang}deg)`, offset: 0.6 }, { transform: `translate(${dx}px,${dy}px) scale(.9) rotate(${ang + 10}deg)` }];
+          p.animate(kf, { duration: fly, easing: 'ease-in-out' }).onfinish = () => { p.remove(); ring(e.to, 0.9, 260); };
+          if (cargo) cargo.animate(kf, { duration: fly, easing: 'ease-in-out' }).onfinish = () => cargo.remove();
+          if (e.carry) await blWait(fly); else addSrc((i) => (i === e.to ? 0 : Infinity), fly);
+        }
       }
     },
     async make(e) {
       let el = els.get(e.id);
       if (!el) el = mkPiece({ id: e.id, k: e.k, sp: e.sp }, e.i); else setArt(el, e.k, e.sp);
-      el.dataset.sp = e.sp; el.classList.remove('new'); void el.offsetWidth; el.classList.add('new');
-      if (e.from != null) beam(e.from, e.i);
+      el.dataset.sp = e.sp;
+      el.firstElementChild.animate([{ transform: 'scale(.2) rotate(-40deg)', opacity: 0.4 }, { transform: 'scale(1.3) rotate(8deg)', opacity: 1, offset: 0.6 }, { transform: 'scale(1) rotate(0)' }], { duration: T(e.bonus ? 220 : 340), easing: 'ease-out' });
+      if (!e.bonus) ring(e.i, 0.8, 300);
+      if (e.from != null) beam(e.from, e.i, 380);
     },
     async fall(e) {
       let maxD = 0;
       for (const m of e.moves) {
         let el = els.get(m.id);
         if (!el) { el = mkPiece({ id: m.id, k: m.k, sp: m.sp }, m.path[0]); el.dataset.sp = String(m.sp || ''); }
-        const kf = m.path.map((i) => ({ transform: tr(i) }));
-        const dur = T(Math.max(110, (kf.length - 1) * 62));
-        el.style.transition = 'none'; el.style.transform = kf[kf.length - 1].transform;
-        el.animate(kf, { duration: dur, easing: 'cubic-bezier(.45,0,.9,.55)' });
-        setTimeout(() => { el.classList.remove('land'); void el.offsetWidth; el.classList.add('land'); }, dur);
+        const pts = m.path.map(xy), cum = [0]; let D = 0;
+        for (let k = 1; k < pts.length; k++) { D += Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]) / cs; cum.push(D); }
+        if (D <= 0) continue;
+        const dur = T(120 + 75 * Math.sqrt(D)), [lx, ly] = pts[pts.length - 1];
+        // gravity: distance grows with time², so a point d cells down is reached at √d of the way
+        const kf = pts.map(([x, y], k) => ({ transform: `translate(${x}px,${y}px)`, offset: 0.82 * Math.sqrt(cum[k] / D) }));
+        kf.push({ transform: `translate(${lx}px,${ly - cs * 0.08}px)`, offset: 0.92 }, { transform: `translate(${lx}px,${ly}px)`, offset: 1 });
+        el.style.transition = 'none'; el.style.transform = `translate(${lx}px,${ly}px)`;
+        el.animate(kf, { duration: dur, easing: 'linear' });
+        setTimeout(() => el.firstElementChild && el.firstElementChild.animate([{ transform: 'scale(1.12,.86) translateY(6%)' }, { transform: 'scale(.96,1.05)' }, { transform: 'none' }], { duration: T(200), easing: 'ease-out' }), dur * 0.82);
         maxD = Math.max(maxD, dur);
       }
-      await blWait(maxD + 20);
+      await blWait(maxD * 0.88);
     },
     async shuffle(e) {
       showBanner('Shuffle!', true); await blWait(T(500));
-      for (const x of e.to) { let el = els.get(x.id); if (!el) el = mkPiece({ id: x.id, k: x.k, sp: 0 }, x.i); moveTo(el, x.i, T(420)); }
-      await blWait(T(450)); hideBanner();
+      for (const x of e.to) { let el = els.get(x.id); if (!el) el = mkPiece({ id: x.id, k: x.k, sp: 0 }, x.i); const fromT = el.style.transform; el.style.transition = 'none'; el.animate([{ transform: fromT }, { transform: tr(x.i) }], { duration: T(460), easing: 'cubic-bezier(.4,0,.2,1)' }); el.style.transform = tr(x.i); }
+      await blWait(T(480)); hideBanner();
     },
   };
   async function play(evs) {
     for (let n = 0; n < evs.length; n++) {
       const e = evs[n];
-      if (e.t === 'make') { // run a burst of power-up creations together
+      if (e.t === 'clear') { // a match that makes a power-up: pieces merge, then it appears
+        const makes = []; let m = n + 1;
+        while (m < evs.length && evs[m].t === 'make' && evs[m].from == null && !evs[m].bonus) makes.push(evs[m++]);
+        await H_.clear(e, makes);
+        if (makes.length) { makes.forEach((mk) => H_.make(mk)); await blWait(T(170)); n = m - 1; }
+        continue;
+      }
+      if (e.t === 'make') { // a burst of power-ups (rainbow combos, bonus)
         let m = n; while (m < evs.length && evs[m].t === 'make') { H_.make(evs[m]); m++; }
-        n = m - 1; await blWait(T(evs[n].bonus ? 90 : 170)); continue;
+        n = m - 1; await blWait(T(evs[n].bonus ? 90 : 200)); continue;
       }
       if (H_[e.t]) await H_[e.t](e);
     }
@@ -4488,10 +4596,9 @@ function mountBL(stage, controls, P, api, ctx) {
   board.onpointercancel = () => { down = null; };
   function tapCell(i) {
     const q = st.p[i];
-    if (sel != null) {
-      if (sel === i) { setSel(null); if (q && q.sp) doTap(i); return; }
-      if (adjacent(sel, i)) { const a = sel; setSel(null); doSwap(a, i); return; }
-    }
+    if (sel != null && sel !== i && adjacent(sel, i)) { const a = sel; setSel(null); doSwap(a, i); return; }
+    if (q && q.sp && M3.movable(st, i)) { setSel(null); doTap(i); return; } // power-ups fire on a single tap
+    if (sel === i) { setSel(null); return; }
     setSel(q && M3.movable(st, i) ? i : null);
   }
   async function doSwap(a, b) {
@@ -4500,7 +4607,7 @@ function mountBL(stage, controls, P, api, ctx) {
     const r = M3.swap(st, a, b);
     if (!r.ok) { // wobble back
       const A = st.p[a] && els.get(st.p[a].id), B = st.p[b] && els.get(st.p[b].id);
-      if (A && B) { moveTo(A, b, 120); moveTo(B, a, 120); await blWait(130); moveTo(A, a, 120); moveTo(B, b, 120); await blWait(130); }
+      if (A && B) { slide(A, a, b, 120, 1.1); slide(B, b, a, 120); await blWait(125); slide(A, b, a, 140); slide(B, a, b, 140); await blWait(145); }
       busy = false; armHint(); return;
     }
     api.move(); paintMoves();
@@ -4509,8 +4616,10 @@ function mountBL(stage, controls, P, api, ctx) {
   async function doTap(i) {
     if (busy || api.done) return;
     busy = true; clearHint();
+    const el = st.p[i] && els.get(st.p[i].id);
     const r = M3.tap(st, i); if (!r.ok) { busy = false; return; }
     api.move(); paintMoves();
+    if (el) { el.firstElementChild.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }], { duration: T(110), easing: 'ease-out', fill: 'forwards' }); await blWait(T(110)); }
     await play(r.ev); await after();
   }
   async function after() {
@@ -4529,17 +4638,18 @@ function mountBL(stage, controls, P, api, ctx) {
       return;
     }
     if (s === 'lose') { paintMoves(); showBanner('Out of moves'); await blWait(1200); hideBanner(); if (!api.done) api.fail('Out of moves', 'out of moves', st.score); return; }
-    busy = false; armHint();
+    busy = false; armHint(); api.save();
   }
   const onResize = () => { if (!wrap.isConnected) { window.removeEventListener('resize', onResize); return; } if (!busy) layout(); };
   window.addEventListener('resize', onResize);
   layout(); armHint();
   api.persist(() => ({ st }), (d) => {
+    // (Bloom saves itself when the board settles, see after())
     Object.assign(st, d.st); layout(); paintMoves();
     st.goals.forEach((g, j) => { disp[j] = g.left; setGoal(j); });
     shownScore = st.score; scoreEl.querySelector('b').textContent = st.score.toLocaleString('en-US');
     if (M3.status(st) !== 'play') { busy = true; setTimeout(after, 300); }
-  });
+  }, true);
   window.__bl = { st, swap: doSwap, tap: doTap, busy: () => busy }; // test hook
 }
 
