@@ -388,9 +388,8 @@ input{font:inherit;color:inherit}
 .yc-pl{flex:1;min-width:0;height:42px;border-radius:11px;background:var(--s2);display:flex;justify-content:space-between;align-items:center;gap:6px;padding:0 10px;font-weight:700;font-size:13px;color:var(--mute);box-shadow:inset 0 0 0 1px var(--line)}
 .yc-pl span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .yc-pl b{font-size:18px;color:#ECEEF3;font-variant-numeric:tabular-nums}
-.yc-pl.cur{color:var(--pc);box-shadow:inset 0 0 0 2px var(--pc)}
-.yc-pl.peek{background:color-mix(in srgb,var(--pc) 16%,var(--s2))}
-.yc-note{font-size:11px;color:var(--dim);text-align:center;height:22px;line-height:22px}
+.yc-pl.on{color:var(--pc);background:color-mix(in srgb,var(--pc) 16%,var(--s2));box-shadow:inset 0 0 0 2px var(--pc)}
+.yc-who{margin-bottom:8px}
 .yc-tot b.up,.yc-pl b.up{color:#3DDC84;animation:ycPop .45s cubic-bezier(.3,1.6,.5,1)}
 .yc-fly{position:fixed;z-index:60;font-weight:900;font-size:18px;color:#3DDC84;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.6)}
 .yc-toast{position:fixed;left:50%;top:40%;z-index:60;transform:translate(-50%,-50%) scale(.8);opacity:0;pointer-events:none;background:#FFC247;color:#2A1E00;font-weight:900;font-size:24px;padding:12px 22px;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.5);transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.5,1)}
@@ -919,10 +918,11 @@ function openGame(ctx) {
   bar.append(back, ttl, help);
   app.appendChild(bar);
 
-  let tb = null;
+  let tb = null, tbQ = p, tbNote = null;
   const setTurn = (q) => {
+    tbQ = q;
     tb.style.setProperty('--pc', PC[q]);
-    tb.innerHTML = `<div>${dot(q)}<b>${nm(q)}${g.together ? '’s' : ''}</b> ${g.together ? 'turn' : 'is playing'} <span class="dim">· round ${ri + 1}</span></div><div class="sc">${scoreLine(gameScore(gid))}</div>`;
+    tb.innerHTML = `<div>${dot(q)}<b>${nm(q)}${g.together ? '’s' : ''}</b> ${g.together ? 'turn' : 'is playing'} <span class="dim">· ${tbNote || `round ${ri + 1}`}</span></div><div class="sc">${scoreLine(gameScore(gid))}</div>`;
     app.style.setProperty('--pc', PC[q]);
   };
   if (duel) {
@@ -998,7 +998,8 @@ function openGame(ctx) {
   };
   if (duel && g.together) {
     // both players share this one game: the mount passes the turn and reports both scores at the end
-    api.setTurn = (q) => { setTurn(q); tb.classList.remove('flash'); void tb.offsetWidth; tb.classList.add('flash'); };
+    api.setTurn = (q, note) => { if (note != null) tbNote = note; setTurn(q); tb.classList.remove('flash'); void tb.offsetWidth; tb.classList.add('flash'); };
+    api.turnNote = (note) => { tbNote = note; setTurn(tbQ); };
     api.endTogether = (scores, conceder) => {
       if (st.done) return;
       st.acc = elapsed() - st.penalty; st.started = false; st.done = true; paint();
@@ -2268,6 +2269,7 @@ function mountYC(stage, controls, P, api, ctx) {
   const cards = players.map(() => ({})), shown = players.map(() => 0);
   let turn = duo ? duo.first : 0, view = turn, dice = Array(ND).fill(0), held = dice.map(() => false), rolls = 0, busy = false, turnsDone = 0;
   const TOTAL = N * players.length;
+  const turnNote = () => `${Math.min(N, Math.floor(turnsDone / 2) + 1)} of ${N}`;
   const upper = (q) => YC_UP.reduce((a, [k]) => a + (cards[q][k] || 0), 0);
   const total = (q) => Object.values(cards[q]).reduce((a, b) => a + b, 0) + (upper(q) >= R.target ? R.bonus : 0);
   const diceEl = $('div', 'yc-dice');
@@ -2327,7 +2329,7 @@ function mountYC(stage, controls, P, api, ctx) {
       dEls.forEach((el, i) => { el.classList.remove('fade'); el.classList.add('blank'); setFace(i, 0); });
       dice = dice.map(() => 0); busy = false;
       if (turnsDone >= TOTAL) { paintBtn(); finish(); return; }
-      if (duo) { turn = 1 - turn; view = turn; api.setTurn(turn); paintCard(); }
+      if (duo) { turn = 1 - turn; view = turn; api.setTurn(turn, turnNote()); paintCard(); }
       paintBtn();
     }, duo ? 850 : 400);
   }
@@ -2377,19 +2379,17 @@ function mountYC(stage, controls, P, api, ctx) {
     };
     let h = '';
     if (duo) {
-      h += `<div class="yc-who">${players.map((p) => `<button class="yc-pl${p === turn ? ' cur' : ''}${p === view && p !== turn ? ' peek' : ''}" data-p="${p}" style="--pc:${PC[p]}"><span>${nm(p)}${p === turn ? ' · turn' : ''}</span><b data-tot="${p}">${Math.round(shown[p])}</b></button>`).join('')}</div>`;
-      const tn = `Turn ${Math.min(N, Math.floor(turnsDone / 2) + 1)} / ${N}`;
-      h += `<div class="yc-note">${mine ? `${tn} · tap the other name to see their card` : `${nm(q)}'s card — tap ${nm(turn)} to go back`}</div>`;
+      h += `<div class="yc-who">${players.map((p) => `<button class="yc-pl${p === view ? ' on' : ''}" data-p="${p}" style="--pc:${PC[p]}"><span>${nm(p)}</span><b data-tot="${p}">${Math.round(shown[p])}</b></button>`).join('')}</div>`;
     }
     h += `<div class="yc-tiles">${R.cats.slice(0, 6).map(tile).join('')}<div class="yc-bonus"><span>Bonus · ${R.target}+ in the top half → +${R.bonus}</span><b class="${ok ? 'ok' : ''}">${ok ? '+' + R.bonus : up + ' / ' + R.target}</b></div>${R.cats.slice(6).map((r, i) => tile(r, i + 6)).join('')}</div>`;
     if (!duo) h += `<div class="yc-tot"><span>Total</span><b data-tot="0">${Math.round(shown[0])}</b></div>`;
     sheet.innerHTML = h;
     if (just) sheet.querySelector(`[data-k="${just}"]`).classList.add('just');
-    api.setExtra('Turn', `${Math.min(N, Math.floor(turnsDone / players.length) + 1)}<i>/ ${N}</i>`);
+    if (duo) api.turnNote(turnNote()); else api.setExtra('Turn', `${Math.min(N, turnsDone + 1)}<i>/ ${N}</i>`);
   }
   sheet.onclick = (e) => {
     const pb = e.target.closest('.yc-pl');
-    if (pb) { if (busy) return; const p = +pb.dataset.p; view = view === p && p !== turn ? turn : p; paintCard(); return; }
+    if (pb) { if (busy) return; view = +pb.dataset.p; paintCard(); return; }
     const t = e.target.closest('.yc-t');
     if (t) choose(t.dataset.k);
   };
