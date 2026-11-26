@@ -404,6 +404,13 @@ input{font:inherit;color:inherit}
 .bl-trail.h{background:linear-gradient(180deg,transparent,rgba(255,214,120,.9) 30%,#fff 50%,rgba(255,214,120,.9) 70%,transparent)}
 .bl-trail.v{background:linear-gradient(90deg,transparent,rgba(255,214,120,.9) 30%,#fff 50%,rgba(255,214,120,.9) 70%,transparent)}
 .bl-spark{position:absolute;pointer-events:none;background:conic-gradient(from 0deg,transparent 0 10%,#fff 12%,transparent 14% 35%,#fff 37%,transparent 39% 60%,#fff 62%,transparent 64% 85%,#fff 87%,transparent 89%);border-radius:50%}
+.bl-cv{position:absolute;left:0;top:0;pointer-events:none;z-index:8}
+.bl-word{position:absolute;left:50%;top:42%;z-index:9;pointer-events:none;white-space:nowrap;font-weight:900;font-size:40px;letter-spacing:.01em;color:#FFF7C2;
+  background:linear-gradient(180deg,#FFFFFF 0%,#FFE14D 45%,#FF9F1A 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  -webkit-text-stroke:2px #B8420E;filter:drop-shadow(0 4px 0 #8E2F06) drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+.bl-word.combo{font-size:34px;background:linear-gradient(180deg,#FFFFFF,#FF9FE0 40%,#B05CFF 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-stroke:2px #5A1E9E;filter:drop-shadow(0 4px 0 #3D1170) drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+.bl-aura{position:absolute;pointer-events:none;border-radius:50%;z-index:4;background:conic-gradient(#FF5A5F,#FFB020,#FFE14D,#3DDC84,#4C8BFF,#B05CFF,#FF5A5F);
+  -webkit-mask:radial-gradient(circle,transparent 40%,#000 44%,#000 58%,transparent 70%);mask:radial-gradient(circle,transparent 40%,#000 44%,#000 58%,transparent 70%)}
 .bl-glow{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#fff 0,rgba(255,240,170,.95) 25%,rgba(255,170,60,.55) 55%,transparent 72%);z-index:5}
 .bl-pc.land svg{animation:blLand .16s ease-out}
 @keyframes blLand{0%{transform:scale(1.08,.88) translateY(4%)}100%{transform:none}}
@@ -416,7 +423,7 @@ input{font:inherit;color:inherit}
 .bl-chain{z-index:2}
 .bl-part{position:absolute;width:8px;height:8px;border-radius:50%;pointer-events:none;will-change:transform}
 .bl-ring{position:absolute;border-radius:50%;border:5px solid #FFF3B0;box-shadow:0 0 18px #FFD54A,inset 0 0 14px #FF9F43;pointer-events:none}
-.bl-beam{position:absolute;height:5px;border-radius:3px;transform-origin:0 50%;background:linear-gradient(90deg,#fff,#FF6FB5,#7C8CFF,#3BE3C3,#FFE14D);box-shadow:0 0 10px #fff;pointer-events:none}
+.bl-beam{position:absolute;height:6px;border-radius:3px;transform-origin:0 50%;background:linear-gradient(90deg,#fff,#FF6FB5,#7C8CFF,#3BE3C3,#FFE14D);box-shadow:0 0 10px #fff;pointer-events:none}
 .bl-flash{position:absolute;inset:0;background:#fff;pointer-events:none;border-radius:12px}
 .bl-sprite{position:absolute;pointer-events:none;z-index:5}
 .bl-fly{position:fixed;z-index:70;pointer-events:none;width:34px;height:34px}
@@ -2272,7 +2279,7 @@ const UB_BANK = [["8:222h142v122h333h322v053v312v302v032h002h112v442h512h","8:22
 </script>
 <script>
 // ====================== STATE ======================
-const APP_VERSION = '2511f182f2';
+const APP_VERSION = '80196d4722';
 const KEY = 'traytable.v2';
 const store = (() => {
   let mem = null;
@@ -4338,7 +4345,7 @@ function mountBL(stage, controls, P, api, ctx) {
       if (st.box[i]) putBox(i);
       if (st.chain[i]) putChain(i);
     }
-    syncAll();
+    syncAll(); sizeCv();
   }
   function putBox(i) { const [x, y] = xy(i); const el = $('div', 'bl-box', blBox(st.box[i])); el.style.cssText = `left:${x + 1}px;top:${y + 1}px;width:${cs - 2}px;height:${cs - 2}px`; obs.appendChild(el); boxEls.set(i, el); }
   function putChain(i) { const [x, y] = xy(i); const el = $('div', 'bl-chain', blChain(st.chain[i])); el.style.cssText = `left:${x}px;top:${y}px;width:${cs}px;height:${cs}px`; chL.appendChild(el); chainEls.set(i, el); }
@@ -4354,51 +4361,134 @@ function mountBL(stage, controls, P, api, ctx) {
   }
   // ---------- effects ----------
   const center = (i) => { const [x, y] = xy(i); return [x + cs / 2, y + cs / 2]; };
-  const SHARDS = ['50%', '2px', '50%', '2px'];
-  function particles(i, color, n = 4) {
-    const [x, y] = center(i);
-    for (let k = 0; k < n; k++) {
-      const p = $('i', 'bl-part'); p.style.cssText = `left:${x - 4}px;top:${y - 4}px;background:${color};border-radius:${SHARDS[k % 4]}`; fxL.appendChild(p);
-      const a = Math.random() * Math.PI * 2, d = cs * (0.45 + Math.random() * 0.55), rot = Math.round(Math.random() * 360);
-      p.animate([{ transform: 'translate(0,0) scale(1) rotate(0)', opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d + cs * 0.25}px) scale(.2) rotate(${rot}deg)`, opacity: 0 }], { duration: 460, easing: 'cubic-bezier(.15,.75,.4,1)' }).onfinish = () => p.remove();
+  // ===== canvas particle system: sparkles, stars, confetti, sparks, smoke (cheap even with hundreds) =====
+  const cv = $('canvas', 'bl-cv'); scene.appendChild(cv);
+  const cx2 = cv.getContext('2d');
+  let dpr = Math.min(2, window.devicePixelRatio || 1), ox = 0, oy = 0, CW = 0, CH = 0;
+  function sizeCv() {
+    const r = scene.getBoundingClientRect(), b = board.getBoundingClientRect();
+    CW = r.width; CH = r.height; ox = b.left - r.left; oy = b.top - r.top;
+    cv.width = Math.round(CW * dpr); cv.height = Math.round(CH * dpr); cv.style.width = CW + 'px'; cv.style.height = CH + 'px';
+  }
+  const SPR = new Map(); // pre-rendered glowing sprites
+  function sprImg(kind, color) {
+    const key = kind + color; if (SPR.has(key)) return SPR.get(key);
+    const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+    if (kind === 'star') {
+      const rg = g.createRadialGradient(32, 32, 0, 32, 32, 30); rg.addColorStop(0, 'rgba(255,255,255,.95)'); rg.addColorStop(0.25, color); rg.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = rg; g.globalAlpha = 0.55; g.fillRect(0, 0, 64, 64); g.globalAlpha = 1;
+      g.beginPath(); for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4, rr = k % 2 ? 5 : 28; g.lineTo(32 + Math.cos(a) * rr, 32 + Math.sin(a) * rr); } g.closePath();
+      g.fillStyle = '#fff'; g.fill(); g.beginPath(); g.arc(32, 32, 5, 0, Math.PI * 2); g.fillStyle = color; g.fill();
+    } else if (kind === 'dot') {
+      const rg = g.createRadialGradient(26, 26, 2, 32, 32, 30); rg.addColorStop(0, '#fff'); rg.addColorStop(0.35, color); rg.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = rg; g.fillRect(0, 0, 64, 64);
+    } else if (kind === 'smoke') {
+      const rg = g.createRadialGradient(32, 32, 0, 32, 32, 31); rg.addColorStop(0, color); rg.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = rg; g.fillRect(0, 0, 64, 64);
     }
-    if (n >= 3) { // white sparkle
-      const s = $('i', 'bl-spark'); s.style.cssText = `left:${x - cs * 0.3}px;top:${y - cs * 0.3}px;width:${cs * 0.6}px;height:${cs * 0.6}px`; fxL.appendChild(s);
-      s.animate([{ transform: 'scale(.3) rotate(0)', opacity: 0.95 }, { transform: 'scale(1.1) rotate(45deg)', opacity: 0 }], { duration: 300, easing: 'ease-out' }).onfinish = () => s.remove();
+    SPR.set(key, c); return c;
+  }
+  const parts = [], emitters = []; let raf = 0, lastT = 0;
+  const kick = () => { if (!raf) { lastT = performance.now(); raf = requestAnimationFrame(loop); } };
+  const add = (p) => { if (parts.length > 900) return; parts.push(p); kick(); };
+  function loop(t) {
+    const dt = Math.min(0.05, (t - lastT) / 1000); lastT = t;
+    if (!wrap.isConnected) { raf = 0; return; }
+    for (let k = emitters.length - 1; k >= 0; k--) { const e = emitters[k]; e.age += dt * 1000; if (e.age >= e.dur) { emitters.splice(k, 1); continue; } e.tick(e.age / e.dur, dt); }
+    cx2.setTransform(dpr, 0, 0, dpr, 0, 0); cx2.clearRect(0, 0, CW, CH);
+    for (let k = parts.length - 1; k >= 0; k--) {
+      const p = parts[k]; p.age += dt;
+      if (p.age >= p.life) { parts.splice(k, 1); continue; }
+      p.vx *= 1 - p.drag * dt; p.vy = p.vy * (1 - p.drag * dt) + p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+      const f = p.age / p.life;
+      let a = f < 0.15 ? f / 0.15 : 1 - (f - 0.15) / 0.85; if (p.tw) a *= 0.6 + 0.4 * Math.sin(p.age * p.tw);
+      const s = p.size * (p.grow ? 1 + f * p.grow : f > 0.6 ? 1 - (f - 0.6) * 1.2 : 1);
+      cx2.globalAlpha = Math.max(0, Math.min(1, a));
+      if (p.kind === 'conf') { cx2.save(); cx2.translate(p.x + ox, p.y + oy); cx2.rotate(p.rot); cx2.scale(1, Math.cos(p.age * 9)); cx2.fillStyle = p.color; cx2.fillRect(-s / 2, -s / 4, s, s / 2); cx2.restore(); }
+      else if (p.kind === 'ring') { cx2.beginPath(); cx2.arc(p.x + ox, p.y + oy, s * (0.3 + f * 1.2), 0, Math.PI * 2); cx2.lineWidth = Math.max(1, 5 * (1 - f)); cx2.strokeStyle = p.color; cx2.stroke(); }
+      else { const img = sprImg(p.kind, p.color); cx2.save(); cx2.translate(p.x + ox, p.y + oy); cx2.rotate(p.rot); cx2.drawImage(img, -s, -s, s * 2, s * 2); cx2.restore(); }
+    }
+    cx2.globalAlpha = 1;
+    if (parts.length || emitters.length) raf = requestAnimationFrame(loop); else { raf = 0; cx2.clearRect(0, 0, CW, CH); }
+  }
+  const GOLD = ['#FFE680', '#FFD23F', '#FFFFFF', '#FFB347'], RAINBOW = ['#FF5A5F', '#FFB020', '#FFE14D', '#3DDC84', '#4C8BFF', '#B05CFF', '#FF6FAE'];
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function burst(x, y, o = {}) {
+    const n = o.n || 12, cols = o.colors || GOLD;
+    for (let k = 0; k < n; k++) {
+      const ang = o.dir != null ? o.dir + rnd(-o.spread, o.spread) : rnd(0, Math.PI * 2), sp = rnd(o.min || 60, o.max || 260);
+      const kind = o.kinds ? pick(o.kinds) : 'star';
+      add({ x, y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - (o.up || 0), g: o.g != null ? o.g : 420, drag: o.drag != null ? o.drag : 1.6, life: rnd(o.life || 0.5, (o.life || 0.5) * 1.6), age: 0,
+        size: rnd(o.size || 6, (o.size || 6) * 1.7) * (kind === 'conf' ? 1.6 : 1), color: pick(cols), kind, rot: rnd(0, 6.28), vr: rnd(-8, 8), tw: kind === 'star' ? rnd(12, 26) : 0, grow: o.grow || 0 });
     }
   }
+  const emit = (dur, tick) => { emitters.push({ dur, age: 0, tick }); kick(); };
+  const pxy = (i) => center(i);
+  // sparkles swirling into a cell (a power-up charging up)
+  function charge(i, ms) {
+    const [x, y] = pxy(i);
+    emit(ms, (f) => { for (let k = 0; k < 2; k++) { const a = rnd(0, 6.28), r = cs * rnd(0.9, 1.5); add({ x: x + Math.cos(a) * r, y: y + Math.sin(a) * r, vx: -Math.cos(a) * r * 3.2, vy: -Math.sin(a) * r * 3.2, g: 0, drag: 0, life: 0.3, age: 0, size: rnd(4, 8), color: pick(GOLD), kind: 'star', rot: 0, vr: 6, tw: 20 }); } });
+  }
+  function words(text, cls = '') {
+    const el = $('div', 'bl-word ' + cls, text); scene.appendChild(el);
+    el.animate([{ transform: 'translate(-50%,-50%) scale(.2) rotate(-12deg)', opacity: 0 }, { transform: 'translate(-50%,-50%) scale(1.25) rotate(4deg)', opacity: 1, offset: 0.25 }, { transform: 'translate(-50%,-50%) scale(1) rotate(0)', opacity: 1, offset: 0.4 }, { transform: 'translate(-50%,-60%) scale(1)', opacity: 1, offset: 0.8 }, { transform: 'translate(-50%,-75%) scale(.9)', opacity: 0 }], { duration: 1400, easing: 'ease-out' }).onfinish = () => el.remove();
+    const r = scene.getBoundingClientRect(); burst(r.width / 2 - ox, r.height * 0.42 - oy, { n: 26, colors: RAINBOW, kinds: ['star', 'conf'], min: 120, max: 420, g: 500, life: 0.8, size: 6 });
+  }
+  function particles(i, color, n = 4) { // small pop of a normal piece
+    const [x, y] = pxy(i);
+    burst(x, y, { n: Math.max(1, n - 1), colors: [color, '#fff'], kinds: ['dot'], min: 50, max: 170, g: 380, life: 0.38, size: 5 });
+    if (n >= 3) burst(x, y, { n: 2, colors: GOLD, min: 20, max: 90, g: 60, life: 0.45, size: 6 });
+  }
   function sprite(sym, i, size = 1) { const el = $('div', 'bl-sprite', blArt(0, sym)); const [x, y] = center(i); el.style.cssText = `left:${x - (cs * size) / 2}px;top:${y - (cs * size) / 2}px;width:${cs * size}px;height:${cs * size}px`; fxL.appendChild(el); return el; }
-  const RK = () => T(26); // rocket speed, ms per cell
+  const RK = () => T(58); // rocket speed, ms per cell
   function rocketFly(i, dir) {
     const [r, c] = rcOf(i), [cx, cy] = center(i);
     for (const sgn of [-1, 1]) {
-      const n = dir === 'h' ? (sgn < 0 ? c + 1 : W - c) : (sgn < 0 ? r + 1 : H - r);
-      const dist = n * cs, dur = RK() * n + T(30);
+      const n = (dir === 'h' ? (sgn < 0 ? c + 1 : W - c) : (sgn < 0 ? r + 1 : H - r)) + 1;
+      const dist = n * cs, dur = RK() * n;
       const trail = $('div', 'bl-trail ' + dir);
       trail.style.cssText = dir === 'h'
         ? `left:${sgn < 0 ? cx - dist : cx}px;top:${cy - cs * 0.13}px;width:${dist}px;height:${cs * 0.26}px;transform-origin:${sgn < 0 ? 'right' : 'left'} center`
         : `left:${cx - cs * 0.13}px;top:${sgn < 0 ? cy - dist : cy}px;width:${cs * 0.26}px;height:${dist}px;transform-origin:center ${sgn < 0 ? 'bottom' : 'top'}`;
       fxL.appendChild(trail);
-      trail.animate([{ transform: dir === 'h' ? 'scaleX(0)' : 'scaleY(0)', opacity: 1 }, { transform: 'none', opacity: 0.85, offset: 0.65 }, { transform: 'none', opacity: 0 }], { duration: dur + T(220), easing: 'linear' }).onfinish = () => trail.remove();
-      const el = sprite(dir === 'h' ? 'rh' : 'rv', i, 0.8);
-      el.animate([{ transform: 'translate(0,0) scale(1.15)' }, { transform: dir === 'h' ? `translate(${sgn * dist}px,0) scale(1)` : `translate(0,${sgn * dist}px) scale(1)` }], { duration: dur, easing: 'cubic-bezier(.5,0,1,1)' }).onfinish = () => el.remove();
+      trail.animate([{ transform: dir === 'h' ? 'scaleX(0)' : 'scaleY(0)', opacity: 1 }, { transform: 'none', opacity: 0.8, offset: 0.8 }, { transform: 'none', opacity: 0 }], { duration: dur + T(260), easing: 'linear' }).onfinish = () => trail.remove();
+      const el = sprite(dir === 'h' ? 'rh' : 'rv', i, 0.95);
+      const ease = (f) => f * f * (0.4 + 0.6 * f) / (0.4 + 0.6); // a little acceleration
+      el.animate([{ transform: 'translate(0,0) scale(1.3)' }, { transform: dir === 'h' ? `translate(${sgn * dist * 0.15}px,0) scale(1.15) rotate(${sgn * 4}deg)` : `translate(0,${sgn * dist * 0.15}px) scale(1.15)`, offset: 0.3 }, { transform: dir === 'h' ? `translate(${sgn * dist}px,0) scale(1)` : `translate(0,${sgn * dist}px) scale(1)` }], { duration: dur, easing: 'linear' }).onfinish = () => el.remove();
+      // fire sparks + smoke behind the rocket
+      emit(dur, (f) => {
+        const d = f < 0.3 ? (f / 0.3) * 0.15 : 0.15 + ((f - 0.3) / 0.7) * 0.85, px = cx + (dir === 'h' ? sgn * dist * d : 0), py = cy + (dir === 'h' ? 0 : sgn * dist * d);
+        const back = dir === 'h' ? (sgn > 0 ? Math.PI : 0) : (sgn > 0 ? -Math.PI / 2 : Math.PI / 2);
+        burst(px, py, { n: 2, colors: ['#FFB020', '#FF6A2B', '#FFE680'], kinds: ['dot'], dir: back, spread: 0.6, min: 40, max: 160, g: 120, life: 0.35, size: 5 });
+        if (Math.random() < 0.5) add({ x: px, y: py, vx: rnd(-15, 15), vy: rnd(-25, -5), g: -10, drag: 1, life: 0.6, age: 0, size: cs * 0.22, color: 'rgba(255,255,255,.55)', kind: 'smoke', rot: 0, vr: 0, grow: 1.4 });
+        if (Math.random() < 0.35) burst(px, py, { n: 1, min: 10, max: 60, g: 30, life: 0.5, size: 7 });
+      });
     }
   }
-  function ring(i, radius, dur = 420) {
+  function ring(i, radius, dur = 520, color) {
     const el = $('div', 'bl-ring'); const [x, y] = center(i); const d = radius * 2 * cs;
-    el.style.cssText = `left:${x - d / 2}px;top:${y - d / 2}px;width:${d}px;height:${d}px`; fxL.appendChild(el);
+    el.style.cssText = `left:${x - d / 2}px;top:${y - d / 2}px;width:${d}px;height:${d}px${color ? ';border-color:' + color : ''}`; fxL.appendChild(el);
     el.animate([{ transform: 'scale(.1)', opacity: 1 }, { transform: 'scale(1)', opacity: 0 }], { duration: T(dur), easing: 'cubic-bezier(.15,.7,.35,1)' }).onfinish = () => el.remove();
   }
-  function glow(i, radius) {
+  function glow(i, radius, dur = 560) {
     const el = $('div', 'bl-glow'); const [x, y] = center(i); const d = radius * 2 * cs;
     el.style.cssText = `left:${x - d / 2}px;top:${y - d / 2}px;width:${d}px;height:${d}px`; fxL.appendChild(el);
-    el.animate([{ transform: 'scale(.2)', opacity: 1 }, { transform: 'scale(1)', opacity: 0.9, offset: 0.35 }, { transform: 'scale(1.15)', opacity: 0 }], { duration: T(420), easing: 'ease-out' }).onfinish = () => el.remove();
+    el.animate([{ transform: 'scale(.2)', opacity: 1 }, { transform: 'scale(1)', opacity: 0.95, offset: 0.3 }, { transform: 'scale(1.2)', opacity: 0 }], { duration: T(dur), easing: 'ease-out' }).onfinish = () => el.remove();
   }
   const quake = (big) => { scene.classList.remove('shake', 'shake2'); void scene.offsetWidth; scene.classList.add(big ? 'shake2' : 'shake'); };
-  function beam(a, b, life = 300) {
-    const [x1, y1] = center(a), [x2, y2] = center(b), len = Math.hypot(x2 - x1, y2 - y1);
-    const el = $('div', 'bl-beam'); el.style.cssText = `left:${x1}px;top:${y1 - 2}px;width:${len}px;transform:rotate(${Math.atan2(y2 - y1, x2 - x1)}rad)`; fxL.appendChild(el);
-    el.animate([{ opacity: 0, transform: `rotate(${Math.atan2(y2 - y1, x2 - x1)}rad) scaleX(0)` }, { opacity: 1, transform: `rotate(${Math.atan2(y2 - y1, x2 - x1)}rad) scaleX(1)`, offset: 0.35 }, { opacity: 0, transform: `rotate(${Math.atan2(y2 - y1, x2 - x1)}rad) scaleX(1)` }], { duration: T(life), easing: 'ease-out' }).onfinish = () => el.remove();
+  function explode(i, R, big) {
+    const [x, y] = pxy(i);
+    glow(i, R + 0.6, 650); ring(i, R + 1, 620); setTimeout(() => ring(i, R + 1.6, 700, '#FFFFFF'), T(110)); quake(big);
+    burst(x, y, { n: big ? 70 : 44, colors: GOLD, kinds: ['star', 'star', 'dot'], min: 160, max: big ? 720 : 520, g: 600, drag: 1.3, life: 0.75, size: 7, up: 120 });
+    burst(x, y, { n: big ? 40 : 26, colors: RAINBOW, kinds: ['conf'], min: 140, max: big ? 600 : 440, g: 700, drag: 1.1, life: 1, size: 7, up: 180 });
+    for (let k = 0; k < (big ? 12 : 8); k++) { const a = rnd(0, 6.28), sp = rnd(30, 110); add({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 20, g: -20, drag: 1.2, life: 0.9, age: 0, size: cs * rnd(0.3, 0.5), color: 'rgba(255,240,220,.7)', kind: 'smoke', rot: 0, vr: 0, grow: 1.6 }); }
+  }
+  function beam(a, b, life = 420) {
+    const [x1, y1] = center(a), [x2, y2] = center(b), len = Math.hypot(x2 - x1, y2 - y1), ang = Math.atan2(y2 - y1, x2 - x1);
+    const el = $('div', 'bl-beam'); el.style.cssText = `left:${x1}px;top:${y1 - 3}px;width:${len}px;transform:rotate(${ang}rad)`; fxL.appendChild(el);
+    el.animate([{ opacity: 0, transform: `rotate(${ang}rad) scaleX(0)` }, { opacity: 1, transform: `rotate(${ang}rad) scaleX(1)`, offset: 0.3 }, { opacity: 0, transform: `rotate(${ang}rad) scaleX(1)` }], { duration: T(life), easing: 'ease-out' }).onfinish = () => el.remove();
+    const tt = T(life) * 0.3; // a spark races down the beam
+    emit(tt, (f) => add({ x: x1 + (x2 - x1) * f, y: y1 + (y2 - y1) * f, vx: 0, vy: 0, g: 0, drag: 0, life: 0.25, age: 0, size: 6, color: pick(RAINBOW), kind: 'star', rot: 0, vr: 5, tw: 0 }));
+    setTimeout(() => burst(x2, y2, { n: 8, colors: RAINBOW, min: 60, max: 220, g: 300, life: 0.5, size: 6 }), tt);
   }
   function flyToGoal(i, k, j) {
     if (j < 0) return;
@@ -4406,7 +4496,7 @@ function mountBL(stage, controls, P, api, ctx) {
     const el = $('div', 'bl-fly', blArt(k)); const sx = src.left + x - 17, sy = src.top + y - 17;
     el.style.left = sx + 'px'; el.style.top = sy + 'px'; document.body.appendChild(el);
     const dx = dst.left + dst.width / 2 - 17 - sx, dy = dst.top + dst.height / 2 - 17 - sy, side = (Math.random() - 0.5) * 60;
-    el.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx * 0.25 + side}px,${dy * 0.25 - 30}px) scale(1.3)`, offset: 0.3 }, { transform: `translate(${dx}px,${dy}px) scale(.75)` }], { duration: T(600) + Math.random() * 140, easing: 'cubic-bezier(.45,0,.25,1)' }).onfinish = () => { el.remove(); dec(j); };
+    el.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx * 0.25 + side}px,${dy * 0.25 - 30}px) scale(1.3)`, offset: 0.3 }, { transform: `translate(${dx}px,${dy}px) scale(.75)` }], { duration: T(650) + Math.random() * 140, easing: 'cubic-bezier(.45,0,.25,1)' }).onfinish = () => { el.remove(); dec(j); };
   }
   function showBanner(html, good) { banner.innerHTML = html; banner.classList.toggle('good', !!good); banner.classList.add('on'); }
   const hideBanner = () => banner.classList.remove('on');
@@ -4418,9 +4508,10 @@ function mountBL(stage, controls, P, api, ctx) {
     let best = Infinity; for (const s of srcs) { const d = s.f(i); if (d !== Infinity) best = Math.min(best, s.at + d); }
     return best === Infinity ? 0 : Math.max(0, best - (performance.now() - srcT0));
   };
-  const rocketF = (i0, dir) => { const [r0, c0] = rcOf(i0); return (i) => { const [r, c] = rcOf(i); return dir === 'h' ? (r === r0 ? Math.abs(c - c0) * RK() : Infinity) : (c === c0 ? Math.abs(r - r0) * RK() : Infinity); }; };
-  const bombF = (i0, R) => { const [r0, c0] = rcOf(i0); return (i) => { const [r, c] = rcOf(i), d = Math.max(Math.abs(r - r0), Math.abs(c - c0)); return d <= R + 1 ? d * T(45) : Infinity; }; };
-  const near = (i0) => { const [r0, c0] = rcOf(i0); return (i) => { const [r, c] = rcOf(i); return Math.abs(r - r0) + Math.abs(c - c0) <= 1 ? 0 : Infinity; }; };
+  const rocketF = (i0, dir) => { const [r0, c0] = rcOf(i0); return (i) => { const [r, c] = rcOf(i); return dir === 'h' ? (r === r0 ? (Math.abs(c - c0) + 0.5) * RK() : Infinity) : (c === c0 ? (Math.abs(r - r0) + 0.5) * RK() : Infinity); }; };
+  const bombF = (i0, R) => { const [r0, c0] = rcOf(i0); return (i) => { const [r, c] = rcOf(i), d = Math.max(Math.abs(r - r0), Math.abs(c - c0)); return d <= R + 1 ? T(60) + d * T(85) : Infinity; }; };
+  const near = (i0) => { const [r0, c0] = rcOf(i0); return (i) => { const [r, c] = rcOf(i); return Math.abs(r - r0) + Math.abs(c - c0) <= 1 ? T(120) : Infinity; }; };
+  let chainN = 0, hype = 0; // cascades in this move, for cheers
   // ---------- event playback ----------
   function slide(el, from, to, ms, lift) {
     el.style.transition = 'none';
@@ -4428,20 +4519,27 @@ function mountBL(stage, controls, P, api, ctx) {
     el.style.transform = tr(to);
     if (lift) el.firstElementChild.animate([{ transform: 'scale(1)' }, { transform: `scale(${lift})` }, { transform: 'scale(1)' }], { duration: ms, easing: 'ease-in-out' });
   }
-  function popEl(el, delay, color, parts) {
+  function popEl(el, delay, color, parts, sp) {
     const svg = el.firstElementChild;
-    svg.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(1.22)', opacity: 1, offset: 0.35 }, { transform: 'scale(.05)', opacity: 0 }], { duration: T(200), delay, easing: 'ease-in', fill: 'forwards' });
+    svg.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: sp ? 'scale(1.5) rotate(20deg)' : 'scale(1.22)', opacity: 1, offset: 0.35 }, { transform: 'scale(.05)', opacity: 0 }], { duration: T(sp ? 260 : 200), delay, easing: 'ease-in', fill: 'forwards' });
     setTimeout(() => particles(+el.dataset.i, color, parts), delay + T(70));
-    setTimeout(() => el.remove(), delay + T(210));
+    setTimeout(() => el.remove(), delay + T(sp ? 270 : 210));
   }
+  const COMBO = { 'r+r': 'Cross Fire!', 'bomb+r': 'Super Rockets!', 'bomb+bomb': 'Mega Bomb!', 'plane+plane': 'Squadron!', 'bomb+plane': 'Air Strike!', 'plane+r': 'Air Strike!', 'rain+rain': 'RAINBOW BLAST!' };
   const H_ = {
     async swap(e) {
       const A = els.get(e.ida), B = els.get(e.idb);
       const combo = A && B && A.dataset.sp && B.dataset.sp;
-      if (A) { A.style.zIndex = 2; slide(A, e.a, e.b, T(combo ? 170 : 140), 1.12); setTimeout(() => (A.style.zIndex = ''), T(200)); }
-      if (B) slide(B, e.b, combo ? e.b : e.a, T(combo ? 170 : 140), combo ? 1.3 : 0);
-      await blWait(T(combo ? 180 : 140));
-      if (combo) { glow(e.b, 1.4); await blWait(T(90)); }
+      if (A) { A.style.zIndex = 2; slide(A, e.a, e.b, T(combo ? 260 : 140), combo ? 1.35 : 1.12); setTimeout(() => (A.style.zIndex = ''), T(300)); }
+      if (B) slide(B, e.b, combo ? e.b : e.a, T(combo ? 260 : 140), combo ? 1.45 : 0);
+      if (!combo) { await blWait(T(140)); return; }
+      // two power-ups merge: a vortex of sparkles, then the big one
+      const [x, y] = pxy(e.b);
+      emit(T(520), (f) => { for (let k = 0; k < 3; k++) { const a = f * 14 + k * 2.1, r = cs * (1.6 - f * 1.3); add({ x: x + Math.cos(a) * r, y: y + Math.sin(a) * r, vx: 0, vy: 0, g: 0, drag: 0, life: 0.35, age: 0, size: rnd(5, 9), color: pick(RAINBOW), kind: 'star', rot: 0, vr: 6, tw: 18 }); } });
+      const kind = (sp) => (sp === 'rh' || sp === 'rv' ? 'r' : sp);
+      const ks = [kind(A.dataset.sp), kind(B.dataset.sp)].sort().join('+');
+      setTimeout(() => words(COMBO[ks] || (ks.includes('rain') ? 'Rainbow Power!' : 'Combo!'), 'combo'), T(200));
+      await blWait(T(420)); glow(e.b, 1.6, 500); await blWait(T(160));
     },
     async clear(e, makes = []) {
       // pieces that formed a power-up slide into its cell
@@ -4455,74 +4553,99 @@ function mountBL(stage, controls, P, api, ctx) {
       const many = e.items.length > 16;
       let maxD = 0;
       const colAt = new Map(e.col.map((x) => [x.i, x]));
+      const matchOnly = !srcs.length && e.items.length && !e.items.some((it) => it.sp);
       for (const it of e.items) {
         const el = els.get(it.id); if (!el) continue; els.delete(it.id); el.dataset.i = it.i;
         if (merging.has(it.i)) {
           const to = merging.get(it.i);
-          if (to !== it.i) { slide(el, it.i, to, T(150)); el.firstElementChild.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(.7)', opacity: 0.6 }], { duration: T(150), fill: 'forwards' }); }
-          setTimeout(() => el.remove(), T(150));
-          if (colAt.has(it.i)) setTimeout(() => flyToGoal(to, it.k, goalIdx('col', it.k)), T(140));
-          maxD = Math.max(maxD, T(150));
+          if (to !== it.i) { slide(el, it.i, to, T(200)); el.firstElementChild.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(.6)', opacity: 0.5 }], { duration: T(200), fill: 'forwards' }); }
+          setTimeout(() => el.remove(), T(200));
+          if (colAt.has(it.i)) setTimeout(() => flyToGoal(to, it.k, goalIdx('col', it.k)), T(190));
+          maxD = Math.max(maxD, T(200));
           continue;
         }
-        const d = delayOf(it.i); maxD = Math.max(maxD, d + T(120));
-        popEl(el, d, it.sp ? '#FFF6C8' : BL_COLORS[it.k], many ? 2 : 4);
+        const d = delayOf(it.i); maxD = Math.max(maxD, d + T(130));
+        if (d > 0 || it.sp) setTimeout(() => { const [x, y] = pxy(it.i); burst(x, y, { n: 5, colors: GOLD, min: 60, max: 200, g: 260, life: 0.45, size: 6 }); }, d);
+        popEl(el, d, it.sp ? '#FFF6C8' : BL_COLORS[it.k], many ? 2 : 4, it.sp);
         if (colAt.has(it.i)) setTimeout(() => flyToGoal(it.i, it.k, goalIdx('col', it.k)), d + T(60));
       }
       for (const b of e.box) {
-        const el = boxEls.get(b.i); if (!el) continue; const d = delayOf(b.i); maxD = Math.max(maxD, d + T(120));
+        const el = boxEls.get(b.i); if (!el) continue; const d = delayOf(b.i); maxD = Math.max(maxD, d + T(130));
         setTimeout(() => {
-          particles(b.i, '#C9893F', 5);
+          const [x, y] = pxy(b.i); burst(x, y, { n: 7, colors: ['#C9893F', '#E2B27A', '#8A5A2E'], kinds: ['conf'], min: 80, max: 260, g: 700, life: 0.6, size: 6, up: 120 });
           if (b.left > 0) { el.innerHTML = blBox(b.left); el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); }
           else { boxEls.delete(b.i); el.classList.add('gone'); setTimeout(() => el.remove(), 320); dec(goalIdx('box')); }
         }, d);
       }
       for (const c of e.chain) {
-        const el = chainEls.get(c.i); if (!el) continue; const d = delayOf(c.i); maxD = Math.max(maxD, d + T(120));
+        const el = chainEls.get(c.i); if (!el) continue; const d = delayOf(c.i); maxD = Math.max(maxD, d + T(130));
         setTimeout(() => {
-          particles(c.i, '#B9C0CC', 4);
+          const [x, y] = pxy(c.i); burst(x, y, { n: 6, colors: ['#D3D8E2', '#FFFFFF', '#9AA3B5'], kinds: ['dot', 'star'], min: 60, max: 220, g: 500, life: 0.5, size: 6 });
           if (c.left > 0) el.innerHTML = blChain(c.left);
           else { chainEls.delete(c.i); el.classList.add('gone'); setTimeout(() => el.remove(), 320); dec(goalIdx('chain')); }
         }, d);
       }
       for (const gi of e.grass) {
         const d = delayOf(gi);
-        setTimeout(() => { const t = tileEls[gi]; if (t) { t.classList.add('grass', 'grow'); setTimeout(() => t.classList.remove('grow'), 400); } dec(goalIdx('grass'), false); if (goalIdx('grass') >= 0) setGoal(goalIdx('grass'), true); }, d);
+        setTimeout(() => { const t = tileEls[gi]; if (t) { t.classList.add('grass', 'grow'); setTimeout(() => t.classList.remove('grow'), 400); const [x, y] = pxy(gi); burst(x, y, { n: 3, colors: ['#7BD35A', '#B5F08A', '#FFFFFF'], kinds: ['dot'], min: 20, max: 90, g: 120, life: 0.45, size: 5 }); } dec(goalIdx('grass'), false); if (goalIdx('grass') >= 0) setGoal(goalIdx('grass'), true); }, d);
       }
       srcs = [];
+      if (matchOnly) { chainN++; if (chainN === 3 && hype < 1) { hype = 1; words('Great!'); } else if (chainN === 5 && hype < 2) { hype = 2; words('Amazing!'); } else if (chainN === 7 && hype < 3) { hype = 3; words('Unstoppable!'); } }
       if (maxD) await blWait(maxD);
     },
     async fx(e) {
       const k = e.kind;
-      if (k === 'rh' || k === 'rv') { const d = k === 'rh' ? 'h' : 'v'; rocketFly(e.i, d); addSrc(rocketF(e.i, d)); }
-      else if (k === 'cross') { rocketFly(e.i, 'h'); rocketFly(e.i, 'v'); addSrc(rocketF(e.i, 'h')); addSrc(rocketF(e.i, 'v')); }
+      if (k === 'rh' || k === 'rv') { const d = k === 'rh' ? 'h' : 'v'; glow(e.i, 0.9, 380); rocketFly(e.i, d); addSrc(rocketF(e.i, d)); }
+      else if (k === 'cross') { glow(e.i, 1.3); rocketFly(e.i, 'h'); rocketFly(e.i, 'v'); addSrc(rocketF(e.i, 'h')); addSrc(rocketF(e.i, 'v')); }
       else if (k === 'cross3') {
-        const [r, c] = rcOf(e.i);
+        const [r, c] = rcOf(e.i); glow(e.i, 2); quake(true);
         for (const d of [-1, 0, 1]) {
           if (r + d >= 0 && r + d < H) { rocketFly((r + d) * W + c, 'h'); addSrc(rocketF((r + d) * W + c, 'h')); }
           if (c + d >= 0 && c + d < W) { rocketFly(r * W + c + d, 'v'); addSrc(rocketF(r * W + c + d, 'v')); }
         }
       }
-      else if (k === 'bomb' || k === 'bigbomb') { const R = k === 'bomb' ? 2 : 3; glow(e.i, R + 0.4); ring(e.i, R + 0.9); quake(k === 'bigbomb'); addSrc(bombF(e.i, R)); await blWait(T(50)); }
-      else if (k === 'all') { const f = $('div', 'bl-flash'); fxL.appendChild(f); f.animate([{ opacity: 0 }, { opacity: 0.95 }, { opacity: 0 }], { duration: T(650) }).onfinish = () => f.remove(); quake(true); addSrc(() => Math.random() * T(260)); await blWait(T(120)); }
+      else if (k === 'bomb' || k === 'bigbomb') {
+        const R = k === 'bomb' ? 2 : 3, [x, y] = pxy(e.i);
+        // fuse: sparks fizz, then boom
+        emit(T(220), () => burst(x + cs * 0.25, y - cs * 0.3, { n: 2, colors: ['#FFE14D', '#FF7A1A', '#FFFFFF'], kinds: ['dot', 'star'], min: 40, max: 160, g: 300, life: 0.35, size: 4 }));
+        const s = sprite('bomb', e.i, 1); s.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.25) rotate(-6deg)', offset: 0.4 }, { transform: 'scale(1.15) rotate(6deg)', offset: 0.7 }, { transform: 'scale(1.6)', opacity: 0 }], { duration: T(240), easing: 'ease-in' }).onfinish = () => s.remove();
+        await blWait(T(220));
+        explode(e.i, R, k === 'bigbomb'); addSrc(bombF(e.i, R)); await blWait(T(60));
+      }
+      else if (k === 'all') {
+        const f = $('div', 'bl-flash'); fxL.appendChild(f); f.animate([{ opacity: 0 }, { opacity: 0.95 }, { opacity: 0 }], { duration: T(900) }).onfinish = () => f.remove(); quake(true);
+        for (let n = 0; n < 6; n++) setTimeout(() => { const j = Math.floor(Math.random() * W * H); const [x, y] = pxy(j); burst(x, y, { n: 24, colors: RAINBOW, kinds: ['star', 'conf'], min: 150, max: 520, g: 500, life: 0.9, size: 7 }); }, T(n * 90));
+        addSrc(() => T(200) + Math.random() * T(500)); await blWait(T(200));
+      }
       else if (k === 'rain') {
-        const cells = e.cells || [], step = T(cells.length > 14 ? 14 : 24);
-        const s = sprite('rain', e.i, 1.25), life = T(140) + cells.length * step + T(160);
-        s.animate([{ transform: 'scale(.7) rotate(0)' }, { transform: 'scale(1.25) rotate(200deg)', offset: 0.25 }, { transform: 'scale(1.15) rotate(600deg)', offset: 0.85 }, { transform: 'scale(0) rotate(720deg)' }], { duration: life, easing: 'linear' }).onfinish = () => s.remove();
-        glow(e.i, 1.2);
-        const order = new Map(cells.map((j, x) => [j, x]));
-        cells.forEach((j, x) => setTimeout(() => beam(e.i, j, 320), T(120) + x * step));
-        addSrc((i) => (order.has(i) ? T(160) + order.get(i) * step : Infinity));
+        const cells = e.cells || [], step = T(Math.max(28, Math.min(70, 1500 / Math.max(1, cells.length))));
+        const [x, y] = pxy(e.i);
+        const aura = $('div', 'bl-aura'); aura.style.cssText = `left:${x - cs * 1.1}px;top:${y - cs * 1.1}px;width:${cs * 2.2}px;height:${cs * 2.2}px`; fxL.appendChild(aura);
+        const s = sprite('rain', e.i, 1.3), life = T(300) + cells.length * step + T(260);
+        aura.animate([{ transform: 'scale(.2) rotate(0)', opacity: 0 }, { transform: 'scale(1) rotate(180deg)', opacity: 1, offset: 0.2 }, { transform: 'scale(1.1) rotate(720deg)', opacity: 1, offset: 0.85 }, { transform: 'scale(1.8) rotate(900deg)', opacity: 0 }], { duration: life, easing: 'linear' }).onfinish = () => aura.remove();
+        s.animate([{ transform: 'translateY(0) scale(.8) rotate(0)' }, { transform: `translateY(${-cs * 0.35}px) scale(1.35) rotate(240deg)`, offset: 0.2 }, { transform: `translateY(${-cs * 0.35}px) scale(1.25) rotate(700deg)`, offset: 0.85 }, { transform: 'translateY(0) scale(0) rotate(900deg)' }], { duration: life, easing: 'linear' }).onfinish = () => { s.remove(); burst(x, y, { n: 40, colors: RAINBOW, kinds: ['star', 'conf'], min: 120, max: 480, g: 420, life: 0.9, size: 7 }); };
+        emit(life, () => { const a = rnd(0, 6.28); add({ x: x + Math.cos(a) * cs * 0.5, y: y - cs * 0.35 + Math.sin(a) * cs * 0.5, vx: Math.cos(a) * 90, vy: Math.sin(a) * 90, g: 0, drag: 1, life: 0.5, age: 0, size: rnd(4, 7), color: pick(RAINBOW), kind: 'star', rot: 0, vr: 4, tw: 18 }); });
+        const order = new Map(cells.map((j, q) => [j, q]));
+        cells.forEach((j, q) => setTimeout(() => beam(e.i, j, 460), T(300) + q * step));
+        addSrc((i) => (order.has(i) ? T(300) + order.get(i) * step + T(150) : Infinity));
+        await blWait(T(120));
       }
       else if (k === 'plane') {
-        addSrc(near(e.i)); ring(e.i, 1.2, 320);
+        addSrc(near(e.i)); ring(e.i, 1.3, 420);
+        const [x1, y1] = pxy(e.i);
+        burst(x1, y1, { n: 14, colors: ['#FFFFFF', '#BFD7FF', '#FFE680'], min: 60, max: 240, g: 200, life: 0.5, size: 6 });
         if (e.to != null) {
-          const fly = T(440);
-          const p = sprite('plane', e.i, 0.95), cargo = e.carry ? sprite(e.carry, e.i, 0.7) : null;
-          const [x1, y1] = center(e.i), [x2, y2] = center(e.to), dx = x2 - x1, dy = y2 - y1, ang = (Math.atan2(dy, dx) * 180) / Math.PI + 22;
-          const kf = [{ transform: 'translate(0,0) scale(1) rotate(0)' }, { transform: `translate(${dx * 0.08}px,${-cs * 0.6}px) scale(1.3) rotate(${ang - 40}deg)`, offset: 0.2 }, { transform: `translate(${dx * 0.55}px,${dy * 0.55 - cs * 1.2}px) scale(1.4) rotate(${ang}deg)`, offset: 0.6 }, { transform: `translate(${dx}px,${dy}px) scale(.9) rotate(${ang + 10}deg)` }];
-          p.animate(kf, { duration: fly, easing: 'ease-in-out' }).onfinish = () => { p.remove(); ring(e.to, 0.9, 260); };
+          const fly = T(820);
+          const p = sprite('plane', e.i, 1), cargo = e.carry ? sprite(e.carry, e.i, 0.7) : null;
+          const [x2, y2] = pxy(e.to), dx = x2 - x1, dy = y2 - y1;
+          // a looping arc: up and out, then dive onto the target
+          const cxp = dx * 0.5 + (dx >= 0 ? -1 : 1) * cs * 1.2, cyp = Math.min(0, dy) - cs * 2.6;
+          const at = (f) => [(1 - f) * (1 - f) * 0 + 2 * (1 - f) * f * cxp + f * f * dx, (1 - f) * (1 - f) * 0 + 2 * (1 - f) * f * cyp + f * f * dy];
+          const kf = []; for (let n = 0; n <= 12; n++) { const f = n / 12, [px, py] = at(f), [qx, qy] = at(Math.min(1, f + 0.02)); const ang = (Math.atan2(qy - py, qx - px) * 180) / Math.PI + 22; kf.push({ transform: `translate(${px}px,${py}px) rotate(${ang}deg) scale(${1 + Math.sin(f * Math.PI) * 0.5})`, offset: f }); }
+          p.animate(kf, { duration: fly, easing: 'ease-in-out' }).onfinish = () => { p.remove(); ring(e.to, 1, 360); burst(x2, y2, { n: 22, colors: GOLD, min: 80, max: 340, g: 400, life: 0.6, size: 7 }); };
           if (cargo) cargo.animate(kf, { duration: fly, easing: 'ease-in-out' }).onfinish = () => cargo.remove();
+          const io = (f) => (f < 0.5 ? 2 * f * f : 1 - 2 * (1 - f) * (1 - f));
+          emit(fly, (f) => { const [px, py] = at(io(f)); add({ x: x1 + px, y: y1 + py, vx: rnd(-20, 20), vy: rnd(-20, 20), g: 40, drag: 1, life: 0.55, age: 0, size: rnd(4, 7), color: pick(['#FFFFFF', '#BFD7FF', '#FFE680']), kind: 'star', rot: 0, vr: 5, tw: 20 }); });
           if (e.carry) await blWait(fly); else addSrc((i) => (i === e.to ? 0 : Infinity), fly);
         }
       }
@@ -4531,9 +4654,11 @@ function mountBL(stage, controls, P, api, ctx) {
       let el = els.get(e.id);
       if (!el) el = mkPiece({ id: e.id, k: e.k, sp: e.sp }, e.i); else setArt(el, e.k, e.sp);
       el.dataset.sp = e.sp;
-      el.firstElementChild.animate([{ transform: 'scale(.2) rotate(-40deg)', opacity: 0.4 }, { transform: 'scale(1.3) rotate(8deg)', opacity: 1, offset: 0.6 }, { transform: 'scale(1) rotate(0)' }], { duration: T(e.bonus ? 220 : 340), easing: 'ease-out' });
-      if (!e.bonus) ring(e.i, 0.8, 300);
-      if (e.from != null) beam(e.from, e.i, 380);
+      el.firstElementChild.animate([{ transform: 'scale(.2) rotate(-40deg)', opacity: 0.4 }, { transform: 'scale(1.4) rotate(10deg)', opacity: 1, offset: 0.55 }, { transform: 'scale(1) rotate(0)' }], { duration: T(e.bonus ? 240 : 420), easing: 'ease-out' });
+      const [x, y] = pxy(e.i);
+      if (!e.bonus) { ring(e.i, 0.9, 380); burst(x, y, { n: 16, colors: e.sp === 'rain' ? RAINBOW : GOLD, min: 60, max: 260, g: 250, life: 0.6, size: 6 }); }
+      else burst(x, y, { n: 6, colors: GOLD, min: 40, max: 160, g: 200, life: 0.45, size: 5 });
+      if (e.from != null) beam(e.from, e.i, 460);
     },
     async fall(e) {
       let maxD = 0;
@@ -4561,18 +4686,19 @@ function mountBL(stage, controls, P, api, ctx) {
     },
   };
   async function play(evs) {
+    chainN = 0; hype = 0;
     for (let n = 0; n < evs.length; n++) {
       const e = evs[n];
       if (e.t === 'clear') { // a match that makes a power-up: pieces merge, then it appears
         const makes = []; let m = n + 1;
         while (m < evs.length && evs[m].t === 'make' && evs[m].from == null && !evs[m].bonus) makes.push(evs[m++]);
         await H_.clear(e, makes);
-        if (makes.length) { makes.forEach((mk) => H_.make(mk)); await blWait(T(170)); n = m - 1; }
+        if (makes.length) { makes.forEach((mk) => H_.make(mk)); await blWait(T(240)); n = m - 1; }
         continue;
       }
       if (e.t === 'make') { // a burst of power-ups (rainbow combos, bonus)
         let m = n; while (m < evs.length && evs[m].t === 'make') { H_.make(evs[m]); m++; }
-        n = m - 1; await blWait(T(evs[n].bonus ? 90 : 200)); continue;
+        n = m - 1; await blWait(T(evs[n].bonus ? 110 : 320)); continue;
       }
       if (H_[e.t]) await H_[e.t](e);
     }
@@ -4619,7 +4745,11 @@ function mountBL(stage, controls, P, api, ctx) {
     const el = st.p[i] && els.get(st.p[i].id);
     const r = M3.tap(st, i); if (!r.ok) { busy = false; return; }
     api.move(); paintMoves();
-    if (el) { el.firstElementChild.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }], { duration: T(110), easing: 'ease-out', fill: 'forwards' }); await blWait(T(110)); }
+    if (el) { // charge up: sparkles swirl in, the power-up swells and shakes
+      charge(i, T(300)); glow(i, 1, 420);
+      el.firstElementChild.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.3) rotate(-10deg)', offset: 0.3 }, { transform: 'scale(1.4) rotate(10deg)', offset: 0.6 }, { transform: 'scale(1.55) rotate(0)' }], { duration: T(300), easing: 'ease-in-out', fill: 'forwards' });
+      await blWait(T(300));
+    }
     await play(r.ev); await after();
   }
   async function after() {
