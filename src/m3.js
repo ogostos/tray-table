@@ -21,71 +21,96 @@ const M3 = (() => {
     [[0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9]],
     [[1, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [1, 9]],
   ];
+  // ---------- one endless level path: each level number decides its own difficulty and which elements appear ----------
+  // when each element first shows up (the level gets a "New!" card)
+  const INTRO = { box: 4, carpet: 7, glass: 10, chain: 14, box2: 18, colors6: 21, chain2: 26, box3: 30, glass2: 34 };
+  const INTRO_AT = new Set(Object.values(INTRO));
+  const isHard = (n) => n >= 10 && n % 5 === 0 && !INTRO_AT.has(n); // a level that introduces something new is never a hard one
+  const isSuper = (n) => isHard(n) && n % 25 === 0;
   function level(tier, num) {
-    const g = { seed: hash(`bloom|${tier}|${num}`) | 0 };
-    const R = () => rnd(g), RI = (n) => Math.floor(R() * n);
-    const shape = SHAPES[num <= 2 ? 0 : RI(SHAPES.length)];
+    const n = Math.max(1, num);
+    const g = { seed: hash(`bloom2|${n}`) | 0 };
+    const R = () => rnd(g), RI = (k) => Math.floor(R() * k);
+    const has = (k) => n >= INTRO[k];
+    const hard = isHard(n), sup = isSuper(n);
+    // board shape: plain early on, shaped later, taller boards in the hard ones
+    let shape = SHAPES[0];
+    if (n >= 8) shape = SHAPES[1 + RI(4)];
+    if (n >= 20 && (hard || R() < 0.35)) shape = SHAPES[5 + RI(2)];
+    if (n <= 7) shape = SHAPES[n >= 5 && n % 2 ? 1 : 0];
     const W = 8, H = Math.max(...shape.map(([, b]) => b));
     const mask = Array(W * H).fill(0);
     shape.forEach(([a, b], c) => { for (let r = a; r < b; r++) mask[r * W + c] = 1; });
-    const ncol = tier >= 3 ? 6 : tier === 2 ? (R() < 0.5 ? 5 : 6) : 5;
-    const box = Array(W * H).fill(0), chain = Array(W * H).fill(0), grass = Array(W * H).fill(0);
-    // pick goal kinds
-    const kinds = ['col', 'box', 'chain', 'grass'];
-    const w = [[6, 3, 1, 1], [4, 4, 3, 2], [3, 4, 3, 3], [3, 4, 3, 3]][tier];
-    const pick = (avoid) => { let tot = 0; const ws = kinds.map((k, i) => (avoid.includes(k) ? 0 : w[i])); ws.forEach((x) => (tot += x)); let x = R() * tot; for (let i = 0; i < 4; i++) { x -= ws[i]; if (x < 0) return kinds[i]; } return 'col'; };
-    const nGoals = tier === 0 ? (num % 3 === 0 ? 2 : 1) : tier === 3 && R() < 0.4 ? 3 : 2;
-    const chosen = [];
-    while (chosen.length < nGoals) chosen.push(pick(chosen.filter((k) => k !== 'col' || chosen.filter((x) => x === 'col').length >= 2)));
-    if (num === 1) chosen.splice(0, chosen.length, 'col');
-    const goals = [];
-    const free = () => { const out = []; for (let i = 0; i < W * H; i++) if (mask[i] && !box[i]) out.push(i); return out; };
+    const ncol = n === INTRO.colors6 || (has('colors6') && (hard || sup || R() < Math.min(0.6, (n - 20) / 40))) ? 6 : 5;
+    const box = Array(W * H).fill(0), chain = Array(W * H).fill(0), grass = Array(W * H).fill(0), ice = Array(W * H).fill(0);
     const mirror = (i) => { const r = Math.floor(i / W), c = i % W; return r * W + (W - 1 - c); };
-    let work = 0;
-    const colsUsed = [];
-    for (const kind of chosen) {
-      if (kind === 'col') {
-        let k = RI(ncol); while (colsUsed.includes(k)) k = (k + 1) % ncol; colsUsed.push(k);
-        const n = [24, 24, 28, 32][tier] + RI(8) + (chosen.length > 1 ? -4 : 0);
-        goals.push({ t: 'col', k, n }); work += n * 0.42;
-      } else if (kind === 'box') {
-        const maxL = [1, 2, 3, 3][tier];
-        const pairs = [6, 6, 7, 8][tier] + RI(3);
-        let layers = 0, placed = 0;
-        for (let tries = 0; placed < pairs && tries < 200; tries++) {
-          const r = 2 + RI(H - 2), c = RI(W / 2), i = r * W + c, j = mirror(i);
-          if (!mask[i] || box[i] || !mask[j] || chain[i] || chain[j] || grass[i] || grass[j]) continue;
-          const L = 1 + RI(maxL); box[i] = L; box[j] = L; layers += 2 * L; placed++;
+    // which goals: the newest element is featured on its intro level
+    const pool = ['col'];
+    if (has('box')) pool.push('box'); if (has('carpet')) pool.push('grass'); if (has('glass')) pool.push('ice'); if (has('chain')) pool.push('chain');
+    let kinds;
+    const intro = Object.entries(INTRO).find(([, v]) => v === n);
+    if (n <= 3) kinds = n === 3 ? ['col', 'col'] : ['col'];
+    else if (intro) kinds = [{ box: 'box', carpet: 'grass', glass: 'ice', chain: 'chain', box2: 'box', colors6: 'col', chain2: 'chain', box3: 'box', glass2: 'ice' }[intro[0]]];
+    else {
+      const nGoals = n < 12 ? 1 + (R() < 0.4 ? 1 : 0) : n < 30 ? 2 : 2 + (R() < 0.35 || sup ? 1 : 0);
+      kinds = [];
+      const opts = pool.slice();
+      while (kinds.length < nGoals && opts.length) { const k = opts.splice(RI(opts.length), 1)[0]; kinds.push(k); }
+    }
+    const ramp = Math.min(1, n / 40); // 0 → 1 over the first 40 levels
+    const goals = []; let colsUsed = [];
+    // obstacles first (boxes, chains, glass) so collect goals know the board
+    for (const kind of kinds.filter((k) => k !== 'col')) {
+      if (kind === 'box') {
+        const maxL = has('box3') ? 3 : has('box2') ? 2 : 1;
+        const pairs = 4 + Math.round(ramp * 4) + RI(2) + (hard ? 2 : 0);
+        let placed = 0;
+        const band = 2 + RI(Math.max(1, H - 4)); // boxes come in a band or block, like the real thing
+        for (let t = 0; placed < pairs && t < 300; t++) {
+          const r = t < 120 ? Math.min(H - 1, band + RI(3)) : 2 + RI(H - 2), c = RI(W / 2), i = r * W + c, j = mirror(i);
+          if (!mask[i] || box[i] || !mask[j] || chain[i] || chain[j] || grass[i] || grass[j] || ice[i] || ice[j]) continue;
+          const L = 1 + (maxL > 1 && R() < 0.35 + ramp * 0.3 ? RI(maxL) : 0); box[i] = L; box[j] = L; placed++;
         }
-        goals.push({ t: 'box', n: placed * 2 }); work += layers * 0.62;
+        goals.push({ t: 'box', n: placed * 2 });
       } else if (kind === 'chain') {
-        const maxL = [1, 1, 2, 2][tier];
-        const cnt = [6, 8, 10, 12][tier] + RI(4);
-        let placed = 0, layers = 0;
-        for (let tries = 0; placed < cnt && tries < 200; tries++) {
-          const r = 1 + RI(H - 1), c = RI(W), i = r * W + c;
-          if (!mask[i] || box[i] || chain[i]) continue;
-          chain[i] = 1 + RI(maxL); layers += chain[i]; placed++;
-        }
-        goals.push({ t: 'chain', n: placed }); work += layers * 0.75;
+        const maxL = has('chain2') ? 2 : 1, cnt = 5 + Math.round(ramp * 6) + RI(3) + (hard ? 2 : 0);
+        let placed = 0;
+        for (let t = 0; placed < cnt && t < 300; t++) { const i = W + RI(W * (H - 1)); if (!mask[i] || box[i] || chain[i]) continue; chain[i] = 1 + (maxL > 1 && R() < 0.4 ? 1 : 0); placed++; }
+        goals.push({ t: 'chain', n: placed });
+      } else if (kind === 'ice') {
+        const maxL = has('glass2') ? 2 : 1;
+        // glass in a symmetric patch
+        const r0 = 1 + RI(Math.max(1, H - 4)), h = 2 + RI(3), w = 2 + RI(2);
+        let cnt = 0;
+        for (let r = r0; r < Math.min(H, r0 + h); r++) for (let c = 0; c < w; c++) for (const cc of [c, W - 1 - c]) { const i = r * W + cc; if (mask[i] && !box[i] && !ice[i]) { ice[i] = 1 + (maxL > 1 && R() < 0.45 ? 1 : 0); cnt++; } }
+        if (n >= 16 && R() < 0.5) for (let r = r0; r < Math.min(H, r0 + h); r++) for (const cc of [3, 4]) { const i = r * W + cc; if (mask[i] && !box[i] && !ice[i]) { ice[i] = 1; cnt++; } }
+        goals.push({ t: 'ice', n: cnt });
       } else if (kind === 'grass') {
-        const cells = free();
-        const seeds = 2 + RI(2);
-        for (let s = 0; s < seeds; s++) { const i = cells[RI(cells.length)]; grass[i] = 1; grass[mirror(i)] = 1; }
+        const cells = []; for (let i = 0; i < W * H; i++) if (mask[i] && !box[i]) cells.push(i);
+        const seeds = 1 + RI(2);
+        for (let k = 0; k < seeds; k++) { const i = cells[RI(cells.length)]; grass[i] = 1; grass[mirror(i)] = 1; }
         let left = 0; for (let i = 0; i < W * H; i++) if (mask[i] && !grass[i]) left++;
-        goals.push({ t: 'grass', n: left }); work += left * 0.36;
+        goals.push({ t: 'grass', n: left });
       }
     }
-    const spec = { W, H, mask, box, chain, grass, ncol, goals, moves: 99, seed: hash(`bloom-play|${tier}|${num}`) | 0 };
-    // move limit: a fair robot (it can't see the pieces that will drop) plays the level twice; humans get a margin on top
-    const used = [1, 2].map((salt) => botPlay(spec, salt));
-    const avg = (used[0] + used[1]) / 2;
-    spec.moves = Math.round(Math.max(12, Math.min(45, avg * [1.55, 1.35, 1.22, 1.12][tier] + [4, 3, 2, 1][tier])));
+    for (const kind of kinds.filter((k) => k === 'col')) {
+      let k = RI(ncol); while (colsUsed.includes(k)) k = (k + 1) % ncol; colsUsed.push(k);
+      const cnt = Math.round((n <= 3 ? 14 + n * 3 : 18 + ramp * 14) + RI(6) - (kinds.length > 1 ? 4 : 0) + (hard ? 4 : 0));
+      goals.push({ t: 'col', k, n: cnt });
+    }
+    const spec = { W, H, mask, box, chain, grass, ice, ncol, goals, moves: 99, seed: hash(`bloom2-play|${n}`) | 0, hard: hard ? (sup ? 2 : 1) : 0, intro: intro ? intro[0] : null, num: n };
+    // move limit: a fair robot plays it twice; early levels get a lot of slack, later ones (and hard ones) much less
+    const used = [1, 2, 3].map((salt) => botPlay(spec, salt));
+    const avg = (used[0] + used[1] + used[2]) / 3, worst = Math.max(...used);
+    const base = (avg + worst) / 2; // lean towards the unlucky run, so a bad refill doesn't make it unwinnable
+    const slack = (n <= 3 ? 1.9 : 1.6 - ramp * 0.34) + (intro ? 0.3 : 0); // 1.6 → 1.26; a new element gets extra room
+    const extra = Math.max(1, Math.round(5 - ramp * 3));
+    spec.moves = Math.round(Math.max(12, Math.min(kinds.includes('grass') ? 52 : 45, base * slack * (sup ? 0.92 : hard ? 0.97 : 1) + extra)));
     return spec;
   }
   function botValue(st0, st) {
     let v = 0;
-    st.goals.forEach((g, j) => { v += (st0.goals[j].left - g.left) * (g.t === 'col' ? 1 : g.t === 'grass' ? 1.2 : 3); });
+    st.goals.forEach((g, j) => { v += (st0.goals[j].left - g.left) * (g.t === 'col' ? 1 : g.t === 'grass' ? 1.2 : g.t === 'ice' ? 1.6 : 3); });
     return v + st.score / 400 + (won(st) ? 1000 : 0);
   }
   function botPlay(spec, salt) {
@@ -107,13 +132,13 @@ const M3 = (() => {
 
   // ---------- state ----------
   function init(spec) {
-    const st = { W: spec.W, H: spec.H, mask: spec.mask.slice(), box: spec.box.slice(), chain: spec.chain.slice(), grass: spec.grass.slice(),
+    const st = { W: spec.W, H: spec.H, mask: spec.mask.slice(), box: spec.box.slice(), chain: spec.chain.slice(), grass: spec.grass.slice(), ice: (spec.ice || Array(spec.W * spec.H).fill(0)).slice(),
       ncol: spec.ncol, seed: spec.seed, nid: 1, moves: spec.moves, score: 0, p: Array(spec.W * spec.H).fill(null),
       goals: spec.goals.map((g) => ({ ...g, left: g.n })), hasGrass: spec.goals.some((g) => g.t === 'grass') };
     fillFresh(st);
     return st;
   }
-  const clone = (st) => ({ ...st, mask: st.mask, box: st.box.slice(), chain: st.chain.slice(), grass: st.grass.slice(), p: st.p.map((q) => (q ? { ...q } : null)), goals: st.goals.map((g) => ({ ...g })) });
+  const clone = (st) => ({ ...st, mask: st.mask, box: st.box.slice(), chain: st.chain.slice(), grass: st.grass.slice(), ice: st.ice.slice(), p: st.p.map((q) => (q ? { ...q } : null)), goals: st.goals.map((g) => ({ ...g })) });
   const color = (st, i) => { const q = st.p[i]; return q && !q.sp ? q.k : -1; }; // power-ups are colourless: they never match
   const movable = (st, i) => st.mask[i] && !st.box[i] && st.p[i] && !st.chain[i];
   function fillFresh(st) {
@@ -254,6 +279,7 @@ const M3 = (() => {
       if (!st.mask[i] || avoid.has(i)) continue;
       if (st.box[i] && want.some((g) => g.t === 'box')) tiers[0].push(i);
       else if (st.chain[i] && want.some((g) => g.t === 'chain')) tiers[0].push(i);
+      else if (st.ice[i] && st.p[i] && want.some((g) => g.t === 'ice')) tiers[0].push(i);
       else if (st.hasGrass && !st.grass[i] && want.some((g) => g.t === 'grass')) tiers[1].push(i);
       else if (st.p[i] && !st.p[i].sp && want.some((g) => g.t === 'col' && g.k === st.p[i].k)) tiers[2].push(i);
       else if (st.p[i] || st.box[i]) tiers[3].push(i);
@@ -289,7 +315,7 @@ const M3 = (() => {
     let hits = wave.hits, first = true;
     const seen = new Set();
     while (hits.length) {
-      const ce = { t: 'clear', items: [], box: [], chain: [], grass: [], col: [] };
+      const ce = { t: 'clear', items: [], box: [], chain: [], grass: [], col: [], ice: [] };
       const trig = [];
       const boxHit = new Set();
       for (const { i, g } of hits) {
@@ -330,6 +356,7 @@ const M3 = (() => {
     const q = st.p[i]; if (!q) return;
     if (st.chain[i]) { st.chain[i]--; st.score += 30; ce.chain.push({ i, left: st.chain[i] }); if (!st.chain[i]) prog(st, 'chain'); return; }
     st.p[i] = null; ce.items.push({ id: q.id, i, k: q.k, sp: q.sp });
+    if (st.ice[i]) { st.ice[i]--; st.score += 25; ce.ice.push({ i, left: st.ice[i] }); if (!st.ice[i]) prog(st, 'ice'); }
     st.score += Math.round(10 * mult);
     if (!q.sp) { const g = goalOf(st, 'col', q.k); if (g && g.left > 0) { g.left--; ce.col.push({ i, k: q.k }); } }
     if (q.sp) trig.push({ sp: q.sp, i, k: q.k, grassy: st.hasGrass && !!st.grass[i] });
@@ -429,7 +456,7 @@ const M3 = (() => {
     if (A.sp && B.sp) { combo(st, ev, A, B, b, a, grassy); }
     else if (A.sp === 'rain' || B.sp === 'rain') {
       const R = A.sp === 'rain' ? A : B, other = R === A ? B : A, ri_ = R === A ? b : a;
-      st.p[ri_] = null; ev.push({ t: 'clear', items: [{ id: R.id, i: ri_, k: -1, sp: 'rain' }], box: [], chain: [], grass: [], col: [] });
+      st.p[ri_] = null; ev.push({ t: 'clear', items: [{ id: R.id, i: ri_, k: -1, sp: 'rain' }], box: [], chain: [], grass: [], col: [], ice: [] });
       const seen = new Set([ri_]);
       const hits = fire(st, ev, { sp: 'rain', i: ri_, withK: other.k, grassy }, seen, new Set());
       run(st, ev, { hits, match: null, creates: [] }, [a, b]);
@@ -443,7 +470,7 @@ const M3 = (() => {
   }
   function combo(st, ev, A, B, at, other, grassy) {
     st.p[other] = null; st.p[at] = null;
-    ev.push({ t: 'clear', items: [{ id: B.id, i: other, k: B.k, sp: B.sp }, { id: A.id, i: at, k: A.k, sp: A.sp }], box: [], chain: [], grass: [], col: [] });
+    ev.push({ t: 'clear', items: [{ id: B.id, i: other, k: B.k, sp: B.sp }, { id: A.id, i: at, k: A.k, sp: A.sp }], box: [], chain: [], grass: [], col: [], ice: [] });
     const kind = (q) => (q.sp === 'rh' || q.sp === 'rv' ? 'r' : q.sp);
     const ks = [kind(A), kind(B)].sort().join('+');
     const seen = new Set([at, other]), res = new Set();
@@ -497,6 +524,6 @@ const M3 = (() => {
     const t = allMoves(st)[0]; return t || null;
   }
   const status = (st) => (won(st) ? 'win' : st.moves <= 0 ? 'lose' : 'play');
-  return { level, init, clone, swap, tap, finale, hint, status, allMoves, swapValid, movable, won, SPECIALS, findGroups, hasMove };
+  return { INTRO, isHard, level, init, clone, swap, tap, finale, hint, status, allMoves, swapValid, movable, won, SPECIALS, findGroups, hasMove };
 })();
 if (typeof module !== 'undefined') module.exports = M3;
