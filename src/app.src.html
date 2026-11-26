@@ -376,6 +376,8 @@ input{font:inherit;color:inherit}
 @keyframes blBump{40%{transform:scale(1.16)}}
 .bl-score{flex:none;text-align:right;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--bl-txt);opacity:.85;min-width:52px}
 .bl-score b{display:block;font-size:17px;letter-spacing:0;font-variant-numeric:tabular-nums}
+.bl-score{position:relative}.bl-cmb{position:absolute;right:0;top:100%;margin-top:2px;font-style:normal;font-size:10px;font-weight:900;white-space:nowrap;background:#FFC93A;color:#6A3A00;border-radius:99px;padding:1px 7px;opacity:0;letter-spacing:0;text-transform:none}
+.bl-cmb.on{animation:blCmb 2.2s ease-out forwards}@keyframes blCmb{0%{opacity:0;transform:scale(.6)}10%{opacity:1;transform:scale(1.15)}20%{transform:none}80%{opacity:1}100%{opacity:0}}
 .bl-scene{position:relative;border-radius:18px;overflow:hidden;padding:8px 4px;display:grid;place-items:center}
 .bl-board{position:relative;touch-action:none}
 .bl-frame{position:absolute;inset:0;filter:drop-shadow(0 6px 14px rgba(40,10,70,.3))}
@@ -387,7 +389,7 @@ input{font:inherit;color:inherit}
 .bl-tile{position:absolute;border-radius:6px;background:var(--bl-tile)}
 .bl-tile.grass{background-color:var(--bl-carpet);background-image:radial-gradient(rgba(255,255,255,.09) 1px,transparent 1.4px),radial-gradient(rgba(0,60,20,.18) 1px,transparent 1.4px);background-size:6px 6px,7px 7px;background-position:0 0,3px 2px;box-shadow:none;border-radius:0}
 .bl-tile.grow{animation:blGrow .4s ease-out}
-@keyframes blGrow{0%{opacity:.35}100%{opacity:1}}
+@keyframes blGrow{0%{filter:saturate(1.6) brightness(1.15)}100%{filter:none}}
 .bl-ice{position:absolute;pointer-events:none;border-radius:7px;background:linear-gradient(135deg,rgba(225,246,255,.92),rgba(170,220,250,.85));box-shadow:inset 0 0 0 2.5px #fff,inset 0 0 0 4px rgba(110,180,230,.5)}
 .bl-ice::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,transparent 22%,rgba(255,255,255,.95) 23% 29%,transparent 30% 44%,rgba(255,255,255,.8) 45% 49%,transparent 50%)}
 .bl-ice.l2{background:linear-gradient(135deg,rgba(240,250,255,.98),rgba(150,205,240,.95));box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 6px rgba(90,160,220,.6),inset 0 0 12px rgba(255,255,255,.9)}
@@ -442,7 +444,53 @@ input{font:inherit;color:inherit}
 .bl-help{font-size:12px;color:rgba(255,255,255,.92);text-align:center;line-height:1.35;text-shadow:0 1px 3px rgba(0,0,0,.45)}
 .bl-help b{color:#fff}
 @media (prefers-reduced-motion:reduce){.bl-pc.hint svg,.bl-moves.low{animation:none}}
+.bl-help{min-height:0;font-weight:700}.bl-help:empty{display:none}.bl-help.on{color:#fff}
+.bl-bar{display:flex;justify-content:center;gap:14px;margin-top:-2px}
+.bl-boost{position:relative;width:58px;height:58px;border-radius:50%;border:2px solid rgba(255,255,255,.9);background:var(--bl-hbg);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 5px 14px rgba(40,10,60,.25);padding:9px;display:grid;place-items:center}
+.bl-boost svg{width:100%;height:100%}
+.bl-boost b{position:absolute;right:-5px;top:-5px;min-width:22px;height:22px;padding:0 5px;box-sizing:border-box;border-radius:11px;background:var(--bl-acc);color:#fff;font-size:12px;font-weight:900;line-height:22px;box-shadow:0 2px 0 var(--bl-accd)}
+.bl-boost span{position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);white-space:nowrap}
+.bl-boost.on{box-shadow:0 0 0 3px #fff,0 0 18px #FFE680;transform:scale(1.08)}
+.bl-boost.empty{opacity:.55}.bl-boost.empty b{background:#3DBE5A;box-shadow:0 2px 0 #23863B}
+.bl-wrap .bl-bar{margin-bottom:14px}
+.bl-jam{position:absolute;pointer-events:none}.bl-jam svg{width:100%;height:100%;display:block}
+.bl-jam.gone{animation:blGone .3s ease-in forwards}
+.bl-bub{position:absolute;pointer-events:none;z-index:3}.bl-bub svg{width:100%;height:100%;display:block}
+.bl-bub.hit{animation:blShake .22s}.bl-bub.popb{animation:blPopB .2s ease-out forwards}
+@keyframes blPopB{to{transform:scale(1.35);opacity:0}}
+.bl-big{position:absolute;pointer-events:none;z-index:1}.bl-big svg{width:100%;height:100%;display:block}
+.bl-big.hit{animation:blShake .22s}.bl-big.gone{animation:blGone .32s ease-in forwards}
+.bl-chain.hit{animation:blShake .22s}
+.bl-paint{position:absolute;right:-8px;top:-12px;width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:var(--bl-acc);color:#fff;padding:4px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.bl-paint svg{width:100%;height:100%;display:block}
+.bl-pick .bl-sw button{width:auto;background:none;box-shadow:none;padding:4px 0;font-size:11px;font-weight:700;border-radius:0}
+.bl-pick>div{padding-top:16px}.bl-pick h3{margin-top:0}.bl-pick .bl-sw{margin:6px 0 12px}.bl-pick .bl-sw button{color:#8A7CA8}.bl-pick .bl-sw .on{color:#3B2A6E}.bl-pick .bl-sw i b{box-shadow:0 0 0 2px #fff}.bl-pick .bl-sw .on i{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--bl-acc)}
+.bl-pset{display:flex;gap:8px;margin-bottom:14px}.bl-pset button{flex:1;background:#F3F0FA;color:#3B2A6E;font-size:14px;padding:9px 6px;box-shadow:none;border:2px solid transparent}.bl-pset button.on{border-color:var(--bl-acc);background:#fff}
+/* Bloom guide */
+.bl-guide{max-height:88vh;overflow:auto}
+.bl-gsec{margin:14px 0 6px;padding-top:12px;border-top:1px solid var(--line,#2C2F3A)}
+.bl-gsec h3{margin:0 0 8px;font-size:16px}.bl-gsec p,.bl-gsec li{font-size:13.5px;line-height:1.45;color:var(--mute);margin:0 0 8px}.bl-gsec b{color:var(--tx)}.bl-gsec ul{padding-left:18px;margin:0 0 8px}
+.bl-gi{display:inline-block;width:38px;height:38px;flex:none}.bl-gi svg{width:100%;height:100%}
+.bl-grow{display:flex;gap:10px;align-items:flex-start;margin:10px 0 4px;font-size:13.5px;line-height:1.45;color:var(--mute)}
+.bl-demo{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:8px 0 10px;padding:10px;border-radius:14px;background:linear-gradient(180deg,#F2B9A0,#B98AB0)}
+.bl-demo .arr{font-size:22px;font-weight:900;color:#fff}.bl-demo .note{flex-basis:100%;text-align:center;font-size:12px;color:#fff;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.bl-mb{position:relative}.bl-mb i{position:absolute;display:block}.bl-mb i svg{width:100%;height:100%;display:block}
+.bl-mb .t{background:rgba(255,255,255,.55);border-radius:4px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.6)}.bl-mb .t.g{background:#1E8F38;box-shadow:none;border-radius:0}
+.bl-mb .ic{border-radius:4px;background:linear-gradient(135deg,rgba(225,246,255,.95),rgba(170,220,250,.85));box-shadow:inset 0 0 0 1.5px #fff}
+.bl-mb .x{border-radius:50%;background:radial-gradient(circle,#fff 0,rgba(255,240,170,.8) 40%,transparent 70%);animation:blGx 1.6s ease-out infinite}
+.bl-mb .mv{animation:blGmv 1.6s ease-in-out infinite}
+.bl-demo .after{animation:blGaf 3.2s ease-in-out infinite}
+@keyframes blGx{0%{opacity:0;transform:scale(.3)}25%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.3)}}
+@keyframes blGmv{50%{transform:scale(1.18)}}
+@keyframes blGaf{0%,15%{opacity:.15;transform:scale(.94)}35%,100%{opacity:1;transform:none}}
+.bl-gtab>div{display:flex;align-items:center;gap:4px;margin:6px 0}.bl-gtab .bl-gi{width:32px;height:32px}.bl-gtab span{color:var(--mute);font-weight:900}.bl-gtab p{margin:0 0 0 6px!important;flex:1}
+.bl-guide-btn{margin-bottom:10px}
 /* Bloom menu: colour swatches + piece sets */
+.bl-pre{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bl-pre button{position:relative;display:grid;justify-items:center;gap:2px;padding:8px 4px;border-radius:14px;border:1.5px solid var(--line,#2C2F3A);background:var(--card,#1B1D26);color:var(--mute);font:inherit;font-size:11px;font-weight:700}
+.bl-pre svg{width:34px;height:34px}.bl-pre b{position:absolute;right:6px;top:6px;font-size:11px;color:var(--tx)}
+.bl-pre .on{border-color:#fff;color:var(--tx);box-shadow:inset 0 0 0 1px #fff}.bl-pre .none{opacity:.4}
+.bl-inv{font-size:12px;color:var(--mute);margin:-4px 0 10px}.bl-inv b{color:var(--tx)}
 .bl-sw{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .bl-sw button{background:none;border:0;color:var(--mute);font:inherit;font-size:11px;font-weight:700;display:grid;justify-items:center;gap:4px;padding:4px 0}
 .bl-sw i{position:relative;width:42px;height:42px;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
@@ -595,8 +643,8 @@ const COLOUR_GAMES = [
   { id: 'pr', sec: 'c', name: 'Pour', color: 'var(--pr)', metric: 'moves', desc: 'Pour the colours until every tube holds just one.',
     rules: ['Tap a tube, then another, to <b>pour</b> its top colour across.', 'You can only pour onto the <b>same colour</b> or into an empty tube, and only while there\'s room.', 'Sort every colour into its own tube. Fewer pours wins. Undo is free.'],
     icon: `<svg viewBox="0 0 46 46">${[['#FF5A5F','#4C6FFF','#FF5A5F'],['#4C6FFF','#FFB020','#4C6FFF'],['#FFB020','#FF5A5F','#FFB020']].map((t,k)=>`<rect x="${5+k*13}" y="6" width="10" height="34" rx="5" fill="none" stroke="#3A4152" stroke-width="1.6"/>`+t.map((c,j)=>`<rect x="${6.5+k*13}" y="${29-j*9.5}" width="7" height="9" rx="${j?1:3}" fill="${c}"/>`).join('')).join('')}</svg>`, mount: mountPR },
-  { id: 'bl', sec: 'c', name: 'Bloom', color: 'var(--bl)', metric: 'pts', unit: 'Level', noTimer: 1, ownHud: 1, oneTrack: 5, lobby: (...a) => blLobby(...a), desc: 'Match three, one level after another. Rockets, bombs, planes and rainbow combos.',
-    rules: ['<b>Swap</b> two neighbouring pieces to line up 3 or more of a kind. Finish the goals in the card at the top before your <b>moves</b> run out. Levels go on forever — every one gets a little harder, and new things turn up along the way (cushions, carpet, glass, chains…). Every 5th level is a <b>Hard level</b>.', 'Bigger matches make power-ups: <b>4 in a row</b> → Rocket (clears a line) · <b>2×2 square</b> → Paper plane (hits around it, then flies to a goal) · <b>L or T</b> → Bomb · <b>5 in a row</b> → Rainbow ball (clears every piece of the kind you swap it with). Swap a power-up, or tap it, to fire it.', 'Swap two power-ups together for <b>combos</b> — Rocket + Bomb clears 3 rows and 3 columns, Rainbow + anything turns a whole kind into that power-up. Moves left at the end turn into bonus rockets.'],
+  { id: 'bl', sec: 'c', name: 'Bloom', color: 'var(--bl)', metric: 'pts', unit: 'Level', noTimer: 1, ownHud: 1, oneTrack: 5, lobby: (...a) => blLobby(...a), guide: () => blGuide(), desc: 'Match three, one level after another. Rockets, bombs, planes and rainbow combos.',
+    rules: ['<b>Swap</b> two neighbouring pieces to line up 3 or more of a kind. Finish the goals in the card at the top before your <b>moves</b> run out. Levels go on forever and new things turn up along the way — cushions, carpet, glass, chains, toys to bring down, bubbles, jam, toy chests. Every 4th level (from 12) is a <b>Hard level</b>, every 10th (from 20) is <b>Super hard</b>.', 'Bigger matches make power-ups: <b>4 in a line</b> → Rocket (clears that row or column) · <b>2×2 square</b> → Paper plane (hits around it, then flies to a goal) · <b>5 in an L or T shape</b> (3 one way + 3 the other, sharing a corner or middle) → Bomb · <b>5 in a straight line</b> → Disco ball (clears every piece of the kind you swap it with). Tap a power-up to fire it, or swap it.', 'Swap two power-ups together for <b>combos</b>. Moves left at the end turn into bonus rockets.', '<b>Boosters</b> (under the board): Hammer smashes any one cell, Glove swaps any two neighbours, Shuffle mixes the board — none of them use a move. You win one for every new level you finish; hard and super hard levels give more, including a Rocket, Bomb or Disco ball to start a level with (pick them here). Tap ? in the game for the full guide. Tap the paint button on the level card to change colours or pieces mid-game.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="1" y="1" width="44" height="44" rx="11" fill="#E9B8C4"/><use href="#bl-home-k0" x="3" y="3" width="20" height="20"/><use href="#bl-home-k3" x="23" y="3" width="20" height="20"/><use href="#bl-home-k1" x="3" y="23" width="20" height="20"/><use href="#bl-home-plane" x="23" y="23" width="20" height="20"/></svg>`, mount: mountBL },
   { id: 'fl', sec: 'c', name: 'Flood', color: 'var(--fl)', metric: 'moves', desc: 'Paint from the corner until the whole board is one colour.',
     rules: ['Your blob starts in the <b>top-left corner</b>.', 'Pick a colour — your blob turns that colour and swallows every touching cell of it.', 'Fill the board in as <b>few moves</b> as you can. Beat the target.'],
@@ -1034,7 +1082,7 @@ function openGame(ctx) {
   navPush();
   curGame = gid;
   const back = $('button', 'ibtn back', '‹'); back.setAttribute('aria-label', `${g.name} menu`); back.onclick = () => leave();
-  const help = $('button', 'ibtn', '?'); help.onclick = () => showRules(g);
+  const help = $('button', 'ibtn', '?'); help.onclick = () => (g.guide ? g.guide() : showRules(g));
   const ttl = $('button', 'gtitle', `${g.name}<small>${round && round.mode === 'set' ? `${S.players[1 - p]}'s word` : g.oneTrack ? 'Level ' + num : tName(g, t)} ▾</small>`); ttl.onclick = () => leave();
   const leave = () => {
     saveNow();
@@ -1058,7 +1106,8 @@ function openGame(ctx) {
     tb = $('div', 'turn');
     app.appendChild(tb); setTurn(p);
     app.classList.add('duelling');
-  } else {
+  } else if (g.oneTrack) app.classList.remove('duelling'); // one-track games show the level in the title; no stepper (more room for the board)
+  else {
     app.classList.remove('duelling');
     const nav = $('div', 'pnav');
     const prev = $('button', '', '‹'), next = $('button', '', '›');
@@ -1240,7 +1289,7 @@ function showResult(ctx, r, title, info, st) {
     bNext.onclick = () => { v.remove(); openGame({ gid, t, num: hasTiers(g) ? nx : nextNum(gid, g.vars ? t : 0, 0), p: 0 }); };
     btns.append(bNext);
     if (hasTiers(g)) { const a = $('button', 'big', r.x ? 'Try this one again' : 'Play this one again'); a.onclick = () => { v.remove(); openGame(ctx); }; btns.append(a); }
-    if (!r.x) {
+    if (!r.x && !g.oneTrack) {
       const look = $('button', 'big', r.x ? 'See the board' : 'See how I solved it');
       look.onclick = () => { v.remove(); showBar(`<b>${fmtMain(g, r)}</b> · ${g.unit || 'Puzzle'} #${num}`, [[hasTiers(g) ? `Next · #${nx}` : 'New game', 'pri', () => bNext.onclick()], ['Result', '', () => showResult(ctx, r, title, {}, st)], ['‹ Menu', '', () => toMenu(gid)]]); };
       btns.append(look);
@@ -2571,7 +2620,19 @@ const BL_ART = (() => {
   const ORIGAMI = `${SH()}<path d="M14 80C8 78 4 73 3 66M24 89C15 89 9 85 6 79" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M4 48L97 8L66 92L47 63Z" fill="url(#blxpB)"/><path d="M47 63L97 8L37 85Z" fill="url(#blxpW)"/><path d="M47 63L97 8" stroke="#fff" stroke-width="3"/><path d="M18 44L78 18" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".75"/><path d="M66 86L93 20" stroke="#8E1A4C" stroke-width="2.5" opacity=".35"/>`;
   A.plane = ORIGAMI; B.plane = ORIGAMI;
 
-  return { defs: A_DEFS + B_DEFS + PL_DEFS, sets: { home: A, garden: B } };
+  // the plane a bit smaller; the 5-in-a-row power-up is a disco ball
+  A.plane = B.plane = `<g transform="translate(9 10) scale(.82)">${ORIGAMI}</g>`;
+  const DISCO_DEFS = `<clipPath id="blxDisc"><circle cx="50" cy="50" r="37"/></clipPath>` + rg('blxDiscSh', [[0, 'rgba(255,255,255,0)'], [.62, 'rgba(255,255,255,0)'], [1, 'rgba(40,10,90,.55)']], '38%', '34%', '70%');
+  const DT = ['#FFFFFF', '#E9E4FF', '#BFD9FF', '#FFC6EC', '#FFF0A8', '#C9F5FF', '#D8C8FF', '#FFFFFF', '#A9A4C8'];
+  let tiles = ''; for (let y = 10, rr = 0; y < 90; y += 8.6, rr++) for (let x = 10 - (rr % 2) * 4.3, cc = 0; x < 92; x += 8.6, cc++) tiles += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="7.6" height="7.6" rx="1.4" fill="${DT[(rr * 7 + cc * 5 + rr * cc) % DT.length]}"/>`;
+  const DISCO = `${SH()}<circle cx="50" cy="50" r="37" fill="#7E78A8"/><g clip-path="url(#blxDisc)">${tiles}<circle cx="50" cy="50" r="37" fill="url(#blxDiscSh)"/></g><circle cx="50" cy="50" r="37" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/>
+<path d="M34 22l2.5 7 7 2.5-7 2.5-2.5 7-2.5-7-7-2.5 7-2.5z" fill="#fff"/><path d="M70 62l1.8 5 5 1.8-5 1.8-1.8 5-1.8-5-5-1.8 5-1.8z" fill="#fff"/><rect x="47" y="5" width="6" height="8" rx="2" fill="url(#blxaGo)"/>`;
+  A.rain = B.rain = DISCO;
+  // drop-down toys: a teddy bear (Home) and an acorn (Garden)
+  A.item = `${SH()}<circle cx="24" cy="26" r="13" fill="#B9773E"/><circle cx="76" cy="26" r="13" fill="#B9773E"/><circle cx="24" cy="26" r="6.5" fill="#F2C39A"/><circle cx="76" cy="26" r="6.5" fill="#F2C39A"/><circle cx="50" cy="54" r="35" fill="url(#blxtB)"/>
+<ellipse cx="50" cy="66" rx="17" ry="13" fill="#F6D2AE"/><ellipse cx="50" cy="60" rx="7" ry="5" fill="#4A2A14"/><path d="M50 65V71M44 73Q50 77 56 73" stroke="#4A2A14" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="37" cy="47" r="4.5" fill="#2A1608"/><circle cx="63" cy="47" r="4.5" fill="#2A1608"/><circle cx="38.5" cy="45.5" r="1.5" fill="#fff"/><circle cx="64.5" cy="45.5" r="1.5" fill="#fff"/><path d="M36 92l14-8 14 8-14 6z" fill="#E0457E"/><ellipse cx="33" cy="33" rx="9" ry="5" fill="#fff" opacity=".3" transform="rotate(-25 33 33)"/>`;
+  B.item = `${SH('#5A3A10', '.25')}<path d="M24 46C24 72 36 90 50 94C64 90 76 72 76 46Z" fill="url(#blxtB)"/><path d="M14 46C14 30 30 20 50 20C70 20 86 30 86 46C86 52 80 54 50 54C20 54 14 52 14 46Z" fill="#7A4A1E"/>${[20, 32, 44, 56, 68, 80].map((x) => `<path d="M${x} 46l5-12" stroke="#5A3410" stroke-width="2.5" opacity=".6"/>`).join('')}<path d="M50 20V8" stroke="#5A3410" stroke-width="5" stroke-linecap="round"/><ellipse cx="38" cy="66" rx="5" ry="12" fill="#fff" opacity=".35"/>`;
+  return { defs: A_DEFS + B_DEFS + PL_DEFS + DISCO_DEFS + lg('blxtB', [[0, '#D9944E'], [.6, '#A8652C'], [1, '#6E3E16']]), sets: { home: A, garden: B } };
 })();
 // particle colours per piece set (index = piece kind)
 const BL_PAL = {
@@ -2580,7 +2641,7 @@ const BL_PAL = {
 };
 let BL_SET = 'home', BL_COLORS = BL_PAL.home[0], BL_LIGHT = BL_PAL.home[1];
 document.body.insertAdjacentHTML('beforeend', `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${BL_ART.defs}${Object.entries(BL_ART.sets).map(([n, set]) => Object.entries(set).map(([k, v]) => `<symbol id="bl-${n}-${k}" viewBox="0 0 100 100">${v}</symbol>`).join('')).join('')}</defs></svg>`);
-const blArt = (k, sp, set = BL_SET) => `<svg viewBox="0 0 100 100"><use href="#bl-${set}-${sp || 'k' + k}"/></svg>`;
+const blArt = (k, sp, set = BL_SET) => `<svg viewBox="0 0 100 100"><use href="#bl-${set}-${sp || (k === -2 ? 'item' : 'k' + k)}"/></svg>`;
 // colour themes: the whole Bloom screen (background, top card, board) follows one
 const BL_THEMES = {
   sunset: { name: 'Sunset', bg: 'radial-gradient(30% 18% at 82% 8%,rgba(255,236,190,.9),transparent 70%),linear-gradient(180deg,#F2B9A0 0%,#C98AA8 45%,#7E5A9E 100%)', acc: '#E0457E', acc2: '#FF8FB1', accD: '#A8245A', txt: '#5A2E5E', hbg: 'rgba(255,255,255,.72)', gbg: 'rgba(255,255,255,.8)', bo: '.75', bi: '.35', tile: 'rgba(255,255,255,.42)', carpet: '#1E8F38' },
@@ -2590,8 +2651,105 @@ const BL_THEMES = {
   meadow: { name: 'Meadow', bg: 'radial-gradient(22% 6% at 20% 4%,#fff 0 60%,transparent 62%),radial-gradient(16% 5% at 82% 7%,#fff 0 60%,transparent 62%),linear-gradient(180deg,#7FD0F5 0%,#CBEFFB 35%,#9ADB74 65%,#5BB843 100%)', acc: '#3E9E1E', acc2: '#7FD45A', accD: '#226A0C', txt: '#2E5A16', hbg: 'rgba(255,255,255,.78)', gbg: 'rgba(255,255,255,.85)', bo: '.85', bi: '.45', tile: 'rgba(255,255,255,.5)', carpet: '#3E9E1E' },
 };
 const blThemeVars = (id) => { const t = BL_THEMES[id] || BL_THEMES.sunset; return Object.entries({ bg: t.bg, acc: t.acc, acc2: t.acc2, accd: t.accD, txt: t.txt, hbg: t.hbg, gbg: t.gbg, bo: t.bo, bi: t.bi, tile: t.tile, carpet: t.carpet }).map(([k, v]) => `--bl-${k}:${v}`).join(';'); };
+// ---------- Bloom: the full guide (every rule, with little before → after boards) ----------
+function blMini(rows, cs = 22) { // tokens: [g carpet|j jam|i glass|x blast][0-5 piece|r v rockets|b bomb|p plane|d disco|t toy|B cushion|K chest|.][* moved|c chain|u bubble]
+  const g = rows.map((r) => r.trim().split(/\s+/)), H = g.length, W = g[0].length;
+  const el = $('div', 'bl-mb'); el.style.cssText = `width:${W * cs}px;height:${H * cs}px`;
+  let h = '';
+  g.forEach((row, r) => row.forEach((tok, c) => {
+    const m = /^([gjix]*)([0-5rvbpdtBK.])([*cu]*)$/.exec(tok); if (!m) return;
+    const [, pre, main, suf] = m, x = c * cs, y = r * cs;
+    h += `<i class="t${pre.includes('g') ? ' g' : ''}" style="left:${x}px;top:${y}px;width:${cs}px;height:${cs}px"></i>`;
+    if (pre.includes('j')) h += `<i style="left:${x}px;top:${y}px;width:${cs}px;height:${cs}px">${BL_JAM}</i>`;
+    if (pre.includes('i')) h += `<i class="ic" style="left:${x + 1}px;top:${y + 1}px;width:${cs - 2}px;height:${cs - 2}px"></i>`;
+    const art = main === '.' ? '' : main === 'B' ? blBox(1) : main === 'K' ? BL_CHEST_ICON : main === 't' ? blArt(-2) : /[0-5]/.test(main) ? blArt(+main) : blArt(0, { r: 'rh', v: 'rv', b: 'bomb', p: 'plane', d: 'rain' }[main]);
+    if (art) h += `<i class="p${suf.includes('*') ? ' mv' : ''}" style="left:${x}px;top:${y}px;width:${cs}px;height:${cs}px">${art}</i>`;
+    if (suf.includes('c')) h += `<i style="left:${x}px;top:${y}px;width:${cs}px;height:${cs}px">${blChain(1)}</i>`;
+    if (suf.includes('u')) h += `<i style="left:${x}px;top:${y}px;width:${cs}px;height:${cs}px">${BL_BUBBLE}</i>`;
+    if (pre.includes('x')) h += `<i class="x" style="left:${x}px;top:${y}px;width:${cs}px;height:${cs}px"></i>`;
+  }));
+  el.innerHTML = h; return el;
+}
+function blDemo(a, b, note) { // before → after, the after side replays in a loop
+  const d = $('div', 'bl-demo'); const A = blMini(a), B = blMini(b); B.classList.add('after');
+  d.append(A, $('div', 'arr', '→'), B); if (note) d.appendChild($('div', 'note', note)); return d;
+}
+function blGuide() {
+  const set = BL_SET; BL_SET = (cfg('bl').blSet) || 'home';
+  const sec = (t, ...kids) => { const s2 = $('div', 'bl-gsec'); s2.append($('h3', '', t), ...kids); return s2; };
+  const P = (h) => $('p', '', h);
+  const icon = (sp) => `<span class="bl-gi">${blArt(0, sp)}</span>`;
+  const body = [
+    $('div', 'kicker', 'How to play'), $('h2', '', 'Bloom — the full guide'),
+    sec('1 · The basics',
+      P('Drag a piece onto a neighbour (or tap one, then the other) to swap them. A swap only counts if it lines up <b>3 or more of the same kind</b> in a row or column — otherwise the pieces slide back and no move is used.'),
+      blDemo(['1 2 1 1', '0 1 3 2'], ['x. x. x. x.', '0 . 3 2'], 'Swap the cup up → three cups in a row are cleared, and new pieces fall in from the top.'),
+      P('Every level has <b>goals</b> in the card at the top (collect pieces, break cushions, cover the floor in carpet…) and a number of <b>moves</b>. Finish every goal before the moves run out. Each swap or power-up tap uses one move; boosters don\'t.'),
+      P('<b>Stars:</b> 1★ for winning, 2★ if at least 15% of your moves are left, 3★ if at least 30% are left. Moves left at the end turn into <b>bonus rockets</b> that fire on their own (+100 points each).')),
+    sec('2 · Making power-ups',
+      P('A power-up is made from a bigger match. It appears where the piece <b>you moved</b> lands (if that piece is part of the match), otherwise somewhere in the match.'),
+      $('div', 'bl-grow', `${icon('rh')}<div><b>Rocket</b> — 4 in a straight line. The rocket points along your line: <b>4 across</b> makes a rocket that clears its whole <b>row</b>, <b>4 down</b> makes one that clears its whole <b>column</b>. Both ends fly at once, to the edges of the board.</div>`),
+      blDemo(['0 0 3* 0', '2 1 0 2'], ['. . r .', '2 1 . 2']),
+      $('div', 'bl-grow', `${icon('plane')}<div><b>Paper plane</b> — a 2×2 square. When it goes off it hits the 4 cells touching it (up, down, left, right), then flies to <b>one more cell</b>: first a blocker that\'s a goal (cushion, chest, bubble, chain, glass, jam), then an uncovered floor cell on carpet levels, then a piece you still need to collect, otherwise any piece.</div>`),
+      blDemo(['2 2 4', '2 1* 3'], ['p . 4', '. . 3']),
+      $('div', 'bl-grow', `${icon('bomb')}<div><b>Bomb</b> — 5 pieces in an <b>L or T shape</b>: a line of 3 one way and a line of 3 the other way that share one piece (a corner = L, the middle of one line = T). It blasts a 5×5 area around itself without the 4 far corners (21 cells).</div>`),
+      blDemo(['5 . .', '5 . .', '5* 5 5'], ['. . .', '. . .', 'b . .'], 'L shape: 3 down + 3 across, sharing the corner.'),
+      $('div', 'bl-grow', `${icon('rain')}<div><b>Disco ball</b> — 5 in a straight line. Swap it with any piece and it zaps <b>every piece of that kind</b> on the board. Tapped on its own (or set off by another blast) it picks the kind there\'s most of.</div>`),
+      blDemo(['3 3 0* 3 3', '1 2 3 4 1'], ['. . d . .', '1 2 3 4 1']),
+      P('If one match is big enough for several, the strongest wins: Disco ball › Bomb › Rocket › Plane.')),
+    sec('3 · Firing power-ups',
+      P('<b>Tap</b> a power-up to fire it where it is (uses a move). Or <b>swap</b> it with a neighbour — it fires from the cell it lands on (also one move, and the swap is always allowed, no match needed).'),
+      P('Power-ups never match with pieces. A power-up hit by another blast goes off too — that\'s how <b>chain reactions</b> start.')),
+    sec('4 · Combos: swap two power-ups together',
+      $('div', 'bl-gtab', [
+        ['rh', 'rh', 'Rocket + Rocket', 'clears the whole row <b>and</b> the whole column.'],
+        ['rh', 'bomb', 'Rocket + Bomb', 'clears <b>3 rows and 3 columns</b> at once.'],
+        ['bomb', 'bomb', 'Bomb + Bomb', 'one huge blast, a <b>7×7</b> area.'],
+        ['plane', 'plane', 'Plane + Plane', '<b>three planes</b> take off, each to its own target.'],
+        ['plane', 'rh', 'Plane + Rocket/Bomb', 'the plane <b>carries</b> the rocket or bomb to its target and sets it off there.'],
+        ['rain', 'rh', 'Disco + Rocket/Bomb/Plane', 'every piece of the most common kind <b>turns into</b> that power-up, then they all go off.'],
+        ['rain', 'rain', 'Disco + Disco', 'clears <b>the entire board</b>.'],
+      ].map(([a, b, n, t]) => `<div>${icon(a)}<span>+</span>${icon(b)}<p><b>${n}</b> — ${t}</p></div>`).join(''))),
+    sec('5 · Combo ×N and points',
+      P('After your move, pieces fall and new pieces drop in. If they line up by themselves, that\'s a <b>cascade</b>. Every new wave of matches counts up: <b>Combo ×2, ×3, ×4…</b> — shown in the middle of the board and in a yellow tag under your score.'),
+      P('Cascades are worth more: each cleared piece is <b>10 points × (1 + 0.5 per cascade)</b> — ×1.5 on the first cascade, ×2 on the next, and so on. You don\'t need to do anything — it\'s luck plus setting up good falls.'),
+      P('Other points: making a power-up +50 · a cushion, chain, bubble or chest hit +30 · glass or jam +25 · each new carpet cell +15 · a chest broken +200 · a toy brought down +200 · each bonus rocket at the end +100. Points decide 2-player rounds and your best score; stars only depend on moves left.')),
+    sec('6 · Carpet (the green floor) — exactly how it spreads',
+      P('<b>Matches:</b> if any piece of a match is standing on carpet, <b>every cell of that match</b> becomes carpet.'),
+      blDemo(['g0 0 0* 2'], ['g. g. g. 2']),
+      P('<b>Power-ups:</b> a power-up spreads carpet to every cell it hits <b>if it goes off from carpet</b>:'),
+      $('ul', '', '<li><b>Tapped:</b> only if the power-up itself is on carpet.</li><li><b>Swapped:</b> if <b>either</b> of the two cells in the swap is carpet. So moving a plane <b>from</b> carpet onto a plain cell still spreads carpet (and so does moving it onto carpet).</li><li><b>Plane:</b> carries the carpet to the cell it flies to.</li><li><b>Chain reactions:</b> a power-up that gets hit and is (now) on carpet spreads it too.</li><li>Boosters follow the same rule: the hammer spreads carpet if it hits a carpet cell.</li>'),
+      blDemo(['gp* 1 2', 'g3 4 5'], ['gx. x1 2', 'gx. 4 5'], 'Plane swapped off the carpet → the cells it hits turn green.'),
+      P('The goal counts the cells that are <b>not yet</b> carpet (cells under a toy chest don\'t count).')),
+    sec('7 · Blockers and goals',
+      $('div', 'bl-grow', `<span class="bl-gi">${blBox(1)}</span><div><b>Cushions</b> — have no piece. Each <b>match right next to</b> a cushion, or any blast that reaches it, knocks off one layer (once per wave). Pink = 1 hit, gold-trimmed = 2, purple = 3.</div>`),
+      blDemo(['B 1 1 1*'], ['. . . .'], 'A match touching the cushion breaks it.'),
+      $('div', 'bl-grow', `<span class="bl-gi">${blChain(1)}</span><div><b>Chains</b> — lock a piece: it <b>can\'t be moved</b> and doesn\'t fall. The piece still matches: match it, or blast it, to break the chain (the piece stays). Crossed chains need 2 hits.</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi">${BL_BUBBLE}</span><div><b>Bubbles</b> — hold a piece in place like chains. They pop when you match <b>next to</b> them, when the piece inside is part of a match, or when a blast hits them. The piece inside stays.</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi">${BL_GLASS}</span><div><b>Glass tiles</b> — lie <b>under</b> pieces, so the pieces on them move freely. When the piece on top is cleared (by a match or a blast), the glass breaks. Frosted glass needs 2.</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi">${BL_JAM}</span><div><b>Jam</b> — also under pieces; clear the piece on top to wipe it. After <b>any move that clears no jam</b>, it spreads to one neighbouring cell (the goal number goes up). Boosters never make it spread.</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi">${BL_CHEST_ICON}</span><div><b>Toy chests</b> — big 2×2 blockers. The number on them is how many hits are left. Each match next to it = 1 hit, each blast that touches any part of it = 1 hit (once per wave).</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi">${blArt(-2)}</span><div><b>Toys to bring down</b> — can\'t be matched or blasted. Clear pieces underneath so they fall; a toy is collected when it reaches the <b>lowest cell of its column</b>. New toys drop in from the top until you have them all.</div>`),
+      blDemo(['t 2', '1 4', '1* 3', '1 0'], ['. 2', '. 4', '. 3', 't 0'], 'Clear the column under the toy and it drops to the bottom.')),
+    sec('8 · Boosters',
+      $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.hammer}</span><div><b>Hammer</b> — tap it, then tap any cell: smashes that piece or hits that blocker once. Sets off power-ups. Can\'t smash toys.</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.glove}</span><div><b>Glove</b> — tap it, then swap <b>any two</b> neighbours, even if it makes no match. Swapping two power-ups this way makes their combo.</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.shuffle}</span><div><b>Shuffle</b> — mixes up the pieces (power-ups, toys and locked pieces stay put). The board also shuffles by itself for free if no move is possible.</div>`),
+      P('None of them use a move. Tap an active booster again to cancel it.'),
+      P('<b>Start-of-level power-ups</b> (Rocket, Bomb, Disco ball): pick them in Bloom\'s menu under “Start the level with”; they\'re placed on the board when a new level starts.'),
+      P('<b>Earning</b> (the first time you finish a level): Normal → +1 Hammer, Glove or Shuffle · Hard → that plus +1 Rocket, Bomb or Disco ball · Super hard → +2 Hammer/Glove/Shuffle and +1 Rocket/Bomb/Disco. Replaying an old level gives nothing. You start with 3 hammers, 3 gloves, 2 shuffles, 2 rockets, 2 bombs and 1 disco ball.')),
+    sec('9 · Levels',
+      P('One endless path. Each level is a little harder: fewer spare moves, more blockers, and new things appear on their own “New!” level — cushions (4), carpet (7), glass (10), chains (14), double cushions (18), a 6th kind of piece (21), toys (23), double chains (26), bubbles (29), triple cushions (31), jam (33), frosted glass (35), toy chests (37).'),
+      P('Like in the Scapes games, levels come in three kinds: <b>Normal</b>, <b>Hard</b> (every 4th level from 12 — red card, far fewer spare moves) and <b>Super hard</b> (every 10th from 20 — the tightest of all). A level that introduces something new is never hard. Harder levels pay more boosters (see Boosters). Boards change shape too — some have gaps and holes, and pieces fall straight through them.'),
+      P('Out of moves? Try again as often as you like, or skip ahead one level. Change colours or pieces any time with the paint button on the level card.')),
+  ];
+  BL_SET = set;
+  const btn = $('button', 'big pri', 'Got it');
+  const v = veil([...body, btn], 'bl-guide'); btn.onclick = () => v.remove();
+}
 // Bloom's own settings in its menu: colour theme and piece set
 function blLobby(kids, c, re, opt) {
+  const gb = $('button', 'big bl-guide-btn', '📖  Full guide — power-ups, combos, every rule'); gb.onclick = () => blGuide(); kids.push(gb);
   const sw = $('div', 'bl-sw');
   for (const [id, t] of Object.entries(BL_THEMES)) {
     const b = $('button', (c.blTheme || 'sunset') === id ? 'on' : '', `<i style="background:${t.bg}"><b style="background:${t.acc}"></b></i><span>${t.name}</span>`);
@@ -2600,6 +2758,17 @@ function blLobby(kids, c, re, opt) {
   kids.push(opt('Colours', sw));
   const mini = (set) => `<span class="bl-mini">${[0, 1, 2, 3].map((k) => blArt(k, 0, set)).join('')}</span>`;
   kids.push(opt('Pieces', seg([['home', `${mini('home')}Home`], ['garden', `${mini('garden')}Garden`]], c.blSet || 'home', (v) => { c.blSet = v; store.save(); re(); })));
+  if (S.duo) return;
+  // power-ups to start the next level with (won on hard levels)
+  const inv = blBoosts(); c.blPre = c.blPre || {};
+  const pre = $('div', 'bl-pre');
+  for (const k of ['rocket', 'bomb', 'rain']) {
+    const n = inv[k] || 0, on = !!c.blPre[k] && n > 0;
+    const b = $('button', (on ? 'on' : '') + (n ? '' : ' none'), `${blArt(0, k === 'rocket' ? 'rh' : k, c.blSet || 'home')}<span>${BL_BOOST_NAME[k]}</span><b>${n}</b>`);
+    b.onclick = () => { if (!n) return; c.blPre[k] = !c.blPre[k]; store.save(); re(); }; pre.appendChild(b);
+  }
+  kids.push(opt('Start the level with', pre));
+  kids.push($('div', 'bl-inv', `In-game boosters: <b>${inv.hammer || 0}</b> hammer · <b>${inv.glove || 0}</b> glove · <b>${inv.shuffle || 0}</b> shuffle. Win levels to get more.`));
 }
 // cushions (1–3 layers): soft and tufted; each layer peels off
 const BL_CUSH = [null, ['#FFC9DE', '#F59BC0', '#E07AA6'], ['#FF8CC0', '#EE5A9E', '#C43A7E'], ['#B98CF0', '#8E5BDA', '#6438B0']];
@@ -2610,7 +2779,22 @@ const blLinks = (x1, y1, x2, y2) => Array.from({ length: 6 }, (_, k) => { const 
 const blChain = (L) => `<svg viewBox="0 0 100 100">${blLinks(4, 4, 96, 96)}${L >= 2 ? blLinks(96, 4, 4, 96) : ''}</svg>`;
 const BL_GRASS = '<svg viewBox="0 0 100 100"><rect x="10" y="10" width="80" height="80" rx="14" fill="#1E9A3C"/><rect x="16" y="16" width="68" height="68" rx="10" fill="none" stroke="#5FD178" stroke-width="3" stroke-dasharray="6 5"/><rect x="18" y="18" width="30" height="10" rx="5" fill="#fff" opacity=".25"/></svg>';
 const BL_GLASS = '<svg viewBox="0 0 100 100"><rect x="10" y="10" width="80" height="80" rx="14" fill="#CFEFFF"/><rect x="10" y="10" width="80" height="80" rx="14" fill="none" stroke="#fff" stroke-width="6"/><path d="M24 58L58 24M34 72L72 34" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".9"/><rect x="10" y="10" width="80" height="80" rx="14" fill="none" stroke="#7FC4EA" stroke-width="2"/></svg>';
-const BL_ICON = { box: () => blBox(1), chain: () => blChain(1), grass: () => BL_GRASS, ice: () => BL_GLASS };
+const BL_JAM = '<svg viewBox="0 0 100 100"><path d="M14 20Q20 8 50 10Q82 8 88 22Q96 46 88 74Q92 90 76 90Q70 98 62 90Q50 94 36 90Q22 96 16 84Q4 60 12 40Q6 28 14 20Z" fill="#C8175A"/><path d="M22 22Q40 14 66 18" stroke="#FF8FBD" stroke-width="6" stroke-linecap="round" fill="none"/><circle cx="74" cy="30" r="4" fill="#FF8FBD"/></svg>';
+const BL_BUBBLE = '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="rgba(200,235,255,.18)"/><circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,.95)" stroke-width="3"/><path d="M14 62A38 38 0 0 0 52 88" stroke="#FF9AD8" stroke-width="4" fill="none" opacity=".75" stroke-linecap="round"/><path d="M86 40A38 38 0 0 0 66 14" stroke="#8FE3FF" stroke-width="4" fill="none" opacity=".75" stroke-linecap="round"/><ellipse cx="32" cy="26" rx="12" ry="6" fill="#fff" opacity=".85" transform="rotate(-35 32 26)"/><circle cx="72" cy="74" r="3.5" fill="#fff" opacity=".8"/></svg>';
+const blChest = (hp) => `<svg viewBox="0 0 200 200"><rect x="8" y="20" width="184" height="172" rx="26" fill="#2A1F5C" opacity=".2"/><rect x="8" y="10" width="184" height="172" rx="26" fill="#B8743A"/><rect x="8" y="10" width="184" height="70" rx="26" fill="#D58E4C"/><rect x="8" y="72" width="184" height="12" fill="#8E5422"/>
+<rect x="22" y="10" width="18" height="172" fill="#FFC93A"/><rect x="160" y="10" width="18" height="172" fill="#FFC93A"/><rect x="26" y="10" width="6" height="172" fill="#FFF0A8" opacity=".7"/><rect x="164" y="10" width="6" height="172" fill="#FFF0A8" opacity=".7"/>
+<rect x="76" y="62" width="48" height="46" rx="10" fill="url(#blxaGo)"/><circle cx="100" cy="82" r="7" fill="#7A4A00"/><rect x="97" y="84" width="6" height="12" rx="2" fill="#7A4A00"/><path d="M30 26H170" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".35"/>
+<circle cx="100" cy="146" r="26" fill="#fff"/><text x="100" y="156" text-anchor="middle" font-size="30" font-weight="900" font-family="system-ui,-apple-system,sans-serif" fill="#7A3A10">${hp}</text></svg>`;
+const BL_CHEST_ICON = '<svg viewBox="0 0 100 100"><rect x="6" y="12" width="88" height="80" rx="14" fill="#B8743A"/><rect x="6" y="12" width="88" height="32" rx="14" fill="#D58E4C"/><rect x="6" y="40" width="88" height="7" fill="#8E5422"/><rect x="14" y="12" width="9" height="80" fill="#FFC93A"/><rect x="77" y="12" width="9" height="80" fill="#FFC93A"/><rect x="38" y="32" width="24" height="24" rx="5" fill="#FFC93A"/><circle cx="50" cy="43" r="4" fill="#7A4A00"/></svg>';
+const BL_ICON = { box: () => blBox(1), chain: () => blChain(1), grass: () => BL_GRASS, ice: () => BL_GLASS, jam: () => BL_JAM, bubble: () => `<svg viewBox="0 0 100 100"><g transform="translate(16 16) scale(.68)">${blArt(2).replace(/<\/?svg[^>]*>/g, '')}</g></svg>`.replace('</svg>', BL_BUBBLE.replace(/<\/?svg[^>]*>/g, '') + '</svg>'), big: () => BL_CHEST_ICON, drop: () => blArt(-2) };
+// boosters: in-level (hammer, glove, shuffle) and pre-level (start with a rocket, bomb or disco ball)
+const BL_BOOST_ART = {
+  hammer: '<svg viewBox="0 0 100 100"><path d="M30 86L62 46" stroke="#8E5422" stroke-width="11" stroke-linecap="round"/><path d="M30 86L62 46" stroke="#C98A4E" stroke-width="5" stroke-linecap="round"/><rect x="40" y="14" width="50" height="30" rx="9" transform="rotate(38 65 29)" fill="#E0457E"/><rect x="44" y="16" width="20" height="10" rx="5" transform="rotate(38 65 29)" fill="#fff" opacity=".45"/></svg>',
+  glove: '<svg viewBox="0 0 100 100"><path d="M30 88V52C22 50 16 42 20 36C24 30 32 34 36 40V18C36 10 48 10 48 18V40V14C48 6 60 6 60 14V40V18C60 10 72 10 72 18V42V28C72 20 84 20 84 28V60C84 76 74 88 60 88Z" fill="#fff" stroke="#C9C2E8" stroke-width="3" stroke-linejoin="round"/><path d="M30 80H84" stroke="#E0457E" stroke-width="8"/></svg>',
+  shuffle: '<svg viewBox="0 0 100 100"><path d="M22 54A28 28 0 0 1 72 30" stroke="#18A086" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M62 16L80 30L60 40Z" fill="#18A086"/><path d="M78 46A28 28 0 0 1 28 70" stroke="#E0457E" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M38 84L20 70L40 60Z" fill="#E0457E"/></svg>',
+};
+const BL_BOOST_NAME = { hammer: 'Hammer', glove: 'Glove', shuffle: 'Shuffle', rocket: 'Rocket', bomb: 'Bomb', rain: 'Disco ball' };
+const blBoosts = () => { S.blBoost = S.blBoost || { hammer: 3, glove: 3, shuffle: 2, rocket: 2, bomb: 2, rain: 1 }; return S.blBoost; };
 const BL_INTRO = {
   box: ['box', 'Cushions', 'Match pieces <b>next to</b> a cushion to knock it off the board.'],
   carpet: ['grass', 'Carpet', 'Match on the carpet and it <b>spreads</b> to every piece in the match. Cover the whole floor.'],
@@ -2621,6 +2805,10 @@ const BL_INTRO = {
   chain2: ['chain', 'Double chains', 'Crossed chains need <b>two hits</b> to break.'],
   box3: ['box', 'Royal cushions', 'The purple ones take <b>three hits</b>.'],
   glass2: ['ice', 'Thick glass', 'Frosted glass needs <b>two hits</b>.'],
+  drop: ['drop', 'Bring them down', 'Toys can\'t be matched or blasted. Clear the pieces <b>under</b> them until they reach the <b>bottom</b> of the board.'],
+  bubble: ['bubble', 'Bubbles', 'A piece in a bubble can\'t move. Match <b>next to</b> it, or blast it, to pop the bubble.'],
+  jam: ['jam', 'Jam', 'Match on top of jam to clear it. Careful — if a move clears <b>no jam</b>, it <b>spreads</b>.'],
+  big: ['big', 'Toy chests', 'Big chests take <b>many hits</b> — the number shows how many. Match next to them or blast them.'],
 };
 const BL_CACHE = {};
 const blWait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -2634,7 +2822,7 @@ function mountBL(stage, controls, P, api, ctx) {
   const T = (ms) => Math.round(ms * fast);
   // ---------- DOM ----------
   const wrap = $('div', 'bl-wrap'), hud = $('div', 'bl-hud');
-  const movesEl = $('div', 'bl-moves'), goalsEl = $('div', 'bl-goals'), scoreEl = $('div', 'bl-score', 'Score<b>0</b>');
+  const movesEl = $('div', 'bl-moves'), goalsEl = $('div', 'bl-goals'), scoreEl = $('div', 'bl-score', 'Score<b>0</b><i class="bl-cmb"></i>');
   hud.append(movesEl, goalsEl, scoreEl);
   if (spec.hard) { hud.classList.add(spec.hard > 1 ? 'super' : 'hard'); hud.appendChild($('div', 'bl-tag', spec.hard > 1 ? 'Super hard level' : 'Hard level')); }
   const scene = $('div', 'bl-scene'), board = $('div', 'bl-board');
@@ -2642,9 +2830,11 @@ function mountBL(stage, controls, P, api, ctx) {
   board.append(frame, tiles, obs, pcs, chL, fxL);
   const banner = $('div', 'bl-banner');
   scene.append(board, banner);
-  const help = $('div', 'bl-help', 'Swipe to swap · <b>4</b> in a row → rocket · <b>square</b> → plane · <b>L/T</b> → bomb · <b>5</b> → rainbow ball · tap a power-up to fire it');
-  wrap.append(hud, scene, help);
+  const bar = $('div', 'bl-bar'), help = $('div', 'bl-help');
+  wrap.append(hud, scene, bar, help);
   wrap.style.cssText = blThemeVars(bc.blTheme);
+  const paintBtn = $('button', 'bl-paint', '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c1.4 0 2-1 2-2 0-.6-.3-1-.6-1.4-.3-.4-.5-.8-.5-1.3 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.5 17 3 12 3Z" fill="currentColor"/><circle cx="7.5" cy="11" r="1.6" fill="#FF6FB5"/><circle cx="10.5" cy="7" r="1.6" fill="#FFC21A"/><circle cx="15" cy="7.5" r="1.6" fill="#3CC64A"/><circle cx="17" cy="11.5" r="1.6" fill="#2F7BEB"/></svg>');
+  paintBtn.setAttribute('aria-label', 'Colours and pieces'); hud.appendChild(paintBtn);
   stage.appendChild(wrap);
   // goals
   const disp = st.goals.map((g) => g.left);
@@ -2683,7 +2873,7 @@ function mountBL(stage, controls, P, api, ctx) {
     const t = tileEls[i]; if (!t) return; const [r, c] = rcOf(i);
     if (gShown[i]) {
       t.classList.add('grass');
-      t.style.cssText = `left:${c * cs}px;top:${r * cs}px;width:${cs}px;height:${cs}px`;
+      t.style.cssText = `left:${c * cs}px;top:${r * cs}px;width:${cs + (c < W - 1 && isG(i + 1) ? 1 : 0)}px;height:${cs + (r < H - 1 && isG(i + W) ? 1 : 0)}px`; // overlap a neighbour by 1px: no hairline seams
       const up = r > 0 && isG(i - W), dn = r < H - 1 && isG(i + W), lf = c > 0 && isG(i - 1), rt = c < W - 1 && isG(i + 1), Rr = Math.round(cs * 0.2);
       t.style.borderRadius = `${up || lf ? 0 : Rr}px ${up || rt ? 0 : Rr}px ${dn || rt ? 0 : Rr}px ${dn || lf ? 0 : Rr}px`;
     } else { t.classList.remove('grass'); t.style.cssText = `left:${c * cs + 1.5}px;top:${r * cs + 1.5}px;width:${cs - 3}px;height:${cs - 3}px`; }
@@ -2692,7 +2882,7 @@ function mountBL(stage, controls, P, api, ctx) {
   function layout() {
     cs = Math.max(30, Math.floor(Math.min(wrap.clientWidth - 24, 420) / W));
     board.style.width = W * cs + 'px'; board.style.height = H * cs + 'px';
-    frame.innerHTML = ''; tiles.innerHTML = ''; obs.innerHTML = ''; chL.innerHTML = ''; tileEls.length = 0; boxEls.clear(); chainEls.clear(); iceEls.clear();
+    frame.innerHTML = ''; tiles.innerHTML = ''; obs.innerHTML = ''; chL.innerHTML = ''; tileEls.length = 0; boxEls.clear(); chainEls.clear(); iceEls.clear(); jamEls.clear(); bubEls.clear(); bigEls.clear();
     gShown = st.grass.slice();
     const outer = [], inner = [];
     for (let i = 0; i < W * H; i++) {
@@ -2705,14 +2895,24 @@ function mountBL(stage, controls, P, api, ctx) {
       const f2 = $('i'); f2.style.cssText = `left:${c * cs - 1}px;top:${r * cs - 1}px;width:${cs + 2}px;height:${cs + 2}px;border-radius:${rad(8)}`; inner.push(f2);
       const t = $('div', 'bl-tile'); tiles.appendChild(t); tileEls[i] = t;
       if (st.ice[i]) putIce(i);
+      if (st.jam[i]) putJam(i);
       if (st.box[i]) putBox(i);
       if (st.chain[i]) putChain(i);
+      if (st.bub[i]) putBub(i);
     }
     const fo = $('div', 'o'), fn = $('div', 'n'); fo.append(...outer); fn.append(...inner); frame.append(fo, fn);
     for (let i = 0; i < W * H; i++) paintTile(i);
+    putChests();
     syncAll(); sizeCv();
   }
   function putIce(i) { const [x, y] = xy(i); const el = $('div', 'bl-ice' + (st.ice[i] > 1 ? ' l2' : '')); el.style.cssText = `left:${x + 2}px;top:${y + 2}px;width:${cs - 4}px;height:${cs - 4}px`; tiles.appendChild(el); iceEls.set(i, el); }
+  const jamEls = new Map(), bubEls = new Map(), bigEls = new Map();
+  function putJam(i) { const [x, y] = xy(i); const el = $('div', 'bl-jam', BL_JAM); el.style.cssText = `left:${x - 1}px;top:${y - 1}px;width:${cs + 2}px;height:${cs + 2}px`; tiles.appendChild(el); jamEls.set(i, el); return el; }
+  function putBub(i) { const [x, y] = xy(i); const el = $('div', 'bl-bub', BL_BUBBLE); el.style.cssText = `left:${x}px;top:${y}px;width:${cs}px;height:${cs}px`; chL.appendChild(el); bubEls.set(i, el); }
+  function putChests() {
+    const firsts = new Map(); st.bigId.forEach((id, i) => { if (id && !firsts.has(id)) firsts.set(id, i); });
+    for (const [id, i] of firsts) { const [x, y] = xy(i); const el = $('div', 'bl-big', blChest(st.bigHp[id])); el.style.cssText = `left:${x + 2}px;top:${y + 2}px;width:${cs * 2 - 4}px;height:${cs * 2 - 4}px`; obs.appendChild(el); bigEls.set(id, el); }
+  }
   function putBox(i) { const [x, y] = xy(i); const el = $('div', 'bl-box', blBox(st.box[i])); el.style.cssText = `left:${x + 1}px;top:${y + 1}px;width:${cs - 2}px;height:${cs - 2}px`; obs.appendChild(el); boxEls.set(i, el); }
   function putChain(i) { const [x, y] = xy(i); const el = $('div', 'bl-chain', blChain(st.chain[i])); el.style.cssText = `left:${x}px;top:${y}px;width:${cs}px;height:${cs}px`; chL.appendChild(el); chainEls.set(i, el); }
   function syncAll() { // safety net: make the DOM match the state exactly
@@ -2822,7 +3022,7 @@ function mountBL(stage, controls, P, api, ctx) {
   const cellFlash = (i) => { const [x, y] = pxy(i); add({ x, y, vx: 0, vy: 0, g: 0, drag: 0, life: 0.3, age: 0, size: cs * 0.44, color: '#fff', kind: 'cell', rot: 0, vr: 0, tw: 0 }); };
   function particles(i, k, n = 6) { // a normal piece pops: flash, shards, a faint dotted ring
     const [x, y] = pxy(i);
-    shatter(x, y, BL_COLORS[k] || '#fff', BL_LIGHT[k], n); dring(x, y);
+    shatter(x, y, BL_COLORS[k] || '#fff', BL_LIGHT[k], n); // (no ring: it read as a white cell border on carpet)
     if (n >= 5) burst(x, y, { n: 2, colors: ['#FFFFFF', '#FFF6C8'], min: 20, max: 80, g: 40, life: 0.4, size: 5 });
   }
   function sprite(sym, i, size = 1) { const el = $('div', 'bl-sprite', blArt(0, sym)); const [x, y] = center(i); el.style.cssText = `left:${x - (cs * size) / 2}px;top:${y - (cs * size) / 2}px;width:${cs * size}px;height:${cs * size}px`; fxL.appendChild(el); return el; }
@@ -2966,6 +3166,23 @@ function mountBL(stage, controls, P, api, ctx) {
           else { chainEls.delete(c.i); el.classList.add('gone'); setTimeout(() => el.remove(), 320); dec(goalIdx('chain')); }
         }, d);
       }
+      for (const ji of e.jam || []) {
+        const el = jamEls.get(ji); if (!el) continue; const d = delayOf(ji); maxD = Math.max(maxD, d + T(130));
+        setTimeout(() => { jamEls.delete(ji); const [x, y] = pxy(ji); shatter(x, y, '#C8175A', '#FF8FBD', 6); el.classList.add('gone'); setTimeout(() => el.remove(), 320); dec(goalIdx('jam')); }, d);
+      }
+      for (const b of e.bub || []) {
+        const el = bubEls.get(b.i); if (!el) continue; const d = delayOf(b.i); maxD = Math.max(maxD, d + T(130));
+        setTimeout(() => { bubEls.delete(b.i); const [x, y] = pxy(b.i); dring(x, y, 'rgba(255,255,255,.9)'); burst(x, y, { n: 10, colors: ['#FFFFFF', '#BFEFFF', '#FFC6EC'], kinds: ['dot'], min: 60, max: 200, g: 60, life: 0.4, size: 5 }); el.classList.add('popb'); setTimeout(() => el.remove(), 220); dec(goalIdx('bubble')); }, d);
+      }
+      for (const b of e.big || []) {
+        const el = bigEls.get(b.id); if (!el) continue; const d = Math.min(...b.cells.map(delayOf)); maxD = Math.max(maxD, d + T(130));
+        setTimeout(() => {
+          const cx = b.cells.reduce((a, j) => a + pxy(j)[0], 0) / 4, cy = b.cells.reduce((a, j) => a + pxy(j)[1], 0) / 4;
+          shatter(cx, cy, '#B8743A', '#FFC93A', b.hp ? 4 : 16);
+          if (b.hp > 0) { el.innerHTML = blChest(b.hp); el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); }
+          else { bigEls.delete(b.id); burst(cx, cy, { n: 30, colors: GOLD, kinds: ['star', 'dot'], min: 120, max: 420, g: 500, life: 0.7, size: 7 }); el.classList.add('gone'); setTimeout(() => el.remove(), 320); dec(goalIdx('big')); }
+        }, d);
+      }
       for (const c of e.ice || []) {
         const el = iceEls.get(c.i); if (!el) continue; const d = delayOf(c.i); maxD = Math.max(maxD, d + T(130));
         setTimeout(() => {
@@ -2984,7 +3201,7 @@ function mountBL(stage, controls, P, api, ctx) {
         }, d);
       }
       srcs = [];
-      if (e.items.length && fell) { chainN++; if (chainN >= 2) words(`Combo ×${chainN}`); } // cascades after pieces fell
+      if (e.items.length && fell) { chainN++; if (chainN >= 2) { words(`Combo ×${chainN}`); const cb = scoreEl.querySelector('.bl-cmb'); cb.textContent = `Combo ×${chainN} · points ×${1 + (chainN - 1) * 0.5}`; cb.classList.remove('on'); void cb.offsetWidth; cb.classList.add('on'); } } // cascades after pieces fell
       if (maxD) await blWait(maxD);
     },
     async fx(e) {
@@ -3080,6 +3297,20 @@ function mountBL(stage, controls, P, api, ctx) {
       }
       await blWait(maxD * 0.88);
     },
+    async collect(e) { // toys reached the bottom: they hop out and fly to the goal
+      for (const it of e.items) {
+        const el = els.get(it.id); if (!el) continue; els.delete(it.id);
+        const [x, y] = pxy(it.i); burst(x, y, { n: 18, colors: GOLD, min: 80, max: 300, g: 300, life: 0.6, size: 7 });
+        el.firstElementChild.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.3) translateY(-12%)' }, { transform: 'scale(0)', opacity: 0 }], { duration: T(360), easing: 'ease-in', fill: 'forwards' });
+        setTimeout(() => el.remove(), T(360)); flyToGoal(it.i, -2, goalIdx('drop'));
+      }
+      await blWait(T(320));
+    },
+    async spread(e) { // no jam cleared this move: it creeps onto a neighbour
+      const el = putJam(e.i); el.animate([{ transform: 'scale(.2)', opacity: 0.3 }, { transform: 'scale(1.12)', opacity: 1, offset: 0.6 }, { transform: 'none' }], { duration: T(380), easing: 'ease-out' });
+      const j = goalIdx('jam'); if (j >= 0) { disp[j]++; setGoal(j, true); }
+      await blWait(T(300));
+    },
     async shuffle(e) {
       showBanner('Shuffle!', true); await blWait(T(500));
       for (const x of e.to) { let el = els.get(x.id); if (!el) el = mkPiece({ id: x.id, k: x.k, sp: 0 }, x.i); const fromT = el.style.transform; el.style.transition = 'none'; el.animate([{ transform: fromT }, { transform: tr(x.i) }], { duration: T(460), easing: 'cubic-bezier(.4,0,.2,1)' }); el.style.transform = tr(x.i); }
@@ -3112,19 +3343,28 @@ function mountBL(stage, controls, P, api, ctx) {
   const armHint = () => { clearHint(); hintT = setTimeout(() => { if (busy || api.done || !wrap.isConnected) return; const h = M3.hint(st); if (!h) return; hinted = h.map((i) => els.get(st.p[i].id)).filter(Boolean); hinted.forEach((el) => el.classList.add('hint')); }, 6000); };
   const cellAt = (e) => { const r = board.getBoundingClientRect(); const c = Math.floor((e.clientX - r.left) / cs), rr = Math.floor((e.clientY - r.top) / cs); if (c < 0 || rr < 0 || c >= W || rr >= H) return -1; const i = rr * W + c; return st.mask[i] ? i : -1; };
   const adjacent = (a, b) => { const [ra, ca] = rcOf(a), [rb, cb] = rcOf(b); return Math.abs(ra - rb) + Math.abs(ca - cb) === 1; };
-  board.onpointerdown = (e) => { if (busy || api.done) return; const i = cellAt(e); if (i < 0) return; down = { i, x: e.clientX, y: e.clientY, moved: false }; try { board.setPointerCapture(e.pointerId); } catch (err) {} clearHint(); };
+  const shakeHeld = (i) => { const el = chainEls.get(i) || bubEls.get(i) || boxEls.get(i); if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } };
+  board.onpointerdown = (e) => {
+    if (busy || api.done) return; const i = cellAt(e); if (i < 0) return;
+    if (mode === 'hammer') { setMode(null); doHammer(i); return; }
+    down = { i, x: e.clientX, y: e.clientY, moved: false }; try { board.setPointerCapture(e.pointerId); } catch (err) {} clearHint();
+  };
   board.onpointermove = (e) => {
     if (!down || down.moved || busy) return;
     const dx = e.clientX - down.x, dy = e.clientY - down.y; if (Math.max(Math.abs(dx), Math.abs(dy)) < cs * 0.3) return;
     down.moved = true; const a = down.i, [r, c] = rcOf(a); let b = -1;
     if (Math.abs(dx) > Math.abs(dy)) { if (dx > 0 && c < W - 1) b = a + 1; if (dx < 0 && c > 0) b = a - 1; } else { if (dy > 0 && r < H - 1) b = a + W; if (dy < 0 && r > 0) b = a - W; }
-    if (b < 0 || !st.mask[b]) return; setSel(null); doSwap(a, b);
+    if (b < 0 || !st.mask[b]) return; setSel(null);
+    if (!M3.movable(st, a) || !M3.movable(st, b)) { shakeHeld(M3.movable(st, a) ? b : a); return; } // chained, bubbled, cushions: nothing moves
+    if (mode === 'glove') { setMode(null); doGlove(a, b); } else doSwap(a, b);
   };
   board.onpointerup = () => { if (!down) return; const d = down; down = null; if (!d.moved && !busy) tapCell(d.i); };
   board.onpointercancel = () => { down = null; };
   function tapCell(i) {
     const q = st.p[i];
-    if (sel != null && sel !== i && adjacent(sel, i)) { const a = sel; setSel(null); doSwap(a, i); return; }
+    if (!M3.movable(st, i)) { shakeHeld(i); setSel(null); return; }
+    if (sel != null && sel !== i && adjacent(sel, i)) { const a = sel; setSel(null); if (mode === 'glove') { setMode(null); doGlove(a, i); } else doSwap(a, i); return; }
+    if (mode === 'glove') { setSel(sel === i ? null : i); return; }
     if (q && q.sp && M3.movable(st, i)) { setSel(null); doTap(i); return; } // power-ups fire on a single tap
     if (sel === i) { setSel(null); return; }
     setSel(q && M3.movable(st, i) ? i : null);
@@ -3154,6 +3394,54 @@ function mountBL(stage, controls, P, api, ctx) {
     }
     await play(r.ev); await after();
   }
+  // ---------- boosters ----------
+  let mode = null;
+  const inv = blBoosts();
+  const bBtns = {};
+  const HELP = { hammer: 'Tap any piece or blocker to smash it', glove: 'Swap any two neighbours — no match needed' };
+  function setMode(m) { mode = m; for (const [k, b] of Object.entries(bBtns)) b.classList.toggle('on', k === m); help.textContent = m ? HELP[m] : ''; help.classList.toggle('on', !!m); setSel(null); }
+  function paintBar() { for (const [k, b] of Object.entries(bBtns)) { b.querySelector('b').textContent = inv[k] || '+'; b.classList.toggle('empty', !inv[k]); } }
+  for (const k of ['hammer', 'glove', 'shuffle']) {
+    const b = $('button', 'bl-boost', `${BL_BOOST_ART[k]}<b></b><span>${BL_BOOST_NAME[k]}</span>`);
+    b.onclick = () => {
+      if (busy || api.done) return;
+      if (!inv[k]) { help.textContent = `No ${BL_BOOST_NAME[k].toLowerCase()}s left — you win more by finishing levels`; help.classList.add('on'); setTimeout(() => { if (!mode) { help.textContent = ''; help.classList.remove('on'); } }, 2200); return; }
+      if (k === 'shuffle') { setMode(null); doMix(); return; }
+      setMode(mode === k ? null : k);
+    };
+    bBtns[k] = b; bar.appendChild(b);
+  }
+  paintBar();
+  const useBoost = (k) => { inv[k]--; store.save(); paintBar(); };
+  async function doHammer(i) {
+    if (busy || api.done) return;
+    const r = M3.hammer(st, i); if (!r.ok) { shakeHeld(i); return; }
+    busy = true; clearHint(); useBoost('hammer');
+    const [x, y] = pxy(i);
+    const h = $('div', 'bl-sprite', BL_BOOST_ART.hammer); h.style.cssText = `left:${x - cs * 0.2}px;top:${y - cs * 1.1}px;width:${cs * 1.1}px;height:${cs * 1.1}px;transform-origin:20% 90%`; fxL.appendChild(h);
+    await h.animate([{ transform: 'rotate(-50deg)', opacity: 0 }, { transform: 'rotate(-60deg)', opacity: 1, offset: 0.4 }, { transform: 'rotate(15deg)', opacity: 1 }], { duration: T(320), easing: 'cubic-bezier(.5,0,.8,.4)' }).finished.catch(() => {});
+    h.remove(); quake(false); burst(x, y, { n: 16, colors: GOLD, min: 80, max: 300, g: 400, life: 0.5, size: 7 });
+    await play(r.ev); await after();
+  }
+  async function doGlove(a, b) {
+    if (busy || api.done) return;
+    const r = M3.swap(st, a, b, true); if (!r.ok) return;
+    busy = true; clearHint(); useBoost('glove');
+    await play(r.ev); await after();
+  }
+  async function doMix() {
+    if (busy || api.done) return;
+    const r = M3.mix(st); if (!r.ok) return;
+    busy = true; clearHint(); useBoost('shuffle');
+    await play(r.ev); await after();
+  }
+  // pre-level boosters chosen in Bloom's menu
+  async function applyPre() {
+    const pick = Object.entries(bc.blPre || {}).filter(([k, on]) => on && inv[k] > 0).map(([k]) => k);
+    if (!pick.length) return;
+    pick.forEach((k) => inv[k]--); store.save();
+    busy = true; await play(M3.preBoost(st, pick)); busy = false; api.save(); armHint();
+  }
   async function after() {
     if (!wrap.isConnected || api.done) return;
     syncAll(); st.goals.forEach((g, j) => { if (g.t !== 'col' || disp[j] < g.left) { disp[j] = g.left; setGoal(j); } }); paintScore(); // collected pieces still flying finish the count
@@ -3166,12 +3454,35 @@ function mountBL(stage, controls, P, api, ctx) {
         fast = 0.55; await play(M3.finale(st)); fast = 1;
         syncAll(); paintMoves(); paintScore(); await blWait(700);
       }
-      if (!api.done) api.win({ m: st.score, s: stars, title: ['', 'Level complete', 'Great job!', 'Perfect!'][stars] });
+      // a booster for every level won; hard levels also give a power-up to start with
+      const pickOf = (a) => a[Math.floor(Math.random() * a.length)], IN = ['hammer', 'glove', 'shuffle'], PRE = ['rocket', 'bomb', 'rain'];
+      const gain = [pickOf(IN)]; // like the Scapes games, harder levels pay more
+      if (spec.hard) gain.push(pickOf(PRE));
+      if (spec.hard > 1) gain.push(pickOf(IN));
+      const earn = !S.duo && !getRes('bl', P.t, P.n, 0); // first win of a level only — replays don't farm boosters
+      if (earn) { gain.forEach((k) => (inv[k] = (inv[k] || 0) + 1)); store.save(); }
+      if (!api.done) api.win({ m: st.score, s: stars, title: ['', 'Level complete', 'Great job!', 'Perfect!'][stars] + (earn ? ` · +1 ${gain.map((k) => BL_BOOST_NAME[k]).join(', +1 ')}` : '') });
       return;
     }
     if (s === 'lose') { paintMoves(); showBanner('Out of moves', 'bad'); await blWait(1200); hideBanner(); if (!api.done) api.fail('Out of moves', 'out of moves', st.score); return; }
     busy = false; armHint(); api.save();
   }
+  paintBtn.onclick = () => {
+    if (busy || scene.querySelector('.bl-card')) return;
+    const card = $('div', 'bl-card bl-pick');
+    const draw = () => {
+      card.innerHTML = '';
+      const box = $('div', '', '<h3>Look</h3>');
+      const sw = $('div', 'bl-sw');
+      for (const [id, t] of Object.entries(BL_THEMES)) { const b = $('button', (bc.blTheme || 'sunset') === id ? 'on' : '', `<i style="background:${t.bg}"><b style="background:${t.acc}"></b></i><span>${t.name}</span>`); b.onclick = (ev) => { ev.stopPropagation(); bc.blTheme = id; store.save(); wrap.style.cssText = blThemeVars(id); draw(); }; sw.appendChild(b); }
+      const ps = $('div', 'bl-pset');
+      for (const [id, nm] of [['home', 'Home'], ['garden', 'Garden']]) { const b = $('button', BL_SET === id ? 'on' : '', `<span class="bl-mini">${[0, 1, 2, 3].map((k) => blArt(k, 0, id)).join('')}</span>${nm}`); b.onclick = (ev) => { ev.stopPropagation(); bc.blSet = id; store.save(); BL_SET = id; [BL_COLORS, BL_LIGHT] = BL_PAL[id]; for (const el of els.values()) el.remove(); els.clear(); layout(); st.goals.forEach((g, j) => { goalEls[j].firstElementChild.outerHTML = g.t === 'col' ? blArt(g.k) : BL_ICON[g.t](); setGoal(j); }); draw(); }; ps.appendChild(b); }
+      const done = $('button', '', 'Done'); done.onclick = (ev) => { ev.stopPropagation(); card.classList.remove('on'); setTimeout(() => card.remove(), 260); };
+      box.append(sw, ps, done); card.appendChild(box);
+    };
+    draw(); card.onclick = (ev) => { if (ev.target === card) { card.classList.remove('on'); setTimeout(() => card.remove(), 260); } };
+    scene.appendChild(card); requestAnimationFrame(() => card.classList.add('on'));
+  };
   const onResize = () => { if (!wrap.isConnected) { window.removeEventListener('resize', onResize); return; } if (!busy) layout(); };
   window.addEventListener('resize', onResize);
   layout(); armHint();
@@ -3183,12 +3494,12 @@ function mountBL(stage, controls, P, api, ctx) {
     const art = ic ? `<div class="art">${(BL_INTRO_ART[spec.intro] || BL_ICON[ic])()}</div>` : `<div class="art six">${[0, 1, 2, 3, 4, 5].map((k) => blArt(k)).join('')}</div>`;
     const card = $('div', 'bl-card', `<div><div class="rib">New!</div>${art}<h3>${title}</h3><p>${text}</p><button>Let's go</button></div>`);
     scene.appendChild(card); requestAnimationFrame(() => card.classList.add('on'));
-    card.onclick = () => { card.onclick = null; card.classList.remove('on'); setTimeout(() => card.remove(), 260); busy = false; armHint(); };
+    card.onclick = () => { card.onclick = null; card.classList.remove('on'); setTimeout(() => card.remove(), 260); busy = false; armHint(); applyPre(); };
   }
   setTimeout(() => {
     if (resumed || api.done || !wrap.isConnected) return;
     if (spec.intro && BL_INTRO[spec.intro]) introCard();
-    else if (spec.hard) { showBanner(spec.hard > 1 ? 'Super hard level' : 'Hard level', 'bad'); setTimeout(hideBanner, 1400); }
+    else { if (spec.hard) { showBanner(spec.hard > 1 ? 'Super hard level' : 'Hard level', 'bad'); setTimeout(hideBanner, 1400); } applyPre(); }
   }, 300);
   api.persist(() => ({ st }), (d) => {
     resumed = true;

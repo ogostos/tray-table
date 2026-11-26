@@ -21,12 +21,25 @@ const M3 = (() => {
     [[0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9]],
     [[1, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [1, 9]],
   ];
+  // open boards: gaps and holes that pieces fall straight through (# = cell)
+  const GRIDS = [
+    ['########', '########', '.######.', '..####..', '..####..', '.######.', '########', '########'], // hourglass
+    ['###..###', '###..###', '###..###', '########', '########', '########', '########', '########'], // two towers
+    ['########', '########', '###..###', '###..###', '########', '########', '########', '########'], // hole in the middle
+    ['...##...', '..####..', '.######.', '########', '########', '.######.', '..####..', '...##...'], // diamond
+    ['..####..', '..####..', '########', '########', '########', '########', '..####..', '..####..'], // plus
+    ['########', '########', '########', '#.#..#.#', '########', '########', '########', '########'], // shelf with holes
+    ['########', '########', '########', '########', '########', '##.##.##', '#..##..#', '#..##..#'], // arches
+    ['##.##.##', '########', '########', '########', '########', '########', '########', '##.##.##'], // notched
+    ['.######.', '########', '########', '##.##.##', '##.##.##', '########', '########', '.######.'], // windows
+  ];
   // ---------- one endless level path: each level number decides its own difficulty and which elements appear ----------
   // when each element first shows up (the level gets a "New!" card)
-  const INTRO = { box: 4, carpet: 7, glass: 10, chain: 14, box2: 18, colors6: 21, chain2: 26, box3: 30, glass2: 34 };
+  const INTRO = { box: 4, carpet: 7, glass: 10, chain: 14, box2: 18, colors6: 21, drop: 23, chain2: 26, bubble: 29, box3: 31, jam: 33, glass2: 35, big: 37 };
   const INTRO_AT = new Set(Object.values(INTRO));
-  const isHard = (n) => n >= 10 && n % 5 === 0 && !INTRO_AT.has(n); // a level that introduces something new is never a hard one
-  const isSuper = (n) => isHard(n) && n % 25 === 0;
+  // like the Scapes games: a Hard level every few levels (every 4th from 12), a Super hard one every 10th from 20; a level that introduces something new is never hard
+  const isSuper = (n) => n >= 20 && n % 10 === 0 && !INTRO_AT.has(n);
+  const isHard = (n) => isSuper(n) || (n >= 12 && n % 4 === 0 && !INTRO_AT.has(n));
   function level(tier, num) {
     const n = Math.max(1, num);
     const g = { seed: hash(`bloom2|${n}`) | 0 };
@@ -34,29 +47,36 @@ const M3 = (() => {
     const has = (k) => n >= INTRO[k];
     const hard = isHard(n), sup = isSuper(n);
     // board shape: plain early on, shaped later, taller boards in the hard ones
-    let shape = SHAPES[0];
+    let shape = SHAPES[0], grid = null;
     if (n >= 8) shape = SHAPES[1 + RI(4)];
     if (n >= 20 && (hard || R() < 0.35)) shape = SHAPES[5 + RI(2)];
-    if (n <= 7) shape = SHAPES[n >= 5 && n % 2 ? 1 : 0];
-    const W = 8, H = Math.max(...shape.map(([, b]) => b));
+    if (n >= 9 && R() < Math.min(0.6, 0.25 + n / 100)) grid = GRIDS[RI(n < 16 ? 3 : GRIDS.length)]; // open boards, more of them later on
+    if (n <= 7) { shape = SHAPES[n >= 5 && n % 2 ? 1 : 0]; grid = null; }
+    const W = 8, H = grid ? grid.length : Math.max(...shape.map(([, b]) => b));
     const mask = Array(W * H).fill(0);
-    shape.forEach(([a, b], c) => { for (let r = a; r < b; r++) mask[r * W + c] = 1; });
+    if (grid) grid.forEach((row, r) => [...row].forEach((ch, c) => { if (ch === '#') mask[r * W + c] = 1; }));
+    else shape.forEach(([a, b], c) => { for (let r = a; r < b; r++) mask[r * W + c] = 1; });
     const ncol = n === INTRO.colors6 || (has('colors6') && (hard || sup || R() < Math.min(0.6, (n - 20) / 40))) ? 6 : 5;
-    const box = Array(W * H).fill(0), chain = Array(W * H).fill(0), grass = Array(W * H).fill(0), ice = Array(W * H).fill(0);
+    const box = Array(W * H).fill(0), chain = Array(W * H).fill(0), grass = Array(W * H).fill(0), ice = Array(W * H).fill(0), bub = Array(W * H).fill(0), jam = Array(W * H).fill(0), bigId = Array(W * H).fill(0), bigHp = {};
+    let drops = [], dropQ = 0;
+    const free = (i) => mask[i] && !box[i] && !chain[i] && !ice[i] && !bub[i] && !jam[i] && !bigId[i] && !grass[i];
     const mirror = (i) => { const r = Math.floor(i / W), c = i % W; return r * W + (W - 1 - c); };
     // which goals: the newest element is featured on its intro level
     const pool = ['col'];
     if (has('box')) pool.push('box'); if (has('carpet')) pool.push('grass'); if (has('glass')) pool.push('ice'); if (has('chain')) pool.push('chain');
+    if (has('drop')) pool.push('drop'); if (has('bubble')) pool.push('bubble'); if (has('jam')) pool.push('jam'); if (has('big')) pool.push('big');
     let kinds;
     const intro = Object.entries(INTRO).find(([, v]) => v === n);
     if (n <= 3) kinds = n === 3 ? ['col', 'col'] : ['col'];
-    else if (intro) kinds = [{ box: 'box', carpet: 'grass', glass: 'ice', chain: 'chain', box2: 'box', colors6: 'col', chain2: 'chain', box3: 'box', glass2: 'ice' }[intro[0]]];
+    else if (intro) kinds = [{ box: 'box', carpet: 'grass', glass: 'ice', chain: 'chain', box2: 'box', colors6: 'col', chain2: 'chain', box3: 'box', glass2: 'ice', drop: 'drop', bubble: 'bubble', jam: 'jam', big: 'big' }[intro[0]]];
     else {
       const nGoals = n < 12 ? 1 + (R() < 0.4 ? 1 : 0) : n < 30 ? 2 : 2 + (R() < 0.35 || sup ? 1 : 0);
       kinds = [];
       const opts = pool.slice();
       while (kinds.length < nGoals && opts.length) { const k = opts.splice(RI(opts.length), 1)[0]; kinds.push(k); }
     }
+    if (kinds.includes('grass') && kinds.includes('jam')) kinds.splice(kinds.indexOf('jam'), 1); // carpet and jam don't share a board
+    kinds.sort((a, b) => (b === 'big') - (a === 'big')); // big chests claim their space first
     const ramp = Math.min(1, n / 40); // 0 → 1 over the first 40 levels
     const goals = []; let colsUsed = [];
     // obstacles first (boxes, chains, glass) so collect goals know the board
@@ -68,49 +88,77 @@ const M3 = (() => {
         const band = 2 + RI(Math.max(1, H - 4)); // boxes come in a band or block, like the real thing
         for (let t = 0; placed < pairs && t < 300; t++) {
           const r = t < 120 ? Math.min(H - 1, band + RI(3)) : 2 + RI(H - 2), c = RI(W / 2), i = r * W + c, j = mirror(i);
-          if (!mask[i] || box[i] || !mask[j] || chain[i] || chain[j] || grass[i] || grass[j] || ice[i] || ice[j]) continue;
+          if (!free(i) || !free(j)) continue;
           const L = 1 + (maxL > 1 && R() < 0.35 + ramp * 0.3 ? RI(maxL) : 0); box[i] = L; box[j] = L; placed++;
         }
         goals.push({ t: 'box', n: placed * 2 });
       } else if (kind === 'chain') {
         const maxL = has('chain2') ? 2 : 1, cnt = 5 + Math.round(ramp * 6) + RI(3) + (hard ? 2 : 0);
         let placed = 0;
-        for (let t = 0; placed < cnt && t < 300; t++) { const i = W + RI(W * (H - 1)); if (!mask[i] || box[i] || chain[i]) continue; chain[i] = 1 + (maxL > 1 && R() < 0.4 ? 1 : 0); placed++; }
+        for (let t = 0; placed < cnt && t < 300; t++) { const i = W + RI(W * (H - 1)); if (!mask[i] || box[i] || chain[i] || bigId[i] || bub[i]) continue; chain[i] = 1 + (maxL > 1 && R() < 0.4 ? 1 : 0); placed++; }
         goals.push({ t: 'chain', n: placed });
       } else if (kind === 'ice') {
         const maxL = has('glass2') ? 2 : 1;
         // glass in a symmetric patch
         const r0 = 1 + RI(Math.max(1, H - 4)), h = 2 + RI(3), w = 2 + RI(2);
         let cnt = 0;
-        for (let r = r0; r < Math.min(H, r0 + h); r++) for (let c = 0; c < w; c++) for (const cc of [c, W - 1 - c]) { const i = r * W + cc; if (mask[i] && !box[i] && !ice[i]) { ice[i] = 1 + (maxL > 1 && R() < 0.45 ? 1 : 0); cnt++; } }
-        if (n >= 16 && R() < 0.5) for (let r = r0; r < Math.min(H, r0 + h); r++) for (const cc of [3, 4]) { const i = r * W + cc; if (mask[i] && !box[i] && !ice[i]) { ice[i] = 1; cnt++; } }
+        for (let r = r0; r < Math.min(H, r0 + h); r++) for (let c = 0; c < w; c++) for (const cc of [c, W - 1 - c]) { const i = r * W + cc; if (mask[i] && !box[i] && !ice[i] && !bigId[i] && !jam[i]) { ice[i] = 1 + (maxL > 1 && R() < 0.45 ? 1 : 0); cnt++; } }
+        if (n >= 16 && R() < 0.5) for (let r = r0; r < Math.min(H, r0 + h); r++) for (const cc of [3, 4]) { const i = r * W + cc; if (mask[i] && !box[i] && !ice[i] && !bigId[i] && !jam[i]) { ice[i] = 1; cnt++; } }
         goals.push({ t: 'ice', n: cnt });
       } else if (kind === 'grass') {
-        const cells = []; for (let i = 0; i < W * H; i++) if (mask[i] && !box[i]) cells.push(i);
+        const cells = []; for (let i = 0; i < W * H; i++) if (mask[i] && !box[i] && !bigId[i]) cells.push(i);
         const seeds = 1 + RI(2);
         for (let k = 0; k < seeds; k++) { const i = cells[RI(cells.length)]; grass[i] = 1; grass[mirror(i)] = 1; }
-        let left = 0; for (let i = 0; i < W * H; i++) if (mask[i] && !grass[i]) left++;
+        let left = 0; for (let i = 0; i < W * H; i++) if (mask[i] && !grass[i] && !bigId[i]) left++;
         goals.push({ t: 'grass', n: left });
+      } else if (kind === 'big') { // 2×2 toy chests that take many hits
+        const num = n >= 45 || hard ? 2 : 1, hp = 6 + Math.round(ramp * 5) + (hard ? 2 : 0);
+        const r0 = 2 + RI(Math.max(1, H - 6)), cols = num === 2 ? [1, W - 3] : [3];
+        let made = 0;
+        cols.forEach((c0) => { const cells = [r0 * W + c0, r0 * W + c0 + 1, (r0 + 1) * W + c0, (r0 + 1) * W + c0 + 1]; if (cells.every((i) => mask[i] && !box[i] && !bigId[i])) { made++; cells.forEach((i) => { bigId[i] = made; ice[i] = 0; chain[i] = 0; }); bigHp[made] = hp; } });
+        if (made) goals.push({ t: 'big', n: made });
+      } else if (kind === 'drop') { // toys that have to be brought down to the bottom
+        const cnt = 2 + (n > 40 ? 1 : 0) + (hard ? 1 : 0);
+        const cols = []; for (let c = 0; c < W; c++) for (let r = 0; r < H; r++) if (mask[r * W + c]) { if (!box[r * W + c] && !bigId[r * W + c]) cols.push(r * W + c); break; }
+        drops = [cols[RI(cols.length)]]; dropQ = cnt - 1;
+        goals.push({ t: 'drop', n: cnt });
+      } else if (kind === 'bubble') { // bubbles hold a piece in place until a match next to them pops them
+        const cnt = 6 + Math.round(ramp * 6) + RI(3) + (hard ? 2 : 0);
+        let placed = 0;
+        for (let t = 0; placed < cnt && t < 300; t++) { const i = W + RI(W * (H - 1)), j = mirror(i); if (!free(i) || !free(j)) continue; bub[i] = 1; placed++; if (j !== i && placed < cnt) { bub[j] = 1; placed++; } }
+        goals.push({ t: 'bubble', n: placed });
+      } else if (kind === 'jam') { // jam spreads every move you don't clear some of it
+        const r0 = 2 + RI(Math.max(1, H - 4)), c0 = RI(3);
+        let cnt = 0;
+        for (const [dr, dc] of [[0, 0], [0, 1], [1, 0], [1, 1], [-1, 0]].slice(0, 3 + RI(3))) { const i = (r0 + dr) * W + c0 + dc; for (const j of [i, mirror(i)]) if (r0 + dr < H && mask[j] && !box[j] && !bigId[j] && !ice[j] && !jam[j]) { jam[j] = 1; cnt++; } }
+        if (cnt) goals.push({ t: 'jam', n: cnt });
       }
     }
+    if (kinds.includes('drop')) for (let c = 0; c < W; c++) { let e = -1; for (let r = 0; r < H; r++) if (mask[r * W + c]) e = r * W + c; if (e >= 0) { if (box[e]) { box[e] = 0; } bub[e] = 0; chain[e] = 0; } }
     for (const kind of kinds.filter((k) => k === 'col')) {
       let k = RI(ncol); while (colsUsed.includes(k)) k = (k + 1) % ncol; colsUsed.push(k);
       const cnt = Math.round((n <= 3 ? 14 + n * 3 : 18 + ramp * 14) + RI(6) - (kinds.length > 1 ? 4 : 0) + (hard ? 4 : 0));
       goals.push({ t: 'col', k, n: cnt });
     }
-    const spec = { W, H, mask, box, chain, grass, ice, ncol, goals, moves: 99, seed: hash(`bloom2-play|${n}`) | 0, hard: hard ? (sup ? 2 : 1) : 0, intro: intro ? intro[0] : null, num: n };
+    const bg = goals.find((g) => g.t === 'box'); if (bg) bg.n = box.filter((x) => x > 0).length;
+    for (const [t, arr] of [['chain', chain], ['bubble', bub], ['ice', ice], ['jam', jam]]) { const g = goals.find((x) => x.t === t); if (g) g.n = t === 'chain' || t === 'bubble' || t === 'jam' ? arr.filter((x) => x > 0).length : arr.filter((x) => x > 0).length; }
+    for (let j = goals.length - 1; j >= 0; j--) if (goals[j].n <= 0) goals.splice(j, 1);
+    if (!goals.length) goals.push({ t: 'col', k: RI(ncol), n: 24 + Math.round(ramp * 10) });
+    const spec = { W, H, mask, box, chain, grass, ice, bub, jam, bigId, bigHp, drops, dropQ, ncol, goals, moves: 99, seed: hash(`bloom2-play|${n}`) | 0, hard: hard ? (sup ? 2 : 1) : 0, intro: intro ? intro[0] : null, num: n };
     // move limit: a fair robot plays it twice; early levels get a lot of slack, later ones (and hard ones) much less
     const used = [1, 2, 3].map((salt) => botPlay(spec, salt));
     const avg = (used[0] + used[1] + used[2]) / 3, worst = Math.max(...used);
     const base = (avg + worst) / 2; // lean towards the unlucky run, so a bad refill doesn't make it unwinnable
     const slack = (n <= 3 ? 1.9 : 1.6 - ramp * 0.34) + (intro ? 0.3 : 0); // 1.6 → 1.26; a new element gets extra room
     const extra = Math.max(1, Math.round(5 - ramp * 3));
-    spec.moves = Math.round(Math.max(12, Math.min(kinds.includes('grass') ? 52 : 45, base * slack * (sup ? 0.92 : hard ? 0.97 : 1) + extra)));
+    spec.moves = Math.round(Math.max(12, Math.min(kinds.includes('grass') || kinds.includes('big') ? 52 : 45, base * slack * (sup ? 0.74 : hard ? 0.84 : 1) + (hard ? 0 : extra))));
     return spec;
   }
   function botValue(st0, st) {
     let v = 0;
-    st.goals.forEach((g, j) => { v += (st0.goals[j].left - g.left) * (g.t === 'col' ? 1 : g.t === 'grass' ? 1.2 : g.t === 'ice' ? 1.6 : 3); });
+    st.goals.forEach((g, j) => { v += (st0.goals[j].left - g.left) * (g.t === 'col' ? 1 : g.t === 'grass' ? 1.2 : g.t === 'ice' || g.t === 'jam' ? 1.6 : g.t === 'bubble' ? 2 : g.t === 'drop' || g.t === 'big' ? 6 : 3); });
+    if (st.goals.some((g) => g.t === 'drop')) st.p.forEach((q, i) => { if (q && q.drop) v += Math.floor(i / st.W) * 0.35; });
+    if (st.goals.some((g) => g.t === 'big')) for (const id in st.bigHp) v += ((st0.bigHp[id] || 0) - st.bigHp[id]) * 0.6;
     return v + st.score / 400 + (won(st) ? 1000 : 0);
   }
   function botPlay(spec, salt) {
@@ -132,21 +180,27 @@ const M3 = (() => {
 
   // ---------- state ----------
   function init(spec) {
-    const st = { W: spec.W, H: spec.H, mask: spec.mask.slice(), box: spec.box.slice(), chain: spec.chain.slice(), grass: spec.grass.slice(), ice: (spec.ice || Array(spec.W * spec.H).fill(0)).slice(),
+    const Z = () => Array(spec.W * spec.H).fill(0);
+    const st = { W: spec.W, H: spec.H, mask: spec.mask.slice(), box: spec.box.slice(), chain: spec.chain.slice(), grass: spec.grass.slice(), ice: (spec.ice || Z()).slice(),
+      bub: (spec.bub || Z()).slice(), jam: (spec.jam || Z()).slice(), bigId: (spec.bigId || Z()).slice(), bigHp: { ...(spec.bigHp || {}) }, dropQ: spec.dropQ || 0, jamHit: false,
       ncol: spec.ncol, seed: spec.seed, nid: 1, moves: spec.moves, score: 0, p: Array(spec.W * spec.H).fill(null),
       goals: spec.goals.map((g) => ({ ...g, left: g.n })), hasGrass: spec.goals.some((g) => g.t === 'grass') };
+    st.exit = Array.from({ length: st.W }, (_, c) => { let e = -1; for (let r = 0; r < st.H; r++) if (st.mask[r * st.W + c]) e = r * st.W + c; return e; });
     fillFresh(st);
+    for (const i of spec.drops || []) st.p[i] = { id: st.nid++, k: -2, sp: 0, drop: 1 };
     return st;
   }
-  const clone = (st) => ({ ...st, mask: st.mask, box: st.box.slice(), chain: st.chain.slice(), grass: st.grass.slice(), ice: st.ice.slice(), p: st.p.map((q) => (q ? { ...q } : null)), goals: st.goals.map((g) => ({ ...g })) });
+  const clone = (st) => ({ ...st, mask: st.mask, box: st.box.slice(), chain: st.chain.slice(), grass: st.grass.slice(), ice: st.ice.slice(), bub: st.bub.slice(), jam: st.jam.slice(), bigId: st.bigId.slice(), bigHp: { ...st.bigHp }, p: st.p.map((q) => (q ? { ...q } : null)), goals: st.goals.map((g) => ({ ...g })) });
   const color = (st, i) => { const q = st.p[i]; return q && !q.sp ? q.k : -1; }; // power-ups are colourless: they never match
-  const movable = (st, i) => st.mask[i] && !st.box[i] && st.p[i] && !st.chain[i];
+  const solid = (st, i) => st.box[i] > 0 || st.bigId[i] > 0; // cells with no piece: cushions, chests
+  const held = (st, i) => st.chain[i] > 0 || st.bub[i] > 0; // a piece that can't move or fall
+  const movable = (st, i) => st.mask[i] && !solid(st, i) && st.p[i] && !held(st, i);
   function fillFresh(st) {
     const { W, H } = st;
     for (let tries = 0; tries < 50; tries++) {
       for (let i = 0; i < W * H; i++) {
         st.p[i] = null;
-        if (!st.mask[i] || st.box[i]) continue;
+        if (!st.mask[i] || solid(st, i)) continue;
         const r = Math.floor(i / W), c = i % W;
         const bad = new Set();
         if (c >= 2 && color(st, i - 1) >= 0 && color(st, i - 1) === color(st, i - 2)) bad.add(color(st, i - 1));
@@ -203,9 +257,9 @@ const M3 = (() => {
     else if (g.runs.find((x) => x.cells.length === 4)) { const x = g.runs.find((y) => y.cells.length === 4); sp = x.d === 'h' ? 'rh' : 'rv'; loc = x.cells[1]; }
     else if (g.squares.length) { sp = 'plane'; loc = g.squares[0].cells[0]; }
     if (!sp) return null;
-    const pref = prefer.find((i) => g.cells.has(i) && !st.chain[i]);
+    const pref = prefer.find((i) => g.cells.has(i) && !held(st, i));
     if (pref != null) loc = pref;
-    if (st.chain[loc]) { const alt = [...g.cells].find((i) => !st.chain[i]); if (alt == null) return null; loc = alt; }
+    if (held(st, loc)) { const alt = [...g.cells].find((i) => !held(st, i)); if (alt == null) return null; loc = alt; }
     const k = color(st, [...g.cells][0]);
     return { sp, loc, k };
   }
@@ -269,7 +323,7 @@ const M3 = (() => {
     return out;
   }
   function commonColor(st) {
-    const cnt = Array(st.ncol).fill(0); st.p.forEach((q) => { if (q && !q.sp) cnt[q.k]++; });
+    const cnt = Array(st.ncol).fill(0); st.p.forEach((q) => { if (q && !q.sp && q.k >= 0) cnt[q.k]++; });
     let best = 0; cnt.forEach((v, k) => { if (v > cnt[best]) best = k; }); return best;
   }
   function planeTarget(st, avoid) {
@@ -278,11 +332,14 @@ const M3 = (() => {
     for (let i = 0; i < W * H; i++) {
       if (!st.mask[i] || avoid.has(i)) continue;
       if (st.box[i] && want.some((g) => g.t === 'box')) tiers[0].push(i);
+      else if (st.bigId[i] && want.some((g) => g.t === 'big')) tiers[0].push(i);
+      else if (st.bub[i] && want.some((g) => g.t === 'bubble')) tiers[0].push(i);
+      else if (st.jam[i] && st.p[i] && want.some((g) => g.t === 'jam')) tiers[0].push(i);
       else if (st.chain[i] && want.some((g) => g.t === 'chain')) tiers[0].push(i);
       else if (st.ice[i] && st.p[i] && want.some((g) => g.t === 'ice')) tiers[0].push(i);
       else if (st.hasGrass && !st.grass[i] && want.some((g) => g.t === 'grass')) tiers[1].push(i);
       else if (st.p[i] && !st.p[i].sp && want.some((g) => g.t === 'col' && g.k === st.p[i].k)) tiers[2].push(i);
-      else if (st.p[i] || st.box[i]) tiers[3].push(i);
+      else if ((st.p[i] && !st.p[i].drop) || solid(st, i)) tiers[3].push(i);
     }
     const t = tiers.find((x) => x.length); return t ? t[ri(st, t.length)] : null;
   }
@@ -295,6 +352,7 @@ const M3 = (() => {
     for (;;) {
       if (wave) { depth++; blastWaves(st, ev, wave, depth); wave = null; }
       gravity(st, ev);
+      while (collect(st, ev)) gravity(st, ev);
       const groups = findGroups(st);
       if (!groups.length) break;
       const creates = [], hits = [], match = new Set();
@@ -315,9 +373,9 @@ const M3 = (() => {
     let hits = wave.hits, first = true;
     const seen = new Set();
     while (hits.length) {
-      const ce = { t: 'clear', items: [], box: [], chain: [], grass: [], col: [], ice: [] };
+      const ce = { t: 'clear', items: [], box: [], chain: [], grass: [], col: [], ice: [], jam: [], bub: [], big: [] };
       const trig = [];
-      const boxHit = new Set();
+      const boxHit = new Set(); // cushions, chests (by id) and bubbles are hit at most once per wave
       for (const { i, g } of hits) {
         if (g && st.hasGrass && st.mask[i] && !st.grass[i]) { st.grass[i] = 1; ce.grass.push(i); prog(st, 'grass'); st.score += 15; }
         if (seen.has(i)) continue; seen.add(i);
@@ -329,14 +387,17 @@ const M3 = (() => {
           const r = Math.floor(i / W), c = i % W;
           for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
             const rr = r + dr, cc = c + dc; if (rr < 0 || cc < 0 || rr >= H || cc >= W) continue;
-            const j = rr * W + cc; if (st.box[j] && !boxHit.has(j) && !wave.match.has(j)) { boxHit.add(j); damageBox(st, j, ce); }
+            const j = rr * W + cc; if (wave.match.has(j)) continue;
+            if (st.box[j] && !boxHit.has(j)) { boxHit.add(j); damageBox(st, j, ce); }
+            else if (st.bigId[j] && !boxHit.has('b' + st.bigId[j])) { boxHit.add('b' + st.bigId[j]); damageBig(st, st.bigId[j], ce); }
+            else if (st.bub[j] && st.p[j] && !boxHit.has(j)) { boxHit.add(j); popBubble(st, j, ce); }
           }
         }
       }
       ev.push(ce);
       if (first && wave.creates) {
         for (const x of wave.creates) {
-          if (st.p[x.loc] || st.box[x.loc]) continue;
+          if (st.p[x.loc] || solid(st, x.loc)) continue;
           const q = { id: st.nid++, k: -1, sp: x.sp };
           st.p[x.loc] = q; st.score += 50; ev.push({ t: 'make', id: q.id, i: x.loc, k: q.k, sp: q.sp });
         }
@@ -350,13 +411,25 @@ const M3 = (() => {
     st.box[i]--; st.score += 30; ce.box.push({ i, left: st.box[i] });
     if (!st.box[i]) prog(st, 'box');
   }
+  function damageBig(st, id, ce) {
+    if (!st.bigHp[id]) return;
+    st.bigHp[id]--; st.score += 30;
+    const cells = []; st.bigId.forEach((x, j) => { if (x === id) cells.push(j); });
+    ce.big.push({ id, hp: st.bigHp[id], cells });
+    if (!st.bigHp[id]) { cells.forEach((j) => (st.bigId[j] = 0)); prog(st, 'big'); st.score += 200; }
+  }
+  function popBubble(st, i, ce) { st.bub[i] = 0; st.score += 30; ce.bub.push({ i }); prog(st, 'bubble'); }
   function hitOne(st, i, ce, trig, mult, boxHit) {
     if (!st.mask[i]) return;
     if (st.box[i]) { if (!boxHit.has(i)) { boxHit.add(i); damageBox(st, i, ce); } return; }
+    if (st.bigId[i]) { const id = st.bigId[i]; if (!boxHit.has('b' + id)) { boxHit.add('b' + id); damageBig(st, id, ce); } return; }
     const q = st.p[i]; if (!q) return;
+    if (st.bub[i]) { if (!boxHit.has(i)) { boxHit.add(i); popBubble(st, i, ce); } return; }
     if (st.chain[i]) { st.chain[i]--; st.score += 30; ce.chain.push({ i, left: st.chain[i] }); if (!st.chain[i]) prog(st, 'chain'); return; }
+    if (q.drop) return; // toys can't be destroyed: bring them down
     st.p[i] = null; ce.items.push({ id: q.id, i, k: q.k, sp: q.sp });
     if (st.ice[i]) { st.ice[i]--; st.score += 25; ce.ice.push({ i, left: st.ice[i] }); if (!st.ice[i]) prog(st, 'ice'); }
+    if (st.jam[i]) { st.jam[i] = 0; st.score += 25; ce.jam.push(i); prog(st, 'jam'); st.jamHit = true; }
     st.score += Math.round(10 * mult);
     if (!q.sp) { const g = goalOf(st, 'col', q.k); if (g && g.left > 0) { g.left--; ce.col.push({ i, k: q.k }); } }
     if (q.sp) trig.push({ sp: q.sp, i, k: q.k, grassy: st.hasGrass && !!st.grass[i] });
@@ -395,23 +468,27 @@ const M3 = (() => {
   function gravity(st, ev) {
     const { W, H } = st, paths = new Map();
     const stuck = new Set(); // empty cells nothing can reach (under boxes) count as walls
-    const blocked = (i) => !st.mask[i] || st.box[i] > 0 || (st.p[i] && st.chain[i] > 0) || (stuck.has(i) && !st.p[i]);
+    const blocked = (i) => !st.mask[i] || solid(st, i) || (st.p[i] && held(st, i)) || (stuck.has(i) && !st.p[i]);
+    let onBoard = st.dropQ > 0 ? st.p.filter((q) => q && q.drop).length : 0;
     const topOf = (c) => { for (let r = 0; r < H; r++) if (st.mask[r * W + c]) return r; return H; };
     const tops = Array.from({ length: W }, (_, c) => topOf(c));
+    const upOf = (r, c) => { for (let y = r - 1; y >= 0; y--) if (st.mask[y * W + c]) return y * W + c; return -1; }; // the next cell up, across any gap
     const spawnN = Array(W).fill(0);
     const rec = (q, from, to) => { if (!paths.has(q.id)) paths.set(q.id, { q, path: [from] }); paths.get(q.id).path.push(to); };
     for (let tick = 0; tick < 60; tick++) {
       let moved = false; const done = new Set();
       for (let r = H - 1; r >= 0; r--) for (let c = 0; c < W; c++) {
         const i = r * W + c;
-        if (!st.mask[i] || st.box[i] || st.p[i]) continue;
-        const up = (r - 1) * W + c;
-        if (r - 1 >= 0 && st.mask[up] && !blocked(up)) {
+        if (!st.mask[i] || solid(st, i) || st.p[i]) continue;
+        const up = upOf(r, c);
+        if (up >= 0 && !blocked(up)) {
           if (st.p[up] && !done.has(st.p[up].id)) { const q = st.p[up]; st.p[i] = q; st.p[up] = null; rec(q, up, i); done.add(q.id); moved = true; }
           continue; // empty above: wait for it to fill
         }
         if (r === tops[c]) { // spawn from the top
-          const q = { id: st.nid++, k: ri(st, st.ncol), sp: 0 };
+          const toy = st.dropQ > 0 && onBoard < 2 && rnd(st) < 0.12;
+          const q = toy ? { id: st.nid++, k: -2, sp: 0, drop: 1 } : { id: st.nid++, k: ri(st, st.ncol), sp: 0 };
+          if (toy) { st.dropQ--; onBoard++; }
           st.p[i] = q; spawnN[c]++; paths.set(q.id, { q, path: [(tops[c] - spawnN[c]) * W + c, i], spawn: true }); done.add(q.id); moved = true; continue;
         }
         // above is blocked: slide in diagonally from a piece that can't fall straight down
@@ -419,20 +496,37 @@ const M3 = (() => {
           const cc = c + dc; if (cc < 0 || cc >= W || r - 1 < 0) continue;
           const s = (r - 1) * W + cc, below = r * W + cc;
           if (!st.mask[s] || blocked(s) || !st.p[s] || done.has(st.p[s].id)) continue;
-          if (st.mask[below] && !st.box[below] && !st.p[below]) continue;
+          if (st.mask[below] && !solid(st, below) && !st.p[below]) continue;
           const q = st.p[s]; st.p[i] = q; st.p[s] = null; rec(q, s, i); done.add(q.id); moved = true; break;
         }
       }
       if (!moved) {
         let more = false;
-        for (let i = W; i < W * H; i++) if (st.mask[i] && !st.box[i] && !st.p[i] && st.mask[i - W] && !st.box[i - W] && !st.p[i - W] && !stuck.has(i - W)) { stuck.add(i - W); more = true; }
+        for (let i = W; i < W * H; i++) { if (!st.mask[i] || solid(st, i) || st.p[i]) continue; const u = upOf(Math.floor(i / W), i % W); if (u >= 0 && !solid(st, u) && !st.p[u] && !stuck.has(u)) { stuck.add(u); more = true; } }
         if (!more) break;
       }
     }
     if (paths.size) ev.push({ t: 'fall', moves: [...paths.values()].map((x) => ({ id: x.q.id, k: x.q.k, sp: x.q.sp, path: x.path, spawn: !!x.spawn })) });
   }
+  // toys that reached the bottom of their column are collected
+  function collect(st, ev) {
+    const got = [];
+    st.exit.forEach((e) => { const q = e >= 0 && st.p[e]; if (q && q.drop) { st.p[e] = null; got.push({ id: q.id, i: e }); prog(st, 'drop'); st.score += 200; } });
+    if (got.length) ev.push({ t: 'collect', items: got });
+    return got.length;
+  }
+  // jam grows onto a neighbouring cell after every move that didn't clear any
+  function spreadJam(st, ev) {
+    const g = goalOf(st, 'jam'); if (!g || won(st)) { st.jamHit = false; return; }
+    if (!st.jamHit) {
+      const { W, H } = st, opts = [];
+      st.jam.forEach((x, i) => { if (!x) return; const r = Math.floor(i / W), c = i % W; for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) { const rr = r + dr, cc = c + dc, j = rr * W + cc; if (rr >= 0 && cc >= 0 && rr < H && cc < W && st.mask[j] && !solid(st, j) && !st.jam[j] && !st.ice[j]) opts.push([i, j]); } });
+      if (opts.length) { const [from, j] = opts[ri(st, opts.length)]; st.jam[j] = 1; g.left++; ev.push({ t: 'spread', from, i: j }); }
+    }
+    st.jamHit = false;
+  }
   function shuffle(st, ev) {
-    const idx = []; for (let i = 0; i < st.W * st.H; i++) if (movable(st, i) && !st.p[i].sp) idx.push(i);
+    const idx = []; for (let i = 0; i < st.W * st.H; i++) if (movable(st, i) && !st.p[i].sp && !st.p[i].drop) idx.push(i);
     for (let t = 0; t < 40; t++) {
       const qs = idx.map((i) => st.p[i]);
       for (let j = qs.length - 1; j > 0; j--) { const x = ri(st, j + 1); [qs[j], qs[x]] = [qs[x], qs[j]]; }
@@ -444,10 +538,11 @@ const M3 = (() => {
   }
 
   // ---------- player actions ----------
-  function swap(st, a, b) {
+  function swap(st, a, b, free = false) { // free: the glove booster — any two neighbours, no move used
     const ev = [];
-    if (st.moves <= 0 || won(st) || !swapValid(st, a, b)) { ev.push({ t: 'bad', a, b }); return { ok: false, ev }; }
-    st.moves--;
+    if (won(st) || (free ? !(adj(st, a, b) && movable(st, a) && movable(st, b)) : st.moves <= 0 || !swapValid(st, a, b))) { ev.push({ t: 'bad', a, b }); return { ok: false, ev }; }
+    if (!free) st.moves--;
+    st.jamHit = false;
     const qa = st.p[a], qb = st.p[b];
     [st.p[a], st.p[b]] = [qb, qa];
     ev.push({ t: 'swap', a, b, ida: qa.id, idb: qb.id });
@@ -456,7 +551,7 @@ const M3 = (() => {
     if (A.sp && B.sp) { combo(st, ev, A, B, b, a, grassy); }
     else if (A.sp === 'rain' || B.sp === 'rain') {
       const R = A.sp === 'rain' ? A : B, other = R === A ? B : A, ri_ = R === A ? b : a;
-      st.p[ri_] = null; ev.push({ t: 'clear', items: [{ id: R.id, i: ri_, k: -1, sp: 'rain' }], box: [], chain: [], grass: [], col: [], ice: [] });
+      st.p[ri_] = null; ev.push({ t: 'clear', items: [{ id: R.id, i: ri_, k: -1, sp: 'rain' }], box: [], chain: [], grass: [], col: [], ice: [], jam: [], bub: [], big: [] });
       const seen = new Set([ri_]);
       const hits = fire(st, ev, { sp: 'rain', i: ri_, withK: other.k, grassy }, seen, new Set());
       run(st, ev, { hits, match: null, creates: [] }, [a, b]);
@@ -466,11 +561,12 @@ const M3 = (() => {
       // the normal piece may also complete a match; resolve that after the blast
       run(st, ev, { hits, match: null, creates: [] }, [a, b]);
     } else run(st, ev, null, [b, a]);
+    if (!free) spreadJam(st, ev);
     return { ok: true, ev };
   }
   function combo(st, ev, A, B, at, other, grassy) {
     st.p[other] = null; st.p[at] = null;
-    ev.push({ t: 'clear', items: [{ id: B.id, i: other, k: B.k, sp: B.sp }, { id: A.id, i: at, k: A.k, sp: A.sp }], box: [], chain: [], grass: [], col: [], ice: [] });
+    ev.push({ t: 'clear', items: [{ id: B.id, i: other, k: B.k, sp: B.sp }, { id: A.id, i: at, k: A.k, sp: A.sp }], box: [], chain: [], grass: [], col: [], ice: [], jam: [], bub: [], big: [] });
     const kind = (q) => (q.sp === 'rh' || q.sp === 'rv' ? 'r' : q.sp);
     const ks = [kind(A), kind(B)].sort().join('+');
     const seen = new Set([at, other]), res = new Set();
@@ -481,7 +577,7 @@ const M3 = (() => {
       const X = A.sp === 'rain' ? B : A, k = commonColor(st);
       const made = [];
       st.p.forEach((q, j) => {
-        if (q && !q.sp && q.k === k && !st.chain[j]) { const sp = kind(X) === 'r' ? (rnd(st) < 0.5 ? 'rh' : 'rv') : X.sp; q.sp = sp; made.push(j); ev.push({ t: 'make', id: q.id, i: j, k: q.k, sp, from: at }); }
+        if (q && !q.sp && q.k === k && !held(st, j)) { const sp = kind(X) === 'r' ? (rnd(st) < 0.5 ? 'rh' : 'rv') : X.sp; q.sp = sp; made.push(j); ev.push({ t: 'make', id: q.id, i: j, k: q.k, sp, from: at }); }
       });
       ev.push({ t: 'fx', kind: 'rain', i: at, cells: made, k });
       hits = made.map((j) => ({ i: j, g: grassy }));
@@ -495,24 +591,47 @@ const M3 = (() => {
   function tap(st, i) {
     const ev = [];
     if (st.moves <= 0 || won(st) || !movable(st, i) || !st.p[i].sp) return { ok: false, ev };
-    st.moves--;
+    st.moves--; st.jamHit = false;
+    const grassy = st.hasGrass && !!st.grass[i];
+    run(st, ev, { hits: [{ i, g: grassy }], match: null, creates: [] }, []);
+    spreadJam(st, ev);
+    return { ok: true, ev };
+  }
+  // ---------- boosters ----------
+  function hammer(st, i) { // smash one cell; no move used
+    const ev = [], q = st.p[i];
+    if (won(st) || !st.mask[i] || (q && q.drop && !held(st, i)) || (!q && !solid(st, i))) return { ok: false, ev };
     const grassy = st.hasGrass && !!st.grass[i];
     run(st, ev, { hits: [{ i, g: grassy }], match: null, creates: [] }, []);
     return { ok: true, ev };
+  }
+  function mix(st) { // shuffle booster
+    const ev = []; if (won(st)) return { ok: false, ev };
+    shuffle(st, ev); run(st, ev, null, []); return { ok: true, ev };
+  }
+  function preBoost(st, kinds) { // start the level with power-ups already on the board
+    const ev = [];
+    for (const sp of kinds) {
+      const c = []; st.p.forEach((q, j) => { if (q && !q.sp && !q.drop && movable(st, j)) c.push(j); });
+      if (!c.length) break;
+      const j = c[ri(st, c.length)], s2 = sp === 'rocket' ? (rnd(st) < 0.5 ? 'rh' : 'rv') : sp;
+      st.p[j].sp = s2; ev.push({ t: 'make', id: st.p[j].id, i: j, k: st.p[j].k, sp: s2 });
+    }
+    return ev;
   }
   // level won: every move left becomes a rocket, then every power-up on the board goes off
   function finale(st) {
     const ev = [];
     let guard = 0;
     while (st.moves > 0 && guard++ < 60) {
-      const cand = []; st.p.forEach((q, j) => { if (q && !q.sp && !st.chain[j]) cand.push(j); });
+      const cand = []; st.p.forEach((q, j) => { if (q && !q.sp && !q.drop && !held(st, j)) cand.push(j); });
       if (!cand.length) break;
       const j = cand[ri(st, cand.length)];
       st.p[j].sp = rnd(st) < 0.5 ? 'rh' : 'rv'; st.moves--; st.score += 100;
       ev.push({ t: 'make', id: st.p[j].id, i: j, k: st.p[j].k, sp: st.p[j].sp, bonus: true });
     }
     for (let n = 0; n < 80; n++) {
-      const j = st.p.findIndex((q, x) => q && q.sp && !st.chain[x]);
+      const j = st.p.findIndex((q, x) => q && q.sp && !held(st, x));
       if (j < 0) break;
       run(st, ev, { hits: [{ i: j, g: false }], match: null, creates: [] }, []);
     }
@@ -524,6 +643,6 @@ const M3 = (() => {
     const t = allMoves(st)[0]; return t || null;
   }
   const status = (st) => (won(st) ? 'win' : st.moves <= 0 ? 'lose' : 'play');
-  return { INTRO, isHard, level, init, clone, swap, tap, finale, hint, status, allMoves, swapValid, movable, won, SPECIALS, findGroups, hasMove };
+  return { INTRO, isHard, isSuper, level, init, botValue, clone, swap, tap, hammer, mix, preBoost, finale, hint, status, allMoves, swapValid, movable, won, SPECIALS, findGroups, hasMove };
 })();
 if (typeof module !== 'undefined') module.exports = M3;
