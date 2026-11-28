@@ -407,7 +407,11 @@ input{font:inherit;color:inherit}
 .bl-pc.hint svg{animation:blHint 1s ease-in-out infinite}
 @keyframes blHint{0%,100%{transform:none}25%{transform:scale(1.12) rotate(-6deg)}75%{transform:scale(1.12) rotate(6deg)}}
 .bl-pc.sp svg{animation:blIdle 1.6s ease-in-out infinite}
-.bl-pc[data-sp=rain] svg{animation:blIdle 1.6s ease-in-out infinite}
+.bl-pc[data-sp=rain] svg{animation:none}
+.bl-dfr{opacity:0;animation:blDfr 1.8s step-end infinite}.bl-pc.go .bl-dfr,.bl-sprite.go .bl-dfr{animation-duration:.45s}
+@keyframes blDfr{0%{opacity:1}16.67%,100%{opacity:0}}
+.bl-tw{transform-box:fill-box;transform-origin:center;animation:blTw 1.8s ease-in-out infinite}@keyframes blTw{0%,100%{opacity:.2;transform:scale(.5)}50%{opacity:1;transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.bl-dfr{animation:none}.bl-dfr:nth-child(3){opacity:1}.bl-tw{animation:none}}
 @keyframes blIdle{50%{transform:scale(1.06)}}
 @keyframes blSpin{to{transform:rotate(360deg)}}
 .bl-trail{position:absolute;pointer-events:none;border-radius:99px;z-index:4}
@@ -663,7 +667,7 @@ const COLOUR_GAMES = [
     rules: ['Tap a tube, then another, to <b>pour</b> its top colour across.', 'You can only pour onto the <b>same colour</b> or into an empty tube, and only while there\'s room.', 'Sort every colour into its own tube. Fewer pours wins. Undo is free.'],
     icon: `<svg viewBox="0 0 46 46">${[['#FF5A5F','#4C6FFF','#FF5A5F'],['#4C6FFF','#FFB020','#4C6FFF'],['#FFB020','#FF5A5F','#FFB020']].map((t,k)=>`<rect x="${5+k*13}" y="6" width="10" height="34" rx="5" fill="none" stroke="#3A4152" stroke-width="1.6"/>`+t.map((c,j)=>`<rect x="${6.5+k*13}" y="${29-j*9.5}" width="7" height="9" rx="${j?1:3}" fill="${c}"/>`).join('')).join('')}</svg>`, mount: mountPR },
   { id: 'bl', sec: 'c', name: 'Bloom', color: 'var(--bl)', metric: 'pts', unit: 'Level', noTimer: 1, ownHud: 1, oneTrack: 5, lobby: (...a) => blLobby(...a), guide: () => blGuide(), desc: 'Match three, one level after another. Rockets, bombs, planes and rainbow combos.',
-    rules: ['<b>Swap</b> two neighbouring pieces to line up 3 or more of a kind. Finish the goals in the card at the top before your <b>moves</b> run out. Levels go on forever and new things turn up along the way — cushions, carpet, glass, chains, toys to bring down, bubbles, jam, toy chests. Every 4th level (from 12) is a <b>Hard level</b>, every 10th (from 20) is <b>Super hard</b>.', 'Bigger matches make power-ups: <b>4 in a line</b> → Rocket (clears that row or column) · <b>2×2 square</b> → Paper plane (hits around it, then flies to a goal) · <b>5 in an L or T shape</b> (3 one way + 3 the other, sharing a corner or middle) → Bomb · <b>5 in a straight line</b> → Disco ball (clears every piece of the kind you swap it with). Tap a power-up to fire it, or swap it.', 'Swap two power-ups together for <b>combos</b>. Moves left at the end turn into bonus rockets.', '<b>Boosters</b> (under the board): Hammer smashes any one cell, Glove swaps any two neighbours, Shuffle mixes the board — none of them use a move. You win one for every new level you finish; hard and super hard levels give more, including a Rocket, Bomb or Disco ball to start a level with (pick them on the level\'s start card). Tap ? in the game for the full guide. Tap the paint button on the level card to change colours or pieces mid-game.'],
+    rules: ['<b>Swap</b> two neighbouring pieces to line up 3 or more of a kind. Finish the goals in the card at the top before your <b>moves</b> run out. Levels go on forever and new things turn up along the way — cushions, carpet, glass, chains, toys to bring down, bubbles, jam, toy chests. Every 4th level (from 12) is a <b>Hard level</b>, every 10th (from 20) is <b>Super hard</b>.', 'Bigger matches make power-ups: <b>4 in a line</b> → Rocket (clears that row or column) · <b>2×2 square</b> → Paper plane (hits around it, then flies to a goal) · <b>5 in an L or T shape</b> (3 one way + 3 the other, sharing a corner or middle) → Bomb · <b>5 in a straight line</b> → Disco ball (clears every piece of the kind you swap it with). Tap a power-up to fire it, or swap it.', 'Swap two power-ups together for <b>combos</b>. Moves left at the end turn into bonus rockets.', '<b>Boosters</b> (under the board): Hammer smashes any one cell, Wand swaps any two neighbours, Shuffle mixes the board — none of them use a move. You win one for every new level you finish; hard and super hard levels give more, including a Rocket, Bomb or Disco ball to start a level with (pick them on the level\'s start card). Tap ? in the game for the full guide. Tap the paint button on the level card to change colours or pieces mid-game.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="1" y="1" width="44" height="44" rx="11" fill="#E9B8C4"/><use href="#bl-home-k0" x="3" y="3" width="20" height="20"/><use href="#bl-home-k3" x="23" y="3" width="20" height="20"/><use href="#bl-home-k1" x="3" y="23" width="20" height="20"/><use href="#bl-home-plane" x="23" y="23" width="20" height="20"/></svg>`, mount: mountBL },
   { id: 'fl', sec: 'c', name: 'Flood', color: 'var(--fl)', metric: 'moves', desc: 'Paint from the corner until the whole board is one colour.',
     rules: ['Your blob starts in the <b>top-left corner</b>.', 'Pick a colour — your blob turns that colour and swallows every touching cell of it.', 'Fill the board in as <b>few moves</b> as you can. Beat the target.'],
@@ -2605,6 +2609,32 @@ function mountTN(stage, controls, P, api) {
 }
 
 // ====================== BLOOM (match-3, Homescapes/Gardenscapes style) ======================
+// ---- the disco ball: a faceted mirror ball; every tile is placed on the sphere and lit on its own
+function blDiscoBall(phase) {
+  const R = 38, cx = 50, cy = 50, dLat = Math.PI / 12, L = [-0.45, 0.62, 0.64].map((v, _, a) => v / Math.hypot(...a)), out = [];
+  const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+  const hsl = (h, sat = 0.95, l = 0.58) => { const k = (n) => (n + h / 30) % 12, a = sat * Math.min(l, 1 - l), f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); return [f(0), f(8), f(4)].map((v) => Math.round(v * 255)); };
+  for (let la = -Math.PI / 2 + 0.06; la < Math.PI / 2 - 0.06; la += dLat) {
+    const lat = la + dLat / 2, n = Math.max(4, Math.round(24 * Math.cos(lat))), dLon = (2 * Math.PI) / n;
+    for (let j = 0; j < n; j++) {
+      const lon0 = j * dLon + phase * dLon, lonC = lon0 + dLon / 2; if (Math.cos(lonC) < 0.02) continue;
+      const g = 0.12, P = (a, b) => [cx + R * Math.cos(a) * Math.sin(b), cy - R * Math.sin(a)];
+      const a1 = la + dLat * g, a2 = la + dLat * (1 - g), b1 = lon0 + dLon * g, b2 = lon0 + dLon * (1 - g);
+      const pts = [P(a1, b1), P(a1, b2), P(a2, b2), P(a2, b1)];
+      const nx = Math.cos(lat) * Math.sin(lonC), ny = Math.sin(lat), nz = Math.cos(lat) * Math.cos(lonC);
+      const d = Math.max(0, nx * L[0] + ny * L[1] + nz * L[2]), spec = Math.pow(Math.max(0, 2 * d * nz - L[2]), 7);
+      let c = hsl((((lonC * 57.3 + lat * 110) % 360) + 360) % 360); // rainbow sheen that moves with the tiles
+      c = mix([96, 72, 160], c, 0.55 + 0.45 * d);
+      c = mix(c, [255, 255, 255], Math.min(1, spec * 1.15));
+      out.push(`<path d="M${pts.map((p) => p.map((v) => v.toFixed(1)).join(' ')).join('L')}Z" fill="rgb(${c})"/>`);
+    }
+  }
+  return out.join('');
+}
+const BL_DISCO_FRAMES = Array.from({ length: 6 }, (_, k) => blDiscoBall(k / 6));
+const blDiscoShell = (inner) => `<ellipse cx="50" cy="92" rx="30" ry="5.5" fill="#2A1F5C" opacity=".28"/><circle cx="50" cy="50" r="39" fill="#5A4A96"/>${inner}<circle cx="50" cy="50" r="38.5" fill="url(#blxDao)"/><circle cx="50" cy="50" r="38.5" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1"/><ellipse cx="36" cy="30" rx="10" ry="6" fill="url(#blxDspec)"/><rect x="45" y="6" width="10" height="7" rx="2.5" fill="#E4E6EE"/><rect x="48.5" y="1" width="3" height="6" rx="1.5" fill="#E4E6EE"/><path class="bl-tw" d="M33 26l1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6z" fill="#fff"/>`;
+// on the board it turns: six pre-drawn frames shown one after another (the shadow and light stay still)
+const BL_DISCO_ANIM = `<svg viewBox="0 0 100 100">${blDiscoShell(BL_DISCO_FRAMES.map((f, k) => `<g class="bl-dfr" style="animation-delay:${(-k * 0.3).toFixed(1)}s">${f}</g>`).join(''))}</svg>`;
 // ---- piece sets: Home (household things) and Garden (fruit) — chunky, glossy, no outlines ----
 const BL_ART = (() => {
   const P = (a, r, cx = 50, cy = 50) => [(cx + r * Math.cos(a)).toFixed(1), (cy + r * Math.sin(a)).toFixed(1)];
@@ -2655,12 +2685,12 @@ const BL_ART = (() => {
   let tiles = ''; for (let y = 10, rr = 0; y < 90; y += 8.6, rr++) for (let x = 10 - (rr % 2) * 4.3, cc = 0; x < 92; x += 8.6, cc++) tiles += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="7.6" height="7.6" rx="1.4" fill="${DT[(rr * 7 + cc * 5 + rr * cc) % DT.length]}"/>`;
   const DISCO = `${SH()}<circle cx="50" cy="50" r="37" fill="#7E78A8"/><g clip-path="url(#blxDisc)">${tiles}<circle cx="50" cy="50" r="37" fill="url(#blxDiscSh)"/></g><circle cx="50" cy="50" r="37" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/>
 <path d="M34 22l2.5 7 7 2.5-7 2.5-2.5 7-2.5-7-7-2.5 7-2.5z" fill="#fff"/><path d="M70 62l1.8 5 5 1.8-5 1.8-1.8 5-1.8-5-5-1.8 5-1.8z" fill="#fff"/><rect x="47" y="5" width="6" height="8" rx="2" fill="url(#blxaGo)"/>`;
-  A.rain = B.rain = DISCO;
+  A.rain = B.rain = blDiscoShell(blDiscoBall(0.3)); // a real faceted mirror ball, holographic
   // drop-down toys: a teddy bear (Home) and an acorn (Garden)
   A.item = `${SH()}<circle cx="24" cy="26" r="13" fill="#B9773E"/><circle cx="76" cy="26" r="13" fill="#B9773E"/><circle cx="24" cy="26" r="6.5" fill="#F2C39A"/><circle cx="76" cy="26" r="6.5" fill="#F2C39A"/><circle cx="50" cy="54" r="35" fill="url(#blxtB)"/>
 <ellipse cx="50" cy="66" rx="17" ry="13" fill="#F6D2AE"/><ellipse cx="50" cy="60" rx="7" ry="5" fill="#4A2A14"/><path d="M50 65V71M44 73Q50 77 56 73" stroke="#4A2A14" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="37" cy="47" r="4.5" fill="#2A1608"/><circle cx="63" cy="47" r="4.5" fill="#2A1608"/><circle cx="38.5" cy="45.5" r="1.5" fill="#fff"/><circle cx="64.5" cy="45.5" r="1.5" fill="#fff"/><path d="M36 92l14-8 14 8-14 6z" fill="#E0457E"/><ellipse cx="33" cy="33" rx="9" ry="5" fill="#fff" opacity=".3" transform="rotate(-25 33 33)"/>`;
   B.item = `${SH('#5A3A10', '.25')}<path d="M24 46C24 72 36 90 50 94C64 90 76 72 76 46Z" fill="url(#blxtB)"/><path d="M14 46C14 30 30 20 50 20C70 20 86 30 86 46C86 52 80 54 50 54C20 54 14 52 14 46Z" fill="#7A4A1E"/>${[20, 32, 44, 56, 68, 80].map((x) => `<path d="M${x} 46l5-12" stroke="#5A3410" stroke-width="2.5" opacity=".6"/>`).join('')}<path d="M50 20V8" stroke="#5A3410" stroke-width="5" stroke-linecap="round"/><ellipse cx="38" cy="66" rx="5" ry="12" fill="#fff" opacity=".35"/>`;
-  return { defs: A_DEFS + B_DEFS + PL_DEFS + DISCO_DEFS + lg('blxtB', [[0, '#D9944E'], [.6, '#A8652C'], [1, '#6E3E16']]), sets: { home: A, garden: B } };
+  return { defs: A_DEFS + B_DEFS + PL_DEFS + DISCO_DEFS + lg('blxtB', [[0, '#D9944E'], [.6, '#A8652C'], [1, '#6E3E16']]) + rg('blxDao', [[0, 'rgba(40,20,90,0)'], [.7, 'rgba(40,20,90,0)'], [1, 'rgba(40,20,90,.4)']], '45%', '40%', '65%') + rg('blxDspec', [[0, 'rgba(255,255,255,.95)'], [.4, 'rgba(255,255,255,.25)'], [1, 'rgba(255,255,255,0)']], '50%', '50%', '50%') + lg('blxFpearl', [[0, '#FFFFFF'], [.6, '#EFEAF8'], [1, '#BFB6DC']]) + lg('blxFlilac', [[0, '#E7D8FF'], [.5, '#B89AF0'], [1, '#6E4AC0']]) + lg('blxFpk', [[0, '#FFC0DA'], [.45, '#EE4C8E'], [1, '#8E1650']]), sets: { home: A, garden: B } };
 })();
 // particle colours per piece set (index = piece kind)
 const BL_PAL = {
@@ -2761,11 +2791,11 @@ function blGuide() {
       blDemo(['t 2', '1 4', '1* 3', '1 0'], ['. 2', '. 4', '. 3', 't 0'], 'Clear the column under the toy and it drops to the bottom.')),
     sec('8 · Boosters',
       $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.hammer}</span><div><b>Hammer</b> — tap it, then tap any cell: smashes that piece or hits that blocker once. Sets off power-ups. Can\'t smash toys.</div>`),
-      $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.glove}</span><div><b>Glove</b> — tap it, then swap <b>any two</b> neighbours, even if it makes no match. Swapping two power-ups this way makes their combo.</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.glove}</span><div><b>Wand</b> — tap it, then swap <b>any two</b> neighbours, even if it makes no match. Swapping two power-ups this way makes their combo.</div>`),
       $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.shuffle}</span><div><b>Shuffle</b> — mixes up the pieces (power-ups, toys and locked pieces stay put). The board also shuffles by itself for free if no move is possible.</div>`),
       P('None of them use a move. Tap an active booster again to cancel it.'),
       P('<b>Start-of-level power-ups</b> (Rocket, Bomb, Disco ball): every new level opens with its card — goals, moves and “Start with”. Tap the ones you want, then Play; they\'re placed on the board right away. Each pick is used up, so you choose again on every level.'),
-      P('<b>Earning</b> (the first time you finish a level): Normal → +1 Hammer, Glove or Shuffle · Hard → that plus +1 Rocket, Bomb or Disco ball · Super hard → +2 Hammer/Glove/Shuffle and +1 Rocket/Bomb/Disco. Replaying an old level gives nothing. You start with 3 hammers, 3 gloves, 2 shuffles, 2 rockets, 2 bombs and 1 disco ball.')),
+      P('<b>Earning</b> (the first time you finish a level): Normal → +1 Hammer, Wand or Shuffle · Hard → that plus +1 Rocket, Bomb or Disco ball · Super hard → +2 Hammer/Wand/Shuffle and +1 Rocket/Bomb/Disco. Replaying an old level gives nothing. You start with 3 hammers, 3 wands, 2 shuffles, 2 rockets, 2 bombs and 1 disco ball.')),
     sec('9 · Levels',
       P('One endless path. Each level is a little harder: fewer spare moves, more blockers, and new things appear on their own “New!” level — cushions (4), carpet (7), glass (10), chains (14), double cushions (18), a 6th kind of piece (21), toys (23), double chains (26), bubbles (29), triple cushions (31), jam (33), frosted glass (35), toy chests (37).'),
       P('Like in the Scapes games, levels come in three kinds: <b>Normal</b>, <b>Hard</b> (every 4th level from 12 — red card, far fewer spare moves) and <b>Super hard</b> (every 10th from 20 — the tightest of all). A level that introduces something new is never hard. Harder levels pay more boosters (see Boosters). Boards change shape too — some have gaps and holes, and pieces fall straight through them.'),
@@ -2804,12 +2834,12 @@ const blChest = (hp) => `<svg viewBox="0 0 200 200"><rect x="8" y="20" width="18
 const BL_CHEST_ICON = '<svg viewBox="0 0 100 100"><rect x="6" y="12" width="88" height="80" rx="14" fill="#B8743A"/><rect x="6" y="12" width="88" height="32" rx="14" fill="#D58E4C"/><rect x="6" y="40" width="88" height="7" fill="#8E5422"/><rect x="14" y="12" width="9" height="80" fill="#FFC93A"/><rect x="77" y="12" width="9" height="80" fill="#FFC93A"/><rect x="38" y="32" width="24" height="24" rx="5" fill="#FFC93A"/><circle cx="50" cy="43" r="4" fill="#7A4A00"/></svg>';
 const BL_ICON = { box: () => blBox(1), chain: () => blChain(1), grass: () => BL_GRASS, ice: () => BL_GLASS, jam: () => BL_JAM, bubble: () => `<svg viewBox="0 0 100 100"><g transform="translate(16 16) scale(.68)">${blArt(2).replace(/<\/?svg[^>]*>/g, '')}</g></svg>`.replace('</svg>', BL_BUBBLE.replace(/<\/?svg[^>]*>/g, '') + '</svg>'), big: () => BL_CHEST_ICON, drop: () => blArt(-2) };
 // boosters: in-level (hammer, glove, shuffle) and pre-level (start with a rocket, bomb or disco ball)
-const BL_BOOST_ART = {
-  hammer: '<svg viewBox="0 0 100 100"><path d="M30 86L62 46" stroke="#8E5422" stroke-width="11" stroke-linecap="round"/><path d="M30 86L62 46" stroke="#C98A4E" stroke-width="5" stroke-linecap="round"/><rect x="40" y="14" width="50" height="30" rx="9" transform="rotate(38 65 29)" fill="#E0457E"/><rect x="44" y="16" width="20" height="10" rx="5" transform="rotate(38 65 29)" fill="#fff" opacity=".45"/></svg>',
-  glove: '<svg viewBox="0 0 100 100"><path d="M30 88V52C22 50 16 42 20 36C24 30 32 34 36 40V18C36 10 48 10 48 18V40V14C48 6 60 6 60 14V40V18C60 10 72 10 72 18V42V28C72 20 84 20 84 28V60C84 76 74 88 60 88Z" fill="#fff" stroke="#C9C2E8" stroke-width="3" stroke-linejoin="round"/><path d="M30 80H84" stroke="#E0457E" stroke-width="8"/></svg>',
-  shuffle: '<svg viewBox="0 0 100 100"><path d="M22 54A28 28 0 0 1 72 30" stroke="#18A086" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M62 16L80 30L60 40Z" fill="#18A086"/><path d="M78 46A28 28 0 0 1 28 70" stroke="#E0457E" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M38 84L20 70L40 60Z" fill="#E0457E"/></svg>',
+const BL_BOOST_ART = { // pearl & lilac porcelain, lit like the pieces
+  hammer: '<svg viewBox="0 0 100 100"><ellipse cx="50" cy="92" rx="30" ry="5.5" fill="#2A1F5C" opacity=".25"/><g transform="rotate(-38 50 50)"><rect x="44.5" y="40" width="11" height="54" rx="5.5" fill="url(#blxFpearl)"/><rect x="47" y="44" width="2.4" height="46" rx="1.2" fill="#fff"/><rect x="18" y="13" width="64" height="31" rx="12" fill="url(#blxFlilac)"/><rect x="18" y="13" width="64" height="31" rx="12" fill="url(#blxDao)"/><rect x="24" y="17" width="44" height="6" rx="3" fill="#fff" opacity=".75"/><rect x="44" y="12" width="12" height="33" rx="3" fill="#6E4AC0" opacity=".25"/></g></svg>',
+  glove: '<svg viewBox="0 0 100 100"><ellipse cx="50" cy="92" rx="30" ry="5.5" fill="#2A1F5C" opacity=".25"/><g transform="rotate(40 50 54)"><rect x="45" y="40" width="10" height="56" rx="5" fill="url(#blxFpearl)"/><rect x="47.2" y="44" width="2.2" height="48" rx="1.1" fill="#fff"/><rect x="45" y="40" width="10" height="9" rx="3" fill="url(#blxFlilac)"/><rect x="45" y="84" width="10" height="9" rx="3" fill="url(#blxFlilac)"/></g><path d="M44 6l7.5 15.2 16.8 2.4-12.2 11.9 2.9 16.7L44 44.3l-15 7.9 2.9-16.7-12.2-11.9 16.8-2.4z" fill="url(#blxFlilac)"/><path d="M44 6l7.5 15.2 16.8 2.4-12.2 11.9 2.9 16.7L44 44.3l-15 7.9 2.9-16.7-12.2-11.9 16.8-2.4z" fill="url(#blxDao)"/><path d="M40 16l4-8 3 7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/><path class="bl-tw" d="M80 50l1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6z" fill="#E0457E"/><path d="M14 58l1.2 3.3 3.3 1.2-3.3 1.2-1.2 3.3-1.2-3.3-3.3-1.2 3.3-1.2z" fill="#B89AF0"/></svg>',
+  shuffle: '<svg viewBox="0 0 100 100"><ellipse cx="50" cy="92" rx="30" ry="5.5" fill="#2A1F5C" opacity=".25"/><circle cx="50" cy="50" r="38" fill="url(#blxFpearl)"/><circle cx="50" cy="50" r="38" fill="url(#blxDao)"/><ellipse cx="40" cy="30" rx="18" ry="9" fill="#fff" opacity=".8"/><path d="M30 52A20 20 0 0 1 64 35" stroke="url(#blxFlilac)" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M58 25L73 35L57 44Z" fill="#8A62DC"/><path d="M70 48A20 20 0 0 1 36 65" stroke="url(#blxFpk)" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M42 75L27 65L43 56Z" fill="#E0457E"/></svg>',
 };
-const BL_BOOST_NAME = { hammer: 'Hammer', glove: 'Glove', shuffle: 'Shuffle', rocket: 'Rocket', bomb: 'Bomb', rain: 'Disco ball' };
+const BL_BOOST_NAME = { hammer: 'Hammer', glove: 'Wand', shuffle: 'Shuffle', rocket: 'Rocket', bomb: 'Bomb', rain: 'Disco ball' };
 const blBoosts = () => { S.blBoost = S.blBoost || { hammer: 3, glove: 3, shuffle: 2, rocket: 2, bomb: 2, rain: 1 }; return S.blBoost; };
 const BL_INTRO = {
   box: ['box', 'Cushions', 'Match pieces <b>next to</b> a cushion to knock it off the board.'],
@@ -2879,11 +2909,11 @@ function mountBL(stage, controls, P, api, ctx) {
   let gShown = st.grass.slice(); // carpet as it is drawn (it spreads during playback)
   const sizeEl = (el) => { el.style.width = cs + 'px'; el.style.height = cs + 'px'; };
   function mkPiece(q, i) {
-    const el = $('div', 'bl-pc' + (q.sp ? ' sp' : ''), blArt(q.k, q.sp));
+    const el = $('div', 'bl-pc' + (q.sp ? ' sp' : ''), q.sp === 'rain' ? BL_DISCO_ANIM : blArt(q.k, q.sp));
     sizeEl(el); el.style.transform = tr(i); el.dataset.id = q.id; el.dataset.sp = String(q.sp || '');
     pcs.appendChild(el); els.set(q.id, el); return el;
   }
-  const setArt = (el, k, sp) => { el.innerHTML = blArt(k, sp); el.classList.toggle('sp', !!sp); };
+  const setArt = (el, k, sp) => { el.innerHTML = sp === 'rain' ? BL_DISCO_ANIM : blArt(k, sp); el.classList.toggle('sp', !!sp); };
   const isG = (j) => st.mask[j] && gShown[j];
   function paintTile(i) { // carpet cells join into one felt floor; only outer corners are rounded
     const t = tileEls[i]; if (!t) return; const [r, c] = rcOf(i);
@@ -3248,8 +3278,9 @@ function mountBL(stage, controls, P, api, ctx) {
         const cells = e.cells || [], step = T(Math.max(28, Math.min(70, 1500 / Math.max(1, cells.length))));
         const [x, y] = pxy(e.i);
         const s = sprite('rain', e.i, 1.3), life = T(300) + cells.length * step + T(260);
+        s.innerHTML = BL_DISCO_ANIM; s.classList.add('go'); // the ball spins fast inside; the picture itself doesn't rotate
         glow(e.i, 1.3, life);
-        s.animate([{ transform: 'translateY(0) scale(.8) rotate(0)' }, { transform: `translateY(${-cs * 0.35}px) scale(1.35) rotate(240deg)`, offset: 0.2 }, { transform: `translateY(${-cs * 0.35}px) scale(1.25) rotate(700deg)`, offset: 0.85 }, { transform: 'translateY(0) scale(0) rotate(900deg)' }], { duration: life, easing: 'linear' }).onfinish = () => { s.remove(); burst(x, y, { n: 40, colors: RAINBOW, kinds: ['star', 'conf'], min: 120, max: 480, g: 420, life: 0.9, size: 7 }); };
+        s.animate([{ transform: 'translateY(0) scale(.8) rotate(0)' }, { transform: `translateY(${-cs * 0.35}px) scale(1.35)`, offset: 0.2 }, { transform: `translateY(${-cs * 0.35}px) scale(1.25)`, offset: 0.85 }, { transform: 'translateY(0) scale(0)' }], { duration: life, easing: 'linear' }).onfinish = () => { s.remove(); burst(x, y, { n: 40, colors: RAINBOW, kinds: ['star', 'conf'], min: 120, max: 480, g: 420, life: 0.9, size: 7 }); };
         let lastRing = 0;
         emit(life, (f) => {
           const a = rnd(0, 6.28); add({ x: x + Math.cos(a) * cs * 0.5, y: y - cs * 0.35 + Math.sin(a) * cs * 0.5, vx: Math.cos(a) * 90, vy: Math.sin(a) * 90, g: 0, drag: 1, life: 0.5, age: 0, size: rnd(4, 7), color: pick(['#FFE680', '#FFFFFF', '#D8C2FF', '#FF8AD8']), kind: 'star', rot: 0, vr: 4, tw: 18 });
