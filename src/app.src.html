@@ -361,8 +361,8 @@ input{font:inherit;color:inherit}
 @keyframes hintPulse{50%{filter:brightness(1.45)}}
 .cbtn.hintb{border-color:rgba(255,194,71,.45);color:#FFC247}
 /* ---------- BLOOM (match-3) ---------- */
-.stage:has(.bl-wrap){justify-content:flex-start;padding-top:2px}
-.bl-wrap{width:min(100%,440px);display:flex;flex-direction:column;gap:10px;user-select:none;-webkit-user-select:none;background:var(--bl-bg);border-radius:24px;padding:16px 8px 10px;box-shadow:0 8px 26px rgba(0,0,0,.4)}
+.stage:has(.bl-wrap){justify-content:center;padding-top:2px}
+.bl-wrap{width:calc(100% + 20px);max-width:460px;margin:0 -10px;display:flex;flex-direction:column;gap:10px;user-select:none;-webkit-user-select:none;background:var(--bl-bg);border-radius:24px;padding:16px 4px 8px;box-shadow:0 8px 26px rgba(0,0,0,.4)}
 .bl-hud{position:relative;display:flex;align-items:center;gap:8px;background:var(--bl-hbg);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:20px;padding:7px 10px 7px 7px;border:2px solid rgba(255,255,255,.85);box-shadow:0 8px 22px rgba(40,10,60,.28);color:var(--bl-txt);margin:0 2px}
 .bl-hud.hard{border-color:#FF5A64;box-shadow:0 0 0 2px #E5323A,0 8px 22px rgba(80,10,20,.35)}
 .bl-hud.super{border-color:#E25AB8;box-shadow:0 0 0 2px #8E1A8A,0 8px 22px rgba(80,10,50,.4)}
@@ -374,18 +374,18 @@ input{font:inherit;color:inherit}
 .bl-moves.low{background:linear-gradient(180deg,#FF8A80,#E8323A 60%,#B3161F);box-shadow:inset 0 -4px 0 rgba(0,0,0,.16),0 3px 0 #8E0C18;animation:blLow 1s ease-in-out infinite}
 @keyframes blLow{50%{transform:scale(1.07)}}
 .bl-goals{flex:1;display:flex;gap:6px;justify-content:center;min-width:0}
-.bl-goal{position:relative;flex:0 1 70px;height:56px;border-radius:14px;background:var(--bl-gbg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.bl-goal{position:relative;flex:0 1 64px;height:56px;border-radius:14px;background:var(--bl-gbg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
 .bl-goal svg{width:31px;height:31px}
 .bl-goal b{font-size:15px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;color:var(--bl-txt)}
 .bl-goal.done b{visibility:hidden}
 .bl-goal.done::after{content:"✓";position:absolute;right:-4px;bottom:-4px;width:22px;height:22px;border-radius:50%;background:#3DBE5A;color:#fff;font-weight:900;font-size:14px;display:grid;place-items:center;box-shadow:0 2px 0 #23863B}
 .bl-goal.bump{animation:blBump .25s ease-out}
 @keyframes blBump{40%{transform:scale(1.16)}}
-.bl-score{flex:none;text-align:right;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--bl-txt);opacity:.85;min-width:52px}
-.bl-score b{display:block;font-size:17px;letter-spacing:0;font-variant-numeric:tabular-nums}
-.bl-score{position:relative}.bl-cmb{position:absolute;right:0;top:100%;margin-top:2px;font-style:normal;font-size:10px;font-weight:900;white-space:nowrap;background:#FFC93A;color:#6A3A00;border-radius:99px;padding:1px 7px;opacity:0;letter-spacing:0;text-transform:none}
+.bl-score{position:absolute;right:12px;top:-11px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--bl-txt);background:var(--bl-gbg);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1.5px solid rgba(255,255,255,.9);border-radius:99px;padding:2px 9px;white-space:nowrap}
+.bl-score b{display:inline;font-size:12px;letter-spacing:0;font-variant-numeric:tabular-nums;margin-left:4px}
+.bl-cmb{position:absolute;right:100%;top:0;margin-right:5px;font-style:normal;font-size:10px;font-weight:900;white-space:nowrap;background:#FFC93A;color:#6A3A00;border-radius:99px;padding:1px 7px;opacity:0;letter-spacing:0;text-transform:none}
 .bl-cmb.on{animation:blCmb 2.2s ease-out forwards}@keyframes blCmb{0%{opacity:0;transform:scale(.6)}10%{opacity:1;transform:scale(1.15)}20%{transform:none}80%{opacity:1}100%{opacity:0}}
-.bl-scene{position:relative;border-radius:18px;overflow:hidden;padding:8px 4px;display:grid;place-items:center}
+.bl-scene{position:relative;border-radius:18px;overflow:hidden;padding:8px 2px;display:grid;place-items:center}
 .bl-board{position:relative;touch-action:none}
 .bl-frame{position:absolute;inset:0;filter:drop-shadow(0 6px 14px rgba(40,10,70,.3))}
 .bl-frame>div{position:absolute;inset:0}.bl-frame i{position:absolute;background:#fff;border-radius:12px}
@@ -456,14 +456,15 @@ input{font:inherit;color:inherit}
 .bl-help b{color:#fff}
 @media (prefers-reduced-motion:reduce){.bl-pc.hint svg,.bl-moves.low{animation:none}}
 .bl-help{min-height:0;font-weight:700}.bl-help:empty{display:none}.bl-help.on{color:#fff}
-.bl-bar{display:flex;justify-content:center;gap:14px;margin-top:-2px}
-.bl-boost{position:relative;width:58px;height:58px;border-radius:50%;border:2px solid rgba(255,255,255,.9);background:var(--bl-hbg);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 5px 14px rgba(40,10,60,.25);padding:9px;display:grid;place-items:center}
-.bl-boost svg{width:100%;height:100%}
-.bl-boost b{position:absolute;right:-5px;top:-5px;min-width:22px;height:22px;padding:0 5px;box-sizing:border-box;border-radius:11px;background:var(--bl-acc);color:#fff;font-size:12px;font-weight:900;line-height:22px;box-shadow:0 2px 0 var(--bl-accd)}
-.bl-boost span{position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);white-space:nowrap}
-.bl-boost.on{box-shadow:0 0 0 3px #fff,0 0 18px #FFE680;transform:scale(1.08)}
-.bl-boost.empty{opacity:.55}.bl-boost.empty b{background:#3DBE5A;box-shadow:0 2px 0 #23863B}
-.bl-wrap .bl-bar{margin-bottom:14px}
+.bl-bar{flex:none;display:flex;gap:5px;margin-left:auto}
+.bl-boost{position:relative;width:36px;height:36px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);background:radial-gradient(120% 90% at 40% 25%,#4A3D86,#1A1236 70%);box-shadow:0 3px 8px rgba(20,8,50,.35),inset 0 1px 0 rgba(255,255,255,.18);padding:6px;display:grid;place-items:center}
+.bl-boost svg{width:100%;height:100%;fill:var(--c);filter:drop-shadow(0 0 3px var(--c))}
+.bl-boost b{position:absolute;right:-6px;top:-7px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:var(--bl-acc);color:#fff;font-size:10.5px;font-weight:900;line-height:18px;box-shadow:0 1.5px 0 var(--bl-accd)}
+.bl-boost.on{box-shadow:0 0 0 2.5px #fff,0 0 16px var(--c);transform:scale(1.08)}
+.bl-boost.empty{opacity:.5}.bl-boost.empty b{background:#3DBE5A;box-shadow:0 1.5px 0 #23863B}
+.bl-help{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:12;white-space:nowrap;font-size:12.5px;font-weight:800;color:#fff;background:rgba(26,18,54,.82);padding:6px 12px;border-radius:99px;pointer-events:none}.bl-help:empty{display:none}
+.bl-hsp svg{fill:#FF7FB2;filter:drop-shadow(0 0 4px #FF7FB2)}
+.bl-gb{border-radius:12px;background:radial-gradient(120% 90% at 40% 25%,#4A3D86,#1A1236 70%);padding:6px}.bl-gb svg{fill:var(--c);filter:drop-shadow(0 0 3px var(--c))}
 .bl-jam{position:absolute;pointer-events:none}.bl-jam svg{width:100%;height:100%;display:block}
 .bl-jam.gone{animation:blGone .3s ease-in forwards}
 .bl-bub{position:absolute;pointer-events:none;z-index:3}.bl-bub svg{width:100%;height:100%;display:block}
@@ -472,7 +473,7 @@ input{font:inherit;color:inherit}
 .bl-big{position:absolute;pointer-events:none;z-index:1}.bl-big svg{width:100%;height:100%;display:block}
 .bl-big.hit{animation:blShake .22s}.bl-big.gone{animation:blGone .32s ease-in forwards}
 .bl-chain.hit{animation:blShake .22s}
-.bl-paint{position:absolute;right:-8px;top:-12px;width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:var(--bl-acc);color:#fff;padding:4px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.bl-paint{position:absolute;left:-8px;top:-12px;width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:var(--bl-acc);color:#fff;padding:4px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .bl-paint svg{width:100%;height:100%;display:block}
 .bl-pick .bl-sw button{width:auto;background:none;box-shadow:none;padding:4px 0;font-size:11px;font-weight:700;border-radius:0}
 .bl-pick>div{padding-top:16px}.bl-pick h3{margin-top:0}.bl-pick .bl-sw{margin:6px 0 12px}.bl-pick .bl-sw button{color:#8A7CA8}.bl-pick .bl-sw .on{color:#3B2A6E}.bl-pick .bl-sw i b{box-shadow:0 0 0 2px #fff}.bl-pick .bl-sw .on i{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--bl-acc)}
@@ -2790,9 +2791,9 @@ function blGuide() {
       $('div', 'bl-grow', `<span class="bl-gi">${blArt(-2)}</span><div><b>Toys to bring down</b> — can\'t be matched or blasted. Clear pieces underneath so they fall; a toy is collected when it reaches the <b>lowest cell of its column</b>. New toys drop in from the top until you have them all.</div>`),
       blDemo(['t 2', '1 4', '1* 3', '1 0'], ['. 2', '. 4', '. 3', 't 0'], 'Clear the column under the toy and it drops to the bottom.')),
     sec('8 · Boosters',
-      $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.hammer}</span><div><b>Hammer</b> — tap it, then tap any cell: smashes that piece or hits that blocker once. Sets off power-ups. Can\'t smash toys.</div>`),
-      $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.glove}</span><div><b>Wand</b> — tap it, then swap <b>any two</b> neighbours, even if it makes no match. Swapping two power-ups this way makes their combo.</div>`),
-      $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.shuffle}</span><div><b>Shuffle</b> — mixes up the pieces (power-ups, toys and locked pieces stay put). The board also shuffles by itself for free if no move is possible.</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi bl-gb" style="--c:${BL_BOOST_COL.hammer}">${BL_BOOST_ART.hammer}</span><div><b>Hammer</b> — tap it, then tap any cell: smashes that piece or hits that blocker once. Sets off power-ups. Can\'t smash toys.</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi bl-gb" style="--c:${BL_BOOST_COL.glove}">${BL_BOOST_ART.glove}</span><div><b>Wand</b> — tap it, then swap <b>any two</b> neighbours, even if it makes no match. Swapping two power-ups this way makes their combo.</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi bl-gb" style="--c:${BL_BOOST_COL.shuffle}">${BL_BOOST_ART.shuffle}</span><div><b>Shuffle</b> — mixes up the pieces (power-ups, toys and locked pieces stay put). The board also shuffles by itself for free if no move is possible.</div>`),
       P('None of them use a move. Tap an active booster again to cancel it.'),
       P('<b>Start-of-level power-ups</b> (Rocket, Bomb, Disco ball): every new level opens with its card — goals, moves and “Start with”. Tap the ones you want, then Play; they\'re placed on the board right away. Each pick is used up, so you choose again on every level.'),
       P('<b>Earning</b> (the first time you finish a level): Normal → +1 Hammer, Wand or Shuffle · Hard → that plus +1 Rocket, Bomb or Disco ball · Super hard → +2 Hammer/Wand/Shuffle and +1 Rocket/Bomb/Disco. Replaying an old level gives nothing. You start with 3 hammers, 3 wands, 2 shuffles, 2 rockets, 2 bombs and 1 disco ball.')),
@@ -2834,11 +2835,12 @@ const blChest = (hp) => `<svg viewBox="0 0 200 200"><rect x="8" y="20" width="18
 const BL_CHEST_ICON = '<svg viewBox="0 0 100 100"><rect x="6" y="12" width="88" height="80" rx="14" fill="#B8743A"/><rect x="6" y="12" width="88" height="32" rx="14" fill="#D58E4C"/><rect x="6" y="40" width="88" height="7" fill="#8E5422"/><rect x="14" y="12" width="9" height="80" fill="#FFC93A"/><rect x="77" y="12" width="9" height="80" fill="#FFC93A"/><rect x="38" y="32" width="24" height="24" rx="5" fill="#FFC93A"/><circle cx="50" cy="43" r="4" fill="#7A4A00"/></svg>';
 const BL_ICON = { box: () => blBox(1), chain: () => blChain(1), grass: () => BL_GRASS, ice: () => BL_GLASS, jam: () => BL_JAM, bubble: () => `<svg viewBox="0 0 100 100"><g transform="translate(16 16) scale(.68)">${blArt(2).replace(/<\/?svg[^>]*>/g, '')}</g></svg>`.replace('</svg>', BL_BUBBLE.replace(/<\/?svg[^>]*>/g, '') + '</svg>'), big: () => BL_CHEST_ICON, drop: () => blArt(-2) };
 // boosters: in-level (hammer, glove, shuffle) and pre-level (start with a rocket, bomb or disco ball)
-const BL_BOOST_ART = { // pearl & lilac porcelain, lit like the pieces
-  hammer: '<svg viewBox="0 0 100 100"><ellipse cx="50" cy="92" rx="30" ry="5.5" fill="#2A1F5C" opacity=".25"/><g transform="rotate(-38 50 50)"><rect x="44.5" y="40" width="11" height="54" rx="5.5" fill="url(#blxFpearl)"/><rect x="47" y="44" width="2.4" height="46" rx="1.2" fill="#fff"/><rect x="18" y="13" width="64" height="31" rx="12" fill="url(#blxFlilac)"/><rect x="18" y="13" width="64" height="31" rx="12" fill="url(#blxDao)"/><rect x="24" y="17" width="44" height="6" rx="3" fill="#fff" opacity=".75"/><rect x="44" y="12" width="12" height="33" rx="3" fill="#6E4AC0" opacity=".25"/></g></svg>',
-  glove: '<svg viewBox="0 0 100 100"><ellipse cx="50" cy="92" rx="30" ry="5.5" fill="#2A1F5C" opacity=".25"/><g transform="rotate(40 50 54)"><rect x="45" y="40" width="10" height="56" rx="5" fill="url(#blxFpearl)"/><rect x="47.2" y="44" width="2.2" height="48" rx="1.1" fill="#fff"/><rect x="45" y="40" width="10" height="9" rx="3" fill="url(#blxFlilac)"/><rect x="45" y="84" width="10" height="9" rx="3" fill="url(#blxFlilac)"/></g><path d="M44 6l7.5 15.2 16.8 2.4-12.2 11.9 2.9 16.7L44 44.3l-15 7.9 2.9-16.7-12.2-11.9 16.8-2.4z" fill="url(#blxFlilac)"/><path d="M44 6l7.5 15.2 16.8 2.4-12.2 11.9 2.9 16.7L44 44.3l-15 7.9 2.9-16.7-12.2-11.9 16.8-2.4z" fill="url(#blxDao)"/><path d="M40 16l4-8 3 7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/><path class="bl-tw" d="M80 50l1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6z" fill="#E0457E"/><path d="M14 58l1.2 3.3 3.3 1.2-3.3 1.2-1.2 3.3-1.2-3.3-3.3-1.2 3.3-1.2z" fill="#B89AF0"/></svg>',
-  shuffle: '<svg viewBox="0 0 100 100"><ellipse cx="50" cy="92" rx="30" ry="5.5" fill="#2A1F5C" opacity=".25"/><circle cx="50" cy="50" r="38" fill="url(#blxFpearl)"/><circle cx="50" cy="50" r="38" fill="url(#blxDao)"/><ellipse cx="40" cy="30" rx="18" ry="9" fill="#fff" opacity=".8"/><path d="M30 52A20 20 0 0 1 64 35" stroke="url(#blxFlilac)" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M58 25L73 35L57 44Z" fill="#8A62DC"/><path d="M70 48A20 20 0 0 1 36 65" stroke="url(#blxFpk)" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M42 75L27 65L43 56Z" fill="#E0457E"/></svg>',
+const BL_BOOST_ART = { // ink glass: a softly glowing symbol on a dark glossy button
+  hammer: '<svg viewBox="0 0 100 100"><g transform="rotate(-38 50 50)"><rect x="46" y="44" width="8" height="38" rx="4"/><rect x="27" y="22" width="46" height="22" rx="7"/></g></svg>',
+  glove: '<svg viewBox="0 0 100 100"><g transform="rotate(40 50 56)"><rect x="46.5" y="44" width="7" height="46" rx="3.5"/></g><path d="M42 12l6 12.2 13.4 1.9-9.7 9.5 2.3 13.4L42 42.6l-12 6.4 2.3-13.4-9.7-9.5 13.4-1.9z"/></svg>',
+  shuffle: '<svg viewBox="0 0 100 100"><path d="M28 54A22 22 0 0 1 66 32l-5-7 17 2-5 16-5-7A14 14 0 0 0 36 54Z"/><path d="M72 46A22 22 0 0 1 34 68l5 7-17-2 5-16 5 7A14 14 0 0 0 64 46Z"/></svg>',
 };
+const BL_BOOST_COL = { hammer: '#FF7FB2', glove: '#C6A2FF', shuffle: '#6FF0D6' };
 const BL_BOOST_NAME = { hammer: 'Hammer', glove: 'Wand', shuffle: 'Shuffle', rocket: 'Rocket', bomb: 'Bomb', rain: 'Disco ball' };
 const blBoosts = () => { S.blBoost = S.blBoost || { hammer: 3, glove: 3, shuffle: 2, rocket: 2, bomb: 2, rain: 1 }; return S.blBoost; };
 const BL_INTRO = {
@@ -2875,9 +2877,10 @@ function mountBL(stage, controls, P, api, ctx) {
   const frame = $('div', 'bl-frame'), tiles = $('div', 'bl-tiles'), obs = $('div', 'bl-obs'), pcs = $('div', 'bl-pcs'), chL = $('div', 'bl-obs'), fxL = $('div', 'bl-fx');
   board.append(frame, tiles, obs, pcs, chL, fxL);
   const banner = $('div', 'bl-banner');
-  scene.append(board, banner);
   const bar = $('div', 'bl-bar'), help = $('div', 'bl-help');
-  wrap.append(hud, scene, bar, help);
+  scene.append(board, banner, help);
+  wrap.append(hud, scene);
+  hud.insertBefore(bar, scoreEl); // boosters sit at the right end of the level card: the board gets the space
   wrap.style.cssText = blThemeVars(bc.blTheme);
   const paintBtn = $('button', 'bl-paint', '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c1.4 0 2-1 2-2 0-.6-.3-1-.6-1.4-.3-.4-.5-.8-.5-1.3 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.5 17 3 12 3Z" fill="currentColor"/><circle cx="7.5" cy="11" r="1.6" fill="#FF6FB5"/><circle cx="10.5" cy="7" r="1.6" fill="#FFC21A"/><circle cx="15" cy="7.5" r="1.6" fill="#3CC64A"/><circle cx="17" cy="11.5" r="1.6" fill="#2F7BEB"/></svg>');
   paintBtn.setAttribute('aria-label', 'Colours and pieces'); hud.appendChild(paintBtn);
@@ -2926,7 +2929,7 @@ function mountBL(stage, controls, P, api, ctx) {
   }
   const nbrs = (i) => { const [r, c] = rcOf(i); return [i, r > 0 ? i - W : -1, r < H - 1 ? i + W : -1, c > 0 ? i - 1 : -1, c < W - 1 ? i + 1 : -1].filter((j) => j >= 0); };
   function layout() {
-    cs = Math.max(30, Math.floor(Math.min(wrap.clientWidth - 24, 420) / W));
+    cs = Math.max(30, Math.floor(Math.min(wrap.clientWidth - 22, 440) / W));
     board.style.width = W * cs + 'px'; board.style.height = H * cs + 'px';
     frame.innerHTML = ''; tiles.innerHTML = ''; obs.innerHTML = ''; chL.innerHTML = ''; tileEls.length = 0; boxEls.clear(); chainEls.clear(); iceEls.clear(); jamEls.clear(); bubEls.clear(); bigEls.clear();
     gShown = st.grass.slice();
@@ -3449,7 +3452,7 @@ function mountBL(stage, controls, P, api, ctx) {
   function setMode(m) { mode = m; for (const [k, b] of Object.entries(bBtns)) b.classList.toggle('on', k === m); help.textContent = m ? HELP[m] : ''; help.classList.toggle('on', !!m); setSel(null); }
   function paintBar() { for (const [k, b] of Object.entries(bBtns)) { b.querySelector('b').textContent = inv[k] || '+'; b.classList.toggle('empty', !inv[k]); } }
   for (const k of ['hammer', 'glove', 'shuffle']) {
-    const b = $('button', 'bl-boost', `${BL_BOOST_ART[k]}<b></b><span>${BL_BOOST_NAME[k]}</span>`);
+    const b = $('button', 'bl-boost', `${BL_BOOST_ART[k]}<b></b>`); b.style.setProperty('--c', BL_BOOST_COL[k]); b.setAttribute('aria-label', BL_BOOST_NAME[k]);
     b.onclick = () => {
       if (busy || api.done) return;
       if (!inv[k]) { help.textContent = `No ${BL_BOOST_NAME[k].toLowerCase()}s left — you win more by finishing levels`; help.classList.add('on'); setTimeout(() => { if (!mode) { help.textContent = ''; help.classList.remove('on'); } }, 2200); return; }
@@ -3465,7 +3468,7 @@ function mountBL(stage, controls, P, api, ctx) {
     const r = M3.hammer(st, i); if (!r.ok) { shakeHeld(i); return; }
     busy = true; clearHint(); useBoost('hammer');
     const [x, y] = pxy(i);
-    const h = $('div', 'bl-sprite', BL_BOOST_ART.hammer); h.style.cssText = `left:${x - cs * 0.2}px;top:${y - cs * 1.1}px;width:${cs * 1.1}px;height:${cs * 1.1}px;transform-origin:20% 90%`; fxL.appendChild(h);
+    const h = $('div', 'bl-sprite bl-hsp', BL_BOOST_ART.hammer); h.style.cssText = `left:${x - cs * 0.2}px;top:${y - cs * 1.1}px;width:${cs * 1.1}px;height:${cs * 1.1}px;transform-origin:20% 90%`; fxL.appendChild(h);
     await h.animate([{ transform: 'rotate(-50deg)', opacity: 0 }, { transform: 'rotate(-60deg)', opacity: 1, offset: 0.4 }, { transform: 'rotate(15deg)', opacity: 1 }], { duration: T(320), easing: 'cubic-bezier(.5,0,.8,.4)' }).finished.catch(() => {});
     h.remove(); quake(false); burst(x, y, { n: 16, colors: GOLD, min: 80, max: 300, g: 400, life: 0.5, size: 7 });
     await play(r.ev); await after();
