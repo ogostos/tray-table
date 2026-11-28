@@ -397,9 +397,13 @@ input{font:inherit;color:inherit}
 .bl-tile.grass{background-color:var(--bl-carpet);background-image:radial-gradient(rgba(255,255,255,.09) 1px,transparent 1.4px),radial-gradient(rgba(0,60,20,.18) 1px,transparent 1.4px);background-size:6px 6px,7px 7px;background-position:0 0,3px 2px;box-shadow:none;border-radius:0}
 .bl-tile.grow{animation:blGrow .4s ease-out}
 @keyframes blGrow{0%{filter:saturate(1.6) brightness(1.15)}100%{filter:none}}
-.bl-ice{position:absolute;pointer-events:none;border-radius:7px;background:linear-gradient(135deg,rgba(225,246,255,.92),rgba(170,220,250,.85));box-shadow:inset 0 0 0 2.5px #fff,inset 0 0 0 4px rgba(110,180,230,.5)}
-.bl-ice::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,transparent 22%,rgba(255,255,255,.95) 23% 29%,transparent 30% 44%,rgba(255,255,255,.8) 45% 49%,transparent 50%)}
-.bl-ice.l2{background:linear-gradient(135deg,rgba(240,250,255,.98),rgba(150,205,240,.95));box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 6px rgba(90,160,220,.6),inset 0 0 12px rgba(255,255,255,.9)}
+.bl-ice{position:absolute;pointer-events:none;z-index:1;border-radius:9px;background:linear-gradient(135deg,rgba(215,242,255,.32),rgba(150,210,250,.2));box-shadow:inset 0 0 0 2.5px rgba(255,255,255,.95),inset 0 0 0 4.5px rgba(100,175,235,.6)}
+.bl-ice::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,transparent 14%,rgba(255,255,255,.85) 15% 21%,transparent 22% 30%,rgba(255,255,255,.6) 31% 34%,transparent 35%)}
+/* frosted glass (2 hits): thick white frost you can clearly see over the piece */
+.bl-ice.l2{background:radial-gradient(60% 60% at 50% 50%,rgba(245,252,255,.38),rgba(235,248,255,.7)),repeating-linear-gradient(45deg,rgba(255,255,255,.18) 0 3px,transparent 3px 7px);box-shadow:inset 0 0 0 3.5px #fff,inset 0 0 0 7px rgba(140,200,245,.75),inset 0 0 14px 4px rgba(255,255,255,.95)}
+.bl-ice.l2::after{content:"";position:absolute;right:3px;top:3px;width:30%;height:30%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1v18M2 5.5l16 9M2 14.5l16-9' stroke='%23fff' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;filter:drop-shadow(0 0 2px rgba(60,140,220,.8))}
+/* after the first hit: plain glass with cracks */
+.bl-ice.cracked::after{content:"";position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 20L6 8M20 20L34 12M20 20L26 36M20 20L5 28M13 14l-3 6M27 16l5 4' stroke='%23fff' stroke-width='1.6' fill='none' stroke-linecap='round' opacity='.95'/%3E%3C/svg%3E") center/100% no-repeat}
 .bl-ice.crack{animation:blShake .22s}
 .bl-pc{position:absolute;left:0;top:0;will-change:transform}
 .bl-pc svg{position:absolute;inset:2%;width:96%;height:96%;overflow:visible;transition:transform .12s}
@@ -2792,7 +2796,7 @@ function blGuide() {
       blDemo(['B 1 1 1*'], ['. . . .'], 'A match touching the cushion breaks it.'),
       $('div', 'bl-grow', `<span class="bl-gi">${blChain(1)}</span><div><b>Chains</b> — lock a piece: it <b>can\'t be moved</b> and doesn\'t fall. The piece still matches: match it, or blast it, to break the chain (the piece stays). Crossed chains need 2 hits.</div>`),
       $('div', 'bl-grow', `<span class="bl-gi">${BL_BUBBLE}</span><div><b>Bubbles</b> — hold a piece in place like chains. They pop when you match <b>next to</b> them, when the piece inside is part of a match, or when a blast hits them. The piece inside stays.</div>`),
-      $('div', 'bl-grow', `<span class="bl-gi">${BL_GLASS}</span><div><b>Glass tiles</b> — lie <b>under</b> pieces, so the pieces on them move freely. When the piece on top is cleared (by a match or a blast), the glass breaks. Frosted glass needs 2.</div>`),
+      $('div', 'bl-grow', `<span class="bl-gi">${BL_GLASS}</span><div><b>Glass tiles</b> — belong to the <b>cell</b>, not the piece: pieces slide in and out freely. Clear whatever piece is on a glass cell (a match or a blast) and the glass breaks. <b>Frosted glass</b> (white, with a snowflake) takes <b>two</b> clears on that cell: the first one cracks it, the second breaks it.</div>`),
       $('div', 'bl-grow', `<span class="bl-gi">${BL_JAM}</span><div><b>Jam</b> — also under pieces; clear the piece on top to wipe it. After <b>any move that clears no jam</b>, it spreads to one neighbouring cell (the goal number goes up). Boosters never make it spread.</div>`),
       $('div', 'bl-grow', `<span class="bl-gi">${BL_CHEST_ICON}</span><div><b>Toy chests</b> — big 2×2 blockers. The number on them is how many hits are left. Each match next to it = 1 hit, each blast that touches any part of it = 1 hit (once per wave).</div>`),
       $('div', 'bl-grow', `<span class="bl-gi">${blArt(-2)}</span><div><b>Toys to bring down</b> — can\'t be matched or blasted. Clear pieces underneath so they fall; a toy is collected when it reaches the <b>lowest cell of its column</b>. New toys drop in from the top until you have them all.</div>`),
@@ -2859,13 +2863,13 @@ const blBoosts = () => { S.blBoost = S.blBoost || { hammer: 3, glove: 3, shuffle
 const BL_INTRO = {
   box: ['box', 'Cushions', 'Match pieces <b>next to</b> a cushion to knock it off the board.'],
   carpet: ['grass', 'Carpet', 'Match on the carpet and it <b>spreads</b> to every piece in the match. Cover the whole floor.'],
-  glass: ['ice', 'Glass tiles', 'Pieces sit on glass. Match the piece on top to <b>break the glass</b> under it.'],
+  glass: ['ice', 'Glass tiles', 'Glass belongs to the cell. Pieces move in and out freely — clear the piece on a glass cell to <b>break the glass</b>.'],
   chain: ['chain', 'Chains', 'A chained piece can\'t move. Match it (or blast it) to <b>break the chain</b>.'],
   box2: ['box', 'Thick cushions', 'Gold-trimmed cushions take <b>two hits</b>.'],
   colors6: [null, 'Six kinds', 'A sixth piece joins the board — matches get <b>harder to find</b>.'],
   chain2: ['chain', 'Double chains', 'Crossed chains need <b>two hits</b> to break.'],
   box3: ['box', 'Royal cushions', 'The purple ones take <b>three hits</b>.'],
-  glass2: ['ice', 'Thick glass', 'Frosted glass needs <b>two hits</b>.'],
+  glass2: ['ice', 'Frosted glass', 'The white glass with a snowflake needs <b>two</b> clears on the same cell: the first cracks it, the second breaks it.'],
   drop: ['drop', 'Bring them down', 'Toys can\'t be matched or blasted. Clear the pieces <b>under</b> them until they reach the <b>bottom</b> of the board.'],
   bubble: ['bubble', 'Bubbles', 'A piece in a bubble can\'t move. Match <b>next to</b> it, or blast it, to pop the bubble.'],
   jam: ['jam', 'Jam', 'Match on top of jam to clear it. Careful — if a move clears <b>no jam</b>, it <b>spreads</b>.'],
@@ -2968,7 +2972,7 @@ function mountBL(stage, controls, P, api, ctx) {
     syncAll(); sizeCv();
     st.bub.forEach((b, i) => { if (b) inBub(i, true); });
   }
-  function putIce(i) { const [x, y] = xy(i); const el = $('div', 'bl-ice' + (st.ice[i] > 1 ? ' l2' : '')); el.style.cssText = `left:${x + 2}px;top:${y + 2}px;width:${cs - 4}px;height:${cs - 4}px`; tiles.appendChild(el); iceEls.set(i, el); }
+  function putIce(i) { const [x, y] = xy(i); const el = $('div', 'bl-ice' + (st.ice[i] > 1 ? ' l2' : '')); el.style.cssText = `left:${x + 1.5}px;top:${y + 1.5}px;width:${cs - 3}px;height:${cs - 3}px`; chL.appendChild(el); iceEls.set(i, el); }
   const jamEls = new Map(), bubEls = new Map(), bigEls = new Map();
   function putJam(i) { const [x, y] = xy(i); const el = $('div', 'bl-jam', BL_JAM); el.style.cssText = `left:${x - 1}px;top:${y - 1}px;width:${cs + 2}px;height:${cs + 2}px`; tiles.appendChild(el); jamEls.set(i, el); return el; }
   const inBub = (i, on) => { const q = st.p[i], el = q && els.get(q.id); if (el) el.classList.toggle('inbub', on); };
@@ -3251,7 +3255,7 @@ function mountBL(stage, controls, P, api, ctx) {
         const el = iceEls.get(c.i); if (!el) continue; const d = delayOf(c.i); maxD = Math.max(maxD, d + T(130));
         setTimeout(() => {
           const [x, y] = pxy(c.i); shatter(x, y, '#CFEFFF', '#FFFFFF', 7); burst(x, y, { n: 4, colors: ['#FFFFFF', '#BFEFFF'], kinds: ['star'], min: 40, max: 160, g: 200, life: 0.45, size: 6 });
-          if (c.left > 0) { el.classList.remove('l2', 'crack'); void el.offsetWidth; el.classList.add('crack'); }
+          if (c.left > 0) { el.classList.remove('l2', 'crack'); void el.offsetWidth; el.classList.add('crack', 'cracked'); burst(x, y, { n: 10, colors: ['#FFFFFF', '#E6F6FF'], kinds: ['dot'], min: 60, max: 220, g: 200, life: 0.5, size: 5 }); }
           else { iceEls.delete(c.i); el.classList.add('gone'); setTimeout(() => el.remove(), 320); dec(goalIdx('ice')); }
         }, d);
       }

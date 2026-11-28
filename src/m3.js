@@ -102,7 +102,7 @@ const M3 = (() => {
         // glass in a symmetric patch
         const r0 = 1 + RI(Math.max(1, H - 4)), h = 2 + RI(3), w = 2 + RI(2);
         let cnt = 0;
-        for (let r = r0; r < Math.min(H, r0 + h); r++) for (let c = 0; c < w; c++) for (const cc of [c, W - 1 - c]) { const i = r * W + cc; if (mask[i] && !box[i] && !ice[i] && !bigId[i] && !jam[i]) { ice[i] = 1 + (maxL > 1 && R() < 0.45 ? 1 : 0); cnt++; } }
+        for (let r = r0; r < Math.min(H, r0 + h); r++) for (let c = 0; c < w; c++) for (const cc of [c, W - 1 - c]) { const i = r * W + cc; if (mask[i] && !box[i] && !ice[i] && !bigId[i] && !jam[i]) { ice[i] = 1 + (maxL > 1 && (n === INTRO.glass2 || R() < 0.45) ? 1 : 0); cnt++; } } // the level that introduces frosted glass uses only frosted glass
         if (n >= 16 && R() < 0.5) for (let r = r0; r < Math.min(H, r0 + h); r++) for (const cc of [3, 4]) { const i = r * W + cc; if (mask[i] && !box[i] && !ice[i] && !bigId[i] && !jam[i]) { ice[i] = 1; cnt++; } }
         goals.push({ t: 'ice', n: cnt });
       } else if (kind === 'grass') {
