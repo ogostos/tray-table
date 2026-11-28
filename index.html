@@ -235,8 +235,15 @@ input{font:inherit;color:inherit}
 .pill.on{background:#fff;color:#0B0D12;border-color:#fff}
 .pill.on .dot{background:var(--pc,#22C55E)}
 .sheet{max-height:92dvh;overflow:auto}
-.lobby .rules{background:var(--s2);border-radius:16px;padding:12px 14px;margin-bottom:14px}
-.lobby .rules p{font-size:13.5px;margin:0 0 6px;line-height:1.45}
+.lobby .rules{background:var(--s2);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.lobby .rules p{font-size:12.5px;margin:0 0 6px;line-height:1.42}
+.lobby .lobby-btns{margin-bottom:12px}
+.fold{border-top:1px solid var(--line);padding:2px 0}
+.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:12px 2px;font-size:15px}
+.fold>summary::-webkit-details-marker{display:none}
+.fold>summary::after{content:"›";margin-left:auto;color:var(--mute);font-size:18px;transition:transform .2s}
+.fold[open]>summary::after{transform:rotate(90deg)}
+.fold>summary small{color:var(--mute);font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lobby .rules p:last-child{margin:0}
 .opt{margin-bottom:12px}
 .opt>label{display:block;font-size:12px;color:var(--mute);font-weight:700;margin:0 2px 6px}
@@ -400,7 +407,7 @@ input{font:inherit;color:inherit}
 .bl-pc.hint svg{animation:blHint 1s ease-in-out infinite}
 @keyframes blHint{0%,100%{transform:none}25%{transform:scale(1.12) rotate(-6deg)}75%{transform:scale(1.12) rotate(6deg)}}
 .bl-pc.sp svg{animation:blIdle 1.6s ease-in-out infinite}
-.bl-pc[data-sp=rain] svg{animation:blSpin 6s linear infinite}
+.bl-pc[data-sp=rain] svg{animation:blIdle 1.6s ease-in-out infinite}
 @keyframes blIdle{50%{transform:scale(1.06)}}
 @keyframes blSpin{to{transform:rotate(360deg)}}
 .bl-trail{position:absolute;pointer-events:none;border-radius:99px;z-index:4}
@@ -486,6 +493,17 @@ input{font:inherit;color:inherit}
 .bl-gtab>div{display:flex;align-items:center;gap:4px;margin:6px 0}.bl-gtab .bl-gi{width:32px;height:32px}.bl-gtab span{color:var(--mute);font-weight:900}.bl-gtab p{margin:0 0 0 6px!important;flex:1}
 .bl-guide-btn{margin-bottom:10px}
 /* Bloom menu: colour swatches + piece sets */
+.bl-start .goals{display:flex;justify-content:center;gap:8px;margin:4px 0 6px}
+.bl-start .g{width:64px;height:64px;border-radius:14px;background:#F3F0FA;display:grid;place-items:center;align-content:center}.bl-start .g svg{width:34px;height:34px}.bl-start .g b{font-size:15px;font-weight:900;color:#3B2A6E}
+.bl-start .mv{font-size:14px;font-weight:800;color:#5D4E8E;margin:6px 0 12px}
+.bl-start .pre small{display:block;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8A7CA8;margin-bottom:6px}
+.bl-start .pre .row{display:flex;justify-content:center;gap:10px;margin-bottom:16px}
+.bl-start .pre button{position:relative;width:70px;padding:8px 4px 6px;background:#F3F0FA;border-radius:16px;box-shadow:none;border:2px solid transparent;color:#5D4E8E;font-size:11px;font-weight:800;display:grid;justify-items:center;gap:2px}
+.bl-start .pre button svg{width:36px;height:36px}
+.bl-start .pre button i{position:absolute;right:-6px;top:-6px;min-width:22px;height:22px;border-radius:11px;background:var(--bl-acc);color:#fff;font:900 12px/22px system-ui;font-style:normal;padding:0 4px;box-sizing:border-box}
+.bl-start .pre button.on{border-color:var(--bl-acc);background:#fff}.bl-start .pre button.on i{background:#3DBE5A}
+.bl-start .pre button.none{opacity:.45}.bl-start .pre button.none i{background:#A9A4C8}
+.bl-start.hard>div{border-color:#E5323A;box-shadow:0 6px 0 #8E0C18,0 18px 40px rgba(20,5,60,.5)}.bl-start.hard .rib{background:linear-gradient(180deg,#FF6B6B,#D4202B);color:#fff;box-shadow:0 3px 0 #8E0C18}
 .bl-pre{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .bl-pre button{position:relative;display:grid;justify-items:center;gap:2px;padding:8px 4px;border-radius:14px;border:1.5px solid var(--line,#2C2F3A);background:var(--card,#1B1D26);color:var(--mute);font:inherit;font-size:11px;font-weight:700}
 .bl-pre svg{width:34px;height:34px}.bl-pre b{position:absolute;right:6px;top:6px;font-size:11px;color:var(--tx)}
@@ -579,6 +597,7 @@ body.has-bar #app{padding-bottom:170px}
 @keyframes up{from{transform:translateY(40px);opacity:.4}}
 .kicker{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);font-weight:800}
 .sheet h2{margin:6px 0 14px;font-size:30px;letter-spacing:-.02em}
+.lobby h2{margin:4px 0 12px;font-size:26px}
 .sheet p{color:var(--mute);font-size:15px;line-height:1.5;margin:0 0 10px}
 .res-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .res{background:var(--s2);border:1px solid var(--line);border-radius:18px;padding:12px 14px}
@@ -2483,7 +2502,7 @@ const UB_BANK = [["8:222h142v122h333h322v053v312v302v032h002h112v442h512h","8:22
 </script>
 <script>
 // ====================== STATE ======================
-const APP_VERSION = '0a12a342fd';
+const APP_VERSION = '9cade200fe';
 const KEY = 'traytable.v2';
 const store = (() => {
   let mem = null;
@@ -2522,7 +2541,7 @@ const COLOUR_GAMES = [
     rules: ['Tap a tube, then another, to <b>pour</b> its top colour across.', 'You can only pour onto the <b>same colour</b> or into an empty tube, and only while there\'s room.', 'Sort every colour into its own tube. Fewer pours wins. Undo is free.'],
     icon: `<svg viewBox="0 0 46 46">${[['#FF5A5F','#4C6FFF','#FF5A5F'],['#4C6FFF','#FFB020','#4C6FFF'],['#FFB020','#FF5A5F','#FFB020']].map((t,k)=>`<rect x="${5+k*13}" y="6" width="10" height="34" rx="5" fill="none" stroke="#3A4152" stroke-width="1.6"/>`+t.map((c,j)=>`<rect x="${6.5+k*13}" y="${29-j*9.5}" width="7" height="9" rx="${j?1:3}" fill="${c}"/>`).join('')).join('')}</svg>`, mount: mountPR },
   { id: 'bl', sec: 'c', name: 'Bloom', color: 'var(--bl)', metric: 'pts', unit: 'Level', noTimer: 1, ownHud: 1, oneTrack: 5, lobby: (...a) => blLobby(...a), guide: () => blGuide(), desc: 'Match three, one level after another. Rockets, bombs, planes and rainbow combos.',
-    rules: ['<b>Swap</b> two neighbouring pieces to line up 3 or more of a kind. Finish the goals in the card at the top before your <b>moves</b> run out. Levels go on forever and new things turn up along the way — cushions, carpet, glass, chains, toys to bring down, bubbles, jam, toy chests. Every 4th level (from 12) is a <b>Hard level</b>, every 10th (from 20) is <b>Super hard</b>.', 'Bigger matches make power-ups: <b>4 in a line</b> → Rocket (clears that row or column) · <b>2×2 square</b> → Paper plane (hits around it, then flies to a goal) · <b>5 in an L or T shape</b> (3 one way + 3 the other, sharing a corner or middle) → Bomb · <b>5 in a straight line</b> → Disco ball (clears every piece of the kind you swap it with). Tap a power-up to fire it, or swap it.', 'Swap two power-ups together for <b>combos</b>. Moves left at the end turn into bonus rockets.', '<b>Boosters</b> (under the board): Hammer smashes any one cell, Glove swaps any two neighbours, Shuffle mixes the board — none of them use a move. You win one for every new level you finish; hard and super hard levels give more, including a Rocket, Bomb or Disco ball to start a level with (pick them here). Tap ? in the game for the full guide. Tap the paint button on the level card to change colours or pieces mid-game.'],
+    rules: ['<b>Swap</b> two neighbouring pieces to line up 3 or more of a kind. Finish the goals in the card at the top before your <b>moves</b> run out. Levels go on forever and new things turn up along the way — cushions, carpet, glass, chains, toys to bring down, bubbles, jam, toy chests. Every 4th level (from 12) is a <b>Hard level</b>, every 10th (from 20) is <b>Super hard</b>.', 'Bigger matches make power-ups: <b>4 in a line</b> → Rocket (clears that row or column) · <b>2×2 square</b> → Paper plane (hits around it, then flies to a goal) · <b>5 in an L or T shape</b> (3 one way + 3 the other, sharing a corner or middle) → Bomb · <b>5 in a straight line</b> → Disco ball (clears every piece of the kind you swap it with). Tap a power-up to fire it, or swap it.', 'Swap two power-ups together for <b>combos</b>. Moves left at the end turn into bonus rockets.', '<b>Boosters</b> (under the board): Hammer smashes any one cell, Glove swaps any two neighbours, Shuffle mixes the board — none of them use a move. You win one for every new level you finish; hard and super hard levels give more, including a Rocket, Bomb or Disco ball to start a level with (pick them on the level\'s start card). Tap ? in the game for the full guide. Tap the paint button on the level card to change colours or pieces mid-game.'],
     icon: `<svg viewBox="0 0 46 46"><rect x="1" y="1" width="44" height="44" rx="11" fill="#E9B8C4"/><use href="#bl-home-k0" x="3" y="3" width="20" height="20"/><use href="#bl-home-k3" x="23" y="3" width="20" height="20"/><use href="#bl-home-k1" x="3" y="23" width="20" height="20"/><use href="#bl-home-plane" x="23" y="23" width="20" height="20"/></svg>`, mount: mountBL },
   { id: 'fl', sec: 'c', name: 'Flood', color: 'var(--fl)', metric: 'moves', desc: 'Paint from the corner until the whole board is one colour.',
     rules: ['Your blob starts in the <b>top-left corner</b>.', 'Pick a colour — your blob turns that colour and swallows every touching cell of it.', 'Fill the board in as <b>few moves</b> as you can. Beat the target.'],
@@ -2811,9 +2830,17 @@ function openLobby(gid, refresh = false) {
   if (!old) { document.querySelectorAll('.veil').forEach((v) => v.remove()); navPush(); }
   const g = G[gid], c = cfg(gid);
   document.documentElement.style.setProperty('--acc', getComputedStyle(document.documentElement).getPropertyValue('--' + gid).trim());
-  const kids = [$('div', 'kicker', S.duo ? 'Two players' : 'Solo'), $('h2', '', g.name)];
-  const rules = $('div', 'rules', g.rules.map((r) => `<p>${r}</p>`).join(''));
-  kids.push(rules);
+  const head = [$('div', 'kicker', S.duo ? 'Two players' : 'Solo'), $('h2', '', g.name)];
+  const kids = []; // settings
+  // collapsible sections: how to play (closed by default) and settings; open/closed is remembered per game
+  S.lobbyOpen = S.lobbyOpen || {};
+  const fold = (key, title, sub, body, def) => {
+    const k = gid + ':' + key, d = $('details', 'fold'); d.open = S.lobbyOpen[k] ?? def;
+    d.ontoggle = () => { S.lobbyOpen[k] = d.open; store.save(); };
+    d.append($('summary', '', `<b>${title}</b>${sub ? `<small>${sub}</small>` : ''}`), ...body); return d;
+  };
+  const howBody = [$('div', 'rules', g.rules.map((r) => `<p>${r}</p>`).join(''))];
+  if (g.guide) { const gb = $('button', 'big bl-guide-btn', '📖  Full guide — every rule, with pictures'); gb.onclick = () => g.guide(); howBody.push(gb); }
   const opt = (label, el) => { const o = $('div', 'opt'); o.append($('label', '', label), el); return o; };
   const re = () => openLobby(gid, true);
   kids.push(opt('Players', seg([[0, '1 player'], [1, '2 players']], S.duo ? 1 : 0, (v) => { S.duo = !!v; store.save(); renderHome(); re(); })));
@@ -2831,14 +2858,14 @@ function openLobby(gid, refresh = false) {
     if (modes.length > 1) kids.push(opt('Duel mode', seg(modes, c.mode, (v) => { c.mode = v; store.save(); re(); })));
     kids.push(opt('Who goes first', seg([[0, `${S.players[0]}`], [1, `${S.players[1]}`]], c.first, (v) => { c.first = v; store.save(); re(); })));
     const s = gameScore(gid);
-    kids.push($('div', 'verdict', `${g.name} score: ${scoreLine(s)}`));
+    head.push($('div', 'verdict', `${g.name} score: ${scoreLine(s)}`));
     ri = openRound(gid);
     if (ri != null) { // nothing played or written in it yet → drop it, so new settings apply right away
       const r0 = duelOf(gid).rounds[ri];
       if (!r0.res[0] && !r0.res[1] && !(r0.words && (r0.words[0] || r0.words[1]))) { duelOf(gid).rounds.splice(ri, 1); store.save(); ri = null; }
     }
   }
-  const btns = $('div', 'btns');
+  const btns = $('div', 'btns lobby-btns');
   const go = $('button', 'big pri');
   if (!S.duo) {
     const t = tkey(g, c); let n = nextNum(gid, t, 0);
@@ -2866,10 +2893,11 @@ function openLobby(gid, refresh = false) {
   }
   const leave = $('button', 'big', '‹  Back to arcade'); leave.onclick = () => goHome();
   btns.appendChild(leave);
-  kids.push(btns);
+  const setSub = [S.duo ? '2 players' : '1 player', hasTiers(g) && !g.oneTrack && !(S.duo && c.mode === 'set') ? TN[c.tier] : null, g.vars ? tName(g, tkey(g, c)) : null, g.oneTrack ? BL_THEMES[c.blTheme || 'sunset'].name + ' · ' + (c.blSet === 'garden' ? 'Garden' : 'Home') : null].filter(Boolean).join(' · ');
+  const all = [...head, btns, fold('how', 'How to play', '', howBody, false), fold('set', 'Settings', setSub, kids, !!S.duo)];
   let v = old;
-  if (old) { const sh = old.querySelector('.sheet'), top = sh.scrollTop; sh.replaceChildren(sh.querySelector('.sheet-x'), ...kids); sh.scrollTop = top; }
-  else v = veil(kids, 'lobby', () => goHome());
+  if (old) { const sh = old.querySelector('.sheet'), top = sh.scrollTop; sh.replaceChildren(sh.querySelector('.sheet-x'), ...all); sh.scrollTop = top; }
+  else v = veil(all, 'lobby', () => goHome());
 }
 
 // ====================== HAND-OFF ======================
@@ -4614,7 +4642,7 @@ function blGuide() {
       $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.glove}</span><div><b>Glove</b> — tap it, then swap <b>any two</b> neighbours, even if it makes no match. Swapping two power-ups this way makes their combo.</div>`),
       $('div', 'bl-grow', `<span class="bl-gi">${BL_BOOST_ART.shuffle}</span><div><b>Shuffle</b> — mixes up the pieces (power-ups, toys and locked pieces stay put). The board also shuffles by itself for free if no move is possible.</div>`),
       P('None of them use a move. Tap an active booster again to cancel it.'),
-      P('<b>Start-of-level power-ups</b> (Rocket, Bomb, Disco ball): pick them in Bloom\'s menu under “Start the level with”; they\'re placed on the board when a new level starts.'),
+      P('<b>Start-of-level power-ups</b> (Rocket, Bomb, Disco ball): every new level opens with its card — goals, moves and “Start with”. Tap the ones you want, then Play; they\'re placed on the board right away. Each pick is used up, so you choose again on every level.'),
       P('<b>Earning</b> (the first time you finish a level): Normal → +1 Hammer, Glove or Shuffle · Hard → that plus +1 Rocket, Bomb or Disco ball · Super hard → +2 Hammer/Glove/Shuffle and +1 Rocket/Bomb/Disco. Replaying an old level gives nothing. You start with 3 hammers, 3 gloves, 2 shuffles, 2 rockets, 2 bombs and 1 disco ball.')),
     sec('9 · Levels',
       P('One endless path. Each level is a little harder: fewer spare moves, more blockers, and new things appear on their own “New!” level — cushions (4), carpet (7), glass (10), chains (14), double cushions (18), a 6th kind of piece (21), toys (23), double chains (26), bubbles (29), triple cushions (31), jam (33), frosted glass (35), toy chests (37).'),
@@ -4627,7 +4655,6 @@ function blGuide() {
 }
 // Bloom's own settings in its menu: colour theme and piece set
 function blLobby(kids, c, re, opt) {
-  const gb = $('button', 'big bl-guide-btn', '📖  Full guide — power-ups, combos, every rule'); gb.onclick = () => blGuide(); kids.push(gb);
   const sw = $('div', 'bl-sw');
   for (const [id, t] of Object.entries(BL_THEMES)) {
     const b = $('button', (c.blTheme || 'sunset') === id ? 'on' : '', `<i style="background:${t.bg}"><b style="background:${t.acc}"></b></i><span>${t.name}</span>`);
@@ -4636,17 +4663,6 @@ function blLobby(kids, c, re, opt) {
   kids.push(opt('Colours', sw));
   const mini = (set) => `<span class="bl-mini">${[0, 1, 2, 3].map((k) => blArt(k, 0, set)).join('')}</span>`;
   kids.push(opt('Pieces', seg([['home', `${mini('home')}Home`], ['garden', `${mini('garden')}Garden`]], c.blSet || 'home', (v) => { c.blSet = v; store.save(); re(); })));
-  if (S.duo) return;
-  // power-ups to start the next level with (won on hard levels)
-  const inv = blBoosts(); c.blPre = c.blPre || {};
-  const pre = $('div', 'bl-pre');
-  for (const k of ['rocket', 'bomb', 'rain']) {
-    const n = inv[k] || 0, on = !!c.blPre[k] && n > 0;
-    const b = $('button', (on ? 'on' : '') + (n ? '' : ' none'), `${blArt(0, k === 'rocket' ? 'rh' : k, c.blSet || 'home')}<span>${BL_BOOST_NAME[k]}</span><b>${n}</b>`);
-    b.onclick = () => { if (!n) return; c.blPre[k] = !c.blPre[k]; store.save(); re(); }; pre.appendChild(b);
-  }
-  kids.push(opt('Start the level with', pre));
-  kids.push($('div', 'bl-inv', `In-game boosters: <b>${inv.hammer || 0}</b> hammer · <b>${inv.glove || 0}</b> glove · <b>${inv.shuffle || 0}</b> shuffle. Win levels to get more.`));
 }
 // cushions (1–3 layers): soft and tufted; each layer peels off
 const BL_CUSH = [null, ['#FFC9DE', '#F59BC0', '#E07AA6'], ['#FF8CC0', '#EE5A9E', '#C43A7E'], ['#B98CF0', '#8E5BDA', '#6438B0']];
@@ -5317,8 +5333,8 @@ function mountBL(stage, controls, P, api, ctx) {
   async function applyPre() {
     const pick = Object.entries(bc.blPre || {}).filter(([k, on]) => on && inv[k] > 0).map(([k]) => k);
     if (!pick.length) return;
-    pick.forEach((k) => inv[k]--); store.save();
-    busy = true; await play(M3.preBoost(st, pick)); busy = false; api.save(); armHint();
+    pick.forEach((k) => inv[k]--); bc.blPre = {}; store.save(); // used up: pick again on the next level's card
+    busy = true; await play(M3.preBoost(st, pick)); busy = false; api.start(); api.save(); armHint(); // saved now, so leaving and coming back keeps them
   }
   async function after() {
     if (!wrap.isConnected || api.done) return;
@@ -5372,13 +5388,35 @@ function mountBL(stage, controls, P, api, ctx) {
     const art = ic ? `<div class="art">${(BL_INTRO_ART[spec.intro] || BL_ICON[ic])()}</div>` : `<div class="art six">${[0, 1, 2, 3, 4, 5].map((k) => blArt(k)).join('')}</div>`;
     const card = $('div', 'bl-card', `<div><div class="rib">New!</div>${art}<h3>${title}</h3><p>${text}</p><button>Let's go</button></div>`);
     scene.appendChild(card); requestAnimationFrame(() => card.classList.add('on'));
-    card.onclick = () => { card.onclick = null; card.classList.remove('on'); setTimeout(() => card.remove(), 260); busy = false; armHint(); applyPre(); };
+    card.onclick = () => { card.onclick = null; card.classList.remove('on'); setTimeout(() => card.remove(), 260); busy = false; armHint(); };
+  }
+  // like Homescapes: every new level opens with its card — goals, moves, and power-ups to start with
+  function afterStart() {
+    if (spec.intro && BL_INTRO[spec.intro]) introCard();
+    else if (spec.hard) { showBanner(spec.hard > 1 ? 'Super hard level' : 'Hard level', 'bad'); setTimeout(hideBanner, 1400); }
+  }
+  function startCard() {
+    busy = true; clearHint();
+    const pre = (bc.blPre = bc.blPre || {});
+    const card = $('div', 'bl-card bl-start' + (spec.hard ? ' hard' : ''));
+    const draw = () => {
+      const goalsH = st.goals.map((g) => `<div class="g">${g.t === 'col' ? blArt(g.k) : BL_ICON[g.t]()}<b>${g.n}</b></div>`).join('');
+      const tog = ['rocket', 'bomb', 'rain'].map((k) => { const n = inv[k] || 0; return `<button data-k="${k}" class="${pre[k] && n ? 'on' : ''}${n ? '' : ' none'}">${blArt(0, k === 'rocket' ? 'rh' : k)}<i>${n ? (pre[k] ? '✓' : n) : '0'}</i><span>${BL_BOOST_NAME[k]}</span></button>`; }).join('');
+      card.innerHTML = `<div><div class="rib">${spec.hard > 1 ? 'Super hard level ' + P.n : spec.hard ? 'Hard level ' + P.n : 'Level ' + P.n}</div>
+        <div class="goals">${goalsH}</div><div class="mv">${st.moves} moves</div>
+        <div class="pre"><small>Start with</small><div class="row">${tog}</div></div><button class="go">Play</button></div>`;
+      card.querySelectorAll('.pre button').forEach((b) => (b.onclick = (ev) => { ev.stopPropagation(); const k = b.dataset.k; if (!inv[k]) return; pre[k] = !pre[k]; store.save(); draw(); }));
+      card.querySelector('.go').onclick = async (ev) => {
+        ev.stopPropagation(); card.classList.remove('on'); setTimeout(() => card.remove(), 260); busy = false;
+        await applyPre(); afterStart();
+      };
+    };
+    draw(); scene.appendChild(card); requestAnimationFrame(() => card.classList.add('on'));
   }
   setTimeout(() => {
     if (resumed || api.done || !wrap.isConnected) return;
-    if (spec.intro && BL_INTRO[spec.intro]) introCard();
-    else { if (spec.hard) { showBanner(spec.hard > 1 ? 'Super hard level' : 'Hard level', 'bad'); setTimeout(hideBanner, 1400); } applyPre(); }
-  }, 300);
+    if (!S.duo) startCard(); else afterStart();
+  }, 250);
   api.persist(() => ({ st }), (d) => {
     resumed = true;
     // (Bloom saves itself when the board settles, see after())
